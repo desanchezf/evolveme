@@ -1,14 +1,16 @@
 """Welcome to Reflex! This file outlines the steps to create a basic app."""
-from rxconfig import config
-
 import reflex as rx
 
-from .pages import login, gym, sport, metrics
-
+from rxconfig import config
 
 docs_url = "https://reflex.dev/docs/getting-started/introduction"
 filename = f"{config.app_name}/{config.app_name}.py"
 
+
+class State(rx.State):
+    """The app state."""
+
+    pass
 
 
 def index() -> rx.Component:
@@ -16,7 +18,10 @@ def index() -> rx.Component:
         rx.color_mode_button(rx.color_mode_icon(), float="right"),
         rx.vstack(
             rx.heading("Welcome to Reflex!", font_size="2em"),
-            rx.box("Get started by editing ", rx.code(filename, font_size="1em")),
+            rx.box(
+                "Get started by editing ",
+                rx.code(filename, font_size="1em")
+            ),
             rx.link(
                 "Check out our docs!",
                 href=docs_url,
@@ -40,8 +45,4 @@ def index() -> rx.Component:
 # Add state and page to the app.
 app = rx.App()
 app.add_page(index)
-# app.add_page(login)
-# app.add_page(gym)
-# app.add_page(sport)
-# app.add_page(metric)
 app.compile()

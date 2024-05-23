@@ -5,8 +5,4 @@ class EvolvemeConfig(rx.Config):
 
 config = EvolvemeConfig(
     app_name="evolveme",
-    # frontend_port=<port>,
-    # redis_url="",
-    telemetry_enabled=False
-    # username="",
 )
