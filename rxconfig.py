@@ -1,12 +1,8 @@
 import reflex as rx
 
+class EvolvemeConfig(rx.Config):
+    pass
 
-def index():
-    return rx.h1("Hello, Reflex!")
-
-
-app = rx.App()
-app.add_route("/", index)
-
-if __name__ == "__main__":
-    app.compile()
+config = EvolvemeConfig(
+    app_name="evolveme",
+)

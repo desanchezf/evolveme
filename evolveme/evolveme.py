@@ -1,7 +1,7 @@
 """Welcome to Reflex! This file outlines the steps to create a basic app."""
-import reflex as rx
-
 from rxconfig import config
+
+import reflex as rx
 
 docs_url = "https://reflex.dev/docs/getting-started/introduction"
 filename = f"{config.app_name}/{config.app_name}.py"
@@ -18,10 +18,7 @@ def index() -> rx.Component:
         rx.color_mode_button(rx.color_mode_icon(), float="right"),
         rx.vstack(
             rx.heading("Welcome to Reflex!", font_size="2em"),
-            rx.box(
-                "Get started by editing ",
-                rx.code(filename, font_size="1em")
-            ),
+            rx.box("Get started by editing ", rx.code(filename, font_size="1em")),
             rx.link(
                 "Check out our docs!",
                 href=docs_url,

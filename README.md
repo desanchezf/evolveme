@@ -13,8 +13,8 @@ To run the app, execute this command on the project root folder:
 More info on: [Reflex repo](https://github.com/reflex-dev/reflex)
 
 ```bash
-# Build the image
-docker build -t evolveme:latest .
-# Start the container
-docker run -p 3000:3000 -p 8000:8000 --name app evolveme:latest
+# Download the image
+docker build -t reflex-app:latest .
+# Run a container
+docker run -it --rm -p 3000:3000 -p 8000:8000 --name evolveme reflex-app:latest
 ```
