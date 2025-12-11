@@ -1,29 +1,21 @@
-# This Dockerfile is used to deploy a simple single-container Reflex app instance.
-FROM python:3.11
+# Versión de linux que se va a utilizar dentro del container
+FROM python:3.12-slim
 
-ARG uv=/root/.cargo/bin/uv
+# Evita la generación de archivos de bytecode (.pyc)
+ENV PYTHONDONTWRITEBYTECODE 1
+# Evita el almacenamiento en búfer de la salida y el error estándar
+ENV PYTHONUNBUFFERED 1
 
-# Install `uv` for faster package bootstrapping
-ENV VIRTUAL_ENV=/usr/local
-ADD --chmod=755 https://astral.sh/uv/install.sh /install.sh
-RUN /install.sh && rm /install.sh
+# Instalar dependencias del sistema y herramientas de compilación
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    gcc \
+    gettext \
+    && rm -rf /var/lib/apt/lists/*
 
-# Check if uv was installed correctly
-RUN ls -l /root/.cargo/bin/ && /root/.cargo/bin/uv --version
-
-# Copy local context to `/app` inside container (see .dockerignore)
-WORKDIR /app
-COPY . .
-
-# Install app requirements and reflex in the container
-# First try using uv, if it fails, use pip directly
-RUN if ! $uv pip install -r requirements.txt; then pip install -r requirements.txt; fi
-
-# Deploy templates and prepare app
-RUN reflex init
-
-# Needed until Reflex properly passes SIGTERM on backend.
-STOPSIGNAL SIGKILL
-
-# Always apply migrations before starting the backend.
-CMD reflex db migrate && reflex run --env prod
+RUN mkdir /code
+WORKDIR /code
+COPY requirements.txt /code/
+RUN pip install --upgrade pip
+RUN python -m pip install -r requirements.txt
+COPY . /code/
