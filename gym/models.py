@@ -1,44 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from cardio.enums import CardioExerciseChoices
-from food.enums import MealTypeChoices
+from cardio.models import CardioExercise
 from gym.enums import BodyPartChoices
-
-
-# Cardio Exercise
-class CardioExercise(models.Model):
-    name = models.CharField(
-        max_length=255,
-        choices=CardioExerciseChoices.choices(),
-        verbose_name="Tipo de actividad",
-    )
-    workout_time = models.IntegerField(
-        null=False, blank=False, verbose_name="Duración (min)"
-    )
-    distance = models.FloatField(null=False, blank=False, verbose_name="Distancia (km)")
-    active_calories = models.IntegerField(
-        null=False, blank=False, verbose_name="Calorías activas"
-    )
-    total_calories = models.IntegerField(
-        null=False, blank=False, verbose_name="Calorías totales"
-    )
-    elevation_gain = models.IntegerField(
-        null=False, blank=False, verbose_name="Elevación (m)"
-    )
-    average_heart_rate = models.IntegerField(
-        null=False, blank=False, verbose_name="Frecuencia cardíaca promedio (bpm)"
-    )
-    avg_speed = models.FloatField(
-        null=False, blank=False, verbose_name="Velocidad promedio (km/h)"
-    )
-
-    class Meta:
-        verbose_name = "Actividad de cardio"
-        verbose_name_plural = "Actividades de cardio"
-
-    def __str__(self):
-        return self.name
 
 
 # Musculation Exercise
@@ -118,29 +82,6 @@ class TrainingSession(models.Model):
         return f"{self.user.username} - {self.date}"
 
 
-# Nutrición
-class Diet(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Usuario")
-    date = models.DateTimeField(verbose_name="Fecha")
-    meal_type = models.CharField(
-        max_length=255,
-        choices=MealTypeChoices.choices(),
-        null=True,
-        blank=True,
-        verbose_name="Tipo de comida",
-    )
-    food = models.TextField(null=True, blank=True, verbose_name="Comida")
-    quantity = models.IntegerField(null=True, blank=True, verbose_name="Cantidad")
-    calories = models.IntegerField(
-        null=True, blank=True, verbose_name="Calorías (kcal)"
-    )
-
-    class Meta:
-        verbose_name = "Dieta"
-        verbose_name_plural = "Dietas"
-
-    def __str__(self):
-        return f"{self.user.username} - {self.date}"
 
 
 class Routine(models.Model):
@@ -157,3 +98,28 @@ class Routine(models.Model):
 
     def __str__(self):
         return f"{self.start_date} - {self.end_date}"
+
+
+# Ejercicios de Musculación
+class MusculationExercise(models.Model):
+    id = models.CharField(
+        primary_key=True, max_length=255, verbose_name="ID del ejercicio"
+    )
+    name = models.CharField(max_length=255, verbose_name="Nombre del ejercicio")
+    description = models.TextField(null=True, blank=True, verbose_name="Descripción")
+    body_part = models.CharField(
+        max_length=255,
+        choices=BodyPartChoices.choices(),
+        null=True,
+        blank=True,
+        verbose_name="Parte del cuerpo",
+    )
+    observation = models.TextField(null=True, blank=True, verbose_name="Observación")
+    image_base64 = models.TextField(null=True, blank=True, verbose_name="Imagen")
+
+    class Meta:
+        verbose_name = "Ejercicio de musculación"
+        verbose_name_plural = "Ejercicios de musculación"
+
+    def __str__(self):
+        return self.name

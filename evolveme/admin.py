@@ -1,9 +1,8 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
-from evolveme.models import (CardioExercise, Diet, ExerciseSet, GymUserProfile,
-                             Measure, MusculationExercise, Routine,
-                             TrainingSession)
+from evolveme.models import (Diet, ExerciseSet, GymUserProfile, Measure,
+                             MusculationExercise, Routine, TrainingSession)
 
 
 @admin.register(GymUserProfile)
@@ -11,19 +10,6 @@ class GymUserProfileAdmin(UnfoldModelAdmin):
     list_display = ("user", "birth_date", "gender", "height", "objective")
     search_fields = ("user__username",)
     list_filter = ("gender", "objective")
-
-
-@admin.register(CardioExercise)
-class CardioAdmin(UnfoldModelAdmin):
-    list_display = (
-        "name",
-        "workout_time",
-        "active_calories",
-        "total_calories",
-        "distance"
-    )
-    search_fields = ("name",)
-    list_filter = ("name",)
 
 
 @admin.register(ExerciseSet)

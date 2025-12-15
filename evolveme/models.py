@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from evolveme.enums import GenderChoices, ObjectiveChoices
+from gym.enums import BodyPartChoices
 
 
 class GymUserProfile(models.Model):
@@ -68,3 +69,5 @@ class Measure(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.date}"
+
+
