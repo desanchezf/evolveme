@@ -1,5 +1,5 @@
 # Versión de linux que se va a utilizar dentro del container
-FROM python:3.12-slim
+FROM python:3.14-bookworm
 
 # Evita la generación de archivos de bytecode (.pyc)
 ENV PYTHONDONTWRITEBYTECODE 1

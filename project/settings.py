@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Project apps
     "evolveme",
-    "sandbox",
     # Project commands
     "project_commands",
 ]
