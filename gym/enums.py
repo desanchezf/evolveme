@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 class BodyPartChoices(str):
     Chest = "chest"
+    Core = "core"
     Back = "back"
     Legs = "legs"
     Arms = "arms"
@@ -17,6 +18,8 @@ class BodyPartChoices(str):
         (Arms, _("Brazos")),
         (Shoulders, _("Hombros")),
         (Abs, _("Abdomen")),
+        (Forearms, _("Antebrazos")),
+        (Core, _("Zona media")),
     )
 
     @classmethod

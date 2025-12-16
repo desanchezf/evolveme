@@ -1,20 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
-from cardio.models import CardioExercise, CardioSession
-
-
-@admin.register(CardioExercise)
-class CardioExerciseAdmin(UnfoldModelAdmin):
-    list_display = (
-        "name",
-        "workout_time",
-        "active_calories",
-        "total_calories",
-        "distance"
-    )
-    search_fields = ("name",)
-    list_filter = ("name",)
+from cardio.models import CardioSession
 
 
 @admin.register(CardioSession)
@@ -28,7 +15,41 @@ class CardioSessionAdmin(UnfoldModelAdmin):
         "active_calories",
         "total_calories",
         "average_heart_rate",
+        "avg_speed",
+        "elevation_gain",
     )
-    search_fields = ("user__username", "name")
-    list_filter = ("name", "date")
+    list_filter = ("name", "date", "user")
+    search_fields = ("user__username", "user__email", "name")
     date_hierarchy = "date"
+    ordering = ("-date", "-workout_time")
+    fieldsets = (
+        (
+            "Información básica",
+            {
+                "fields": ("user", "name", "date"),
+            },
+        ),
+        (
+            "Datos del entrenamiento",
+            {
+                "fields": (
+                    "workout_time",
+                    "distance",
+                    "avg_speed",
+                    "elevation_gain",
+                ),
+            },
+        ),
+        (
+            "Calorías",
+            {
+                "fields": ("active_calories", "total_calories"),
+            },
+        ),
+        (
+            "Frecuencia cardíaca",
+            {
+                "fields": ("average_heart_rate",),
+            },
+        ),
+    )

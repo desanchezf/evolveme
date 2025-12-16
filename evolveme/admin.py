@@ -1,54 +1,91 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
-from evolveme.models import (Diet, ExerciseSet, GymUserProfile, Measure,
-                             MusculationExercise, Routine, TrainingSession)
+from evolveme.models import GymUserProfile, Measure
 
 
 @admin.register(GymUserProfile)
 class GymUserProfileAdmin(UnfoldModelAdmin):
     list_display = ("user", "birth_date", "gender", "height", "objective")
-    search_fields = ("user__username",)
+    search_fields = (
+        "user__username",
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+    )
     list_filter = ("gender", "objective")
-
-
-@admin.register(ExerciseSet)
-class ExerciseSetAdmin(UnfoldModelAdmin):
-    list_display = ["exercise", "weight", "reps", "sets"]
-    search_fields = ("exercise__name",)
-    list_filter = ("exercise__body_part",)
-
-
-@admin.register(MusculationExercise)
-class MusculationExerciseAdmin(UnfoldModelAdmin):
-    list_display = ("name", "body_part", "description", "observation")
-    search_fields = ("name", "body_part")
-    list_filter = ("body_part",)
-
-
-@admin.register(TrainingSession)
-class TrainingSessionAdmin(UnfoldModelAdmin):
-    list_display = ("user", "date", "observation")
-    search_fields = ("user__username",)
-    list_filter = ("date",)
-
-
-@admin.register(Diet)
-class DietAdmin(UnfoldModelAdmin):
-    list_display = ("user", "date", "meal_type", "food", "quantity", "calories")
-    search_fields = ("user__username", "meal_type", "food")
-    list_filter = ("meal_type", "date")
+    date_hierarchy = "birth_date"
+    ordering = ("-birth_date",)
+    fieldsets = (
+        (
+            "Usuario",
+            {
+                "fields": ("user",),
+            },
+        ),
+        (
+            "Información personal",
+            {
+                "fields": ("birth_date", "gender", "height"),
+            },
+        ),
+        (
+            "Objetivos",
+            {
+                "fields": ("objective",),
+            },
+        ),
+    )
 
 
 @admin.register(Measure)
 class MeasureAdmin(UnfoldModelAdmin):
-    list_display = ("user", "date", "weight", "arm", "chest", "waist", "leg")
-    search_fields = ("user__username",)
-    list_filter = ("date",)
-
-
-@admin.register(Routine)
-class RoutineAdmin(UnfoldModelAdmin):
-    list_display = ("name", "start_date", "end_date")
-    search_fields = ("name",)
-    list_filter = ("start_date", "end_date")
+    list_display = (
+        "user",
+        "date",
+        "weight",
+        "arm",
+        "chest",
+        "waist",
+        "leg",
+        "fat_perc",
+        "muscle_mass",
+    )
+    search_fields = (
+        "user__username",
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+    )
+    list_filter = ("date", "user")
+    date_hierarchy = "date"
+    ordering = ("-date", "-user")
+    fieldsets = (
+        (
+            "Información básica",
+            {
+                "fields": ("user", "date"),
+            },
+        ),
+        (
+            "Medidas corporales",
+            {
+                "fields": (
+                    "weight",
+                    "arm",
+                    "chest",
+                    "waist",
+                    "leg",
+                ),
+            },
+        ),
+        (
+            "Composición corporal",
+            {
+                "fields": (
+                    "fat_perc",
+                    "muscle_mass",
+                ),
+            },
+        ),
+    )
