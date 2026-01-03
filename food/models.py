@@ -4,6 +4,19 @@ from django.db import models
 from food.enums import MealTypeChoices
 
 
+
+class Products(models.Model):
+    name = models.CharField(max_length=255, verbose_name="Nombre")
+    description = models.TextField(verbose_name="Descripción", blank=True)
+    calories_per_100g = models.FloatField(default=0, verbose_name="Calorías por 100g")
+    protein_per_100g = models.FloatField(
+        default=0, verbose_name="Proteínas por 100g (g)"
+    )
+    carbs_per_100g = models.FloatField(
+        default=0, verbose_name="Carbohidratos por 100g (g)"
+    )
+
+
 # Create your models here.
 class Food(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nombre")

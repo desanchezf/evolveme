@@ -3,12 +3,14 @@ import logging
 import os
 from datetime import date
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 logger = logging.getLogger(__name__)
 
 from cardio.models import CardioSession
 from evolveme.models import Measure, User
+from food.models import Food
 from gym.models import MusculationExercise
 
 
@@ -36,6 +38,11 @@ class Command(BaseCommand):
             return
         else:
             print(" ✅ Sesiones de cardio cargadas correctamente 🚴")
+        if not self.food_products():
+            print(" ❌ Error al cargar los productos alimentarios 🍎")
+            return
+        else:
+            print(" ✅ Productos alimentarios cargados correctamente 🍎")
 
     def user_data(self):
         logger.info("Cargando información de los usuarios 👤 ...")
@@ -143,3 +150,53 @@ class Command(BaseCommand):
 
         logger.info("Sesiones de cardio cargadas correctamente ✅")
         return True
+
+    def food_products(self):
+        logger.info("Cargando productos alimentarios 🍎 ...")
+
+        # Obtener la ruta del archivo food.txt relativa al directorio del proyecto
+        # El archivo está en prompts/food.txt desde la raíz del proyecto
+        try:
+            project_root = settings.BASE_DIR
+        except AttributeError:
+            # Fallback si BASE_DIR no está disponible
+            project_root = os.path.dirname(
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+                )
+            )
+        food_file_path = os.path.join(project_root, "prompts", "food.txt")
+
+        if not os.path.exists(food_file_path):
+            logger.error(f"El archivo {food_file_path} no existe")
+            return False
+
+        with open(food_file_path, "r", encoding="utf-8") as f:
+            products = [line.strip() for line in f if line.strip()]
+
+        created_count = 0
+        skipped_count = 0
+
+        for product_name in products:
+            if not Food.objects.filter(name=product_name).exists():
+                Food.objects.create(
+                    name=product_name,
+                    description="",
+                    calories_per_100g=0,
+                    protein_per_100g=0,
+                    carbs_per_100g=0,
+                    fat_per_100g=0,
+                )
+                created_count += 1
+            else:
+                skipped_count += 1
+
+        logger.info(
+            f"Productos alimentarios cargados correctamente ✅ "
+            f"(Creados: {created_count}, Ya existían: {skipped_count})"
+        )
+        return True
+
+    def daily_meals(self):
+        pass
+   
