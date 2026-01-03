@@ -1,24 +1,15 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from food.enums import MealTypeChoices
+# Products -> productos de la tienda
+# Supplements -> suplementos
+# DailyMeal -> Conjunto de productos y suplementos que ingieren en un dia
+# Diet -> Conjunto de DailyMeals que conforman una dieta
+# ProductStock -> Stock de productos
 
 
-
+# Products -> productos de la tienda
 class Products(models.Model):
-    name = models.CharField(max_length=255, verbose_name="Nombre")
-    description = models.TextField(verbose_name="Descripción", blank=True)
-    calories_per_100g = models.FloatField(default=0, verbose_name="Calorías por 100g")
-    protein_per_100g = models.FloatField(
-        default=0, verbose_name="Proteínas por 100g (g)"
-    )
-    carbs_per_100g = models.FloatField(
-        default=0, verbose_name="Carbohidratos por 100g (g)"
-    )
-
-
-# Create your models here.
-class Food(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nombre")
     description = models.TextField(verbose_name="Descripción", blank=True)
     calories_per_100g = models.FloatField(default=0, verbose_name="Calorías por 100g")
@@ -33,14 +24,15 @@ class Food(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Alimento"
-        verbose_name_plural = "Alimentos"
+        verbose_name = "Producto"
+        verbose_name_plural = "Productos"
 
     def __str__(self):
         return self.name
 
 
-class Supplement(models.Model):
+# Supplements -> suplementos
+class Supplements(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nombre")
     description = models.TextField(verbose_name="Descripción", blank=True)
     unit = models.CharField(
@@ -60,9 +52,48 @@ class Supplement(models.Model):
         return self.name
 
 
-class Diet(models.Model):
-    """Dieta completa generada por IA para 2 semanas (14 días)"""
+# ProductStock -> Stock de productos
+class ProductStock(models.Model):
+    product = models.OneToOneField(
+        Products,
+        on_delete=models.CASCADE,
+        related_name="stock",
+        verbose_name="Producto",
+    )
+    quantity = models.FloatField(
+        default=0,
+        verbose_name="Cantidad",
+        help_text="Cantidad disponible en stock",
+    )
+    unit = models.CharField(
+        max_length=50,
+        default="kg",
+        verbose_name="Unidad",
+        help_text="Unidad de medida del stock (kg, unidades, etc.)",
+    )
+    min_quantity = models.FloatField(
+        default=0,
+        verbose_name="Cantidad mínima",
+        help_text="Cantidad mínima antes de reponer",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "Stock de producto"
+        verbose_name_plural = "Stock de productos"
+
+    def __str__(self):
+        return f"{self.product.name} - {self.quantity} {self.unit}"
+
+    @property
+    def is_low_stock(self):
+        """Indica si el stock está por debajo del mínimo"""
+        return self.quantity <= self.min_quantity
+
+
+# Diet -> Conjunto de DailyMeals que conforman una dieta
+class Diet(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nombre de la dieta")
     diet_type = models.CharField(
         max_length=255, verbose_name="Tipo de dieta", blank=True
@@ -94,228 +125,106 @@ class Diet(models.Model):
         return (self.to_date - self.from_date).days + 1
 
 
-class DietDay(models.Model):
-    """Un día específico de la dieta (día 1, día 2, etc.)"""
-
+# DailyMeal -> Conjunto de productos y suplementos que ingieren en un dia
+class DailyMeal(models.Model):
+    date = models.DateField(verbose_name="Fecha")
     diet = models.ForeignKey(
-        Diet, on_delete=models.CASCADE, related_name="days", verbose_name="Dieta"
+        Diet,
+        on_delete=models.CASCADE,
+        related_name="daily_meals",
+        null=True,
+        blank=True,
+        verbose_name="Dieta",
+        help_text="Dieta a la que pertenece este día (opcional)",
     )
     day_number = models.IntegerField(
-        verbose_name="Número de día",
-        help_text="Día de la dieta (1-14 para 2 semanas)",
-    )
-    date = models.DateField(
-        verbose_name="Fecha",
-        help_text="Fecha específica de este día",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name = "Día de la dieta"
-        verbose_name_plural = "Días de la dieta"
-        ordering = ["diet", "day_number"]
-        unique_together = [["diet", "day_number"]]
-
-    def __str__(self):
-        return f"{self.diet.name} - Día {self.day_number} ({self.date})"
-
-
-class Meal(models.Model):
-    """Una comida del día (desayuno, almuerzo, cena, etc.)"""
-
-    diet_day = models.ForeignKey(
-        DietDay,
-        on_delete=models.CASCADE,
-        related_name="meals",
-        verbose_name="Día de la dieta",
-    )
-    meal_type = models.CharField(
-        max_length=50,
-        choices=MealTypeChoices.choices(),
-        verbose_name="Tipo de comida",
-    )
-    order = models.IntegerField(
-        default=0,
-        verbose_name="Orden",
-        help_text="Orden de la comida en el día (para ordenar)",
-    )
-    notes = models.TextField(
+        null=True,
         blank=True,
-        verbose_name="Notas",
-        help_text="Notas adicionales sobre la comida",
+        verbose_name="Número de día",
+        help_text="Número del día en la dieta (1-14)",
     )
+    notes = models.TextField(blank=True, verbose_name="Notas")
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Comida"
-        verbose_name_plural = "Comidas"
-        ordering = ["diet_day", "order", "meal_type"]
+        verbose_name = "Comida diaria"
+        verbose_name_plural = "Comidas diarias"
+        ordering = ["date", "day_number"]
 
     def __str__(self):
-        return f"{self.diet_day} - {self.get_meal_type_display()}"
+        if self.diet:
+            day_str = f"Día {self.day_number or '?'}"
+            return f"{self.diet.name} - {day_str} ({self.date})"
+        return f"Comida del {self.date}"
 
     @property
     def total_calories(self):
-        """Calcula el total de calorías de la comida"""
-        return sum(meal_food.calories for meal_food in self.foods.all())
+        """Calcula el total de calorías del día"""
+        products_calories = sum(
+            item.calories for item in self.daily_meal_products.all()
+        )
+        return products_calories
 
 
-class MealFood(models.Model):
-    """Alimento incluido en una comida con su cantidad"""
+class DailyMealProduct(models.Model):
+    """Producto incluido en una comida diaria"""
 
-    meal = models.ForeignKey(
-        Meal,
+    daily_meal = models.ForeignKey(
+        DailyMeal,
         on_delete=models.CASCADE,
-        related_name="foods",
-        verbose_name="Comida",
+        related_name="daily_meal_products",
+        verbose_name="Comida diaria",
     )
-    food = models.ForeignKey(Food, on_delete=models.CASCADE, verbose_name="Alimento")
+    product = models.ForeignKey(
+        Products, on_delete=models.CASCADE, verbose_name="Producto"
+    )
     quantity_grams = models.FloatField(
         verbose_name="Cantidad (gramos)",
-        help_text="Cantidad del alimento en gramos",
+        help_text="Cantidad del producto en gramos",
     )
     calories = models.FloatField(
         verbose_name="Calorías",
-        help_text="Calorías totales para esta cantidad",
         null=True,
         blank=True,
+        help_text="Calorías totales (se calcula automáticamente)",
     )
-    notes = models.TextField(
-        blank=True,
-        verbose_name="Notas",
-        help_text="Notas sobre este alimento",
-    )
+    notes = models.TextField(blank=True, verbose_name="Notas")
 
     class Meta:
-        verbose_name = "Alimento de la comida"
-        verbose_name_plural = "Alimentos de la comida"
-        ordering = ["meal", "food"]
+        verbose_name = "Producto de comida diaria"
+        verbose_name_plural = "Productos de comida diaria"
 
     def __str__(self):
-        return f"{self.meal} - {self.food.name} ({self.quantity_grams}g)"
+        qty_str = f"({self.quantity_grams}g)"
+        return f"{self.daily_meal} - {self.product.name} {qty_str}"
 
     def save(self, *args, **kwargs):
-        """Calcula las calorías automáticamente si no se proporcionan"""
-        if not self.calories and self.food.calories_per_100g:
-            self.calories = (self.food.calories_per_100g * self.quantity_grams) / 100
+        """Calcula las calorías automáticamente"""
+        if not self.calories and self.product.calories_per_100g:
+            self.calories = (self.product.calories_per_100g * self.quantity_grams) / 100
         super().save(*args, **kwargs)
 
 
-class MealSupplement(models.Model):
-    """Suplemento incluido en una comida"""
+class DailyMealSupplement(models.Model):
+    """Suplemento incluido en una comida diaria"""
 
-    meal = models.ForeignKey(
-        Meal,
+    daily_meal = models.ForeignKey(
+        DailyMeal,
         on_delete=models.CASCADE,
-        related_name="supplements",
-        verbose_name="Comida",
+        related_name="daily_meal_supplements",
+        verbose_name="Comida diaria",
     )
     supplement = models.ForeignKey(
-        Supplement, on_delete=models.CASCADE, verbose_name="Suplemento"
+        Supplements, on_delete=models.CASCADE, verbose_name="Suplemento"
     )
     quantity = models.FloatField(verbose_name="Cantidad")
-    notes = models.TextField(
-        blank=True,
-        verbose_name="Notas",
-        help_text="Notas sobre este suplemento",
-    )
-
-    class Meta:
-        verbose_name = "Suplemento de la comida"
-        verbose_name_plural = "Suplementos de la comida"
-        ordering = ["meal", "supplement"]
-
-    def __str__(self):
-        return f"{self.meal} - {self.supplement.name} ({self.quantity} {self.supplement.unit})"
-
-
-class EatenFood(models.Model):
-    """Registro de alimentos realmente consumidos por el usuario"""
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="eaten_foods",
-        verbose_name="Usuario",
-    )
-    meal = models.ForeignKey(
-        Meal,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name="Comida planificada",
-        help_text="Comida de la dieta que se estaba siguiendo (opcional)",
-    )
-    food = models.ForeignKey(Food, on_delete=models.CASCADE, verbose_name="Alimento")
-    quantity_grams = models.FloatField(verbose_name="Cantidad consumida (gramos)")
-    calories = models.FloatField(
-        verbose_name="Calorías",
-        null=True,
-        blank=True,
-        help_text="Calorías consumidas (se calcula automáticamente)",
-    )
-    date = models.DateField(verbose_name="Fecha de consumo")
-    meal_type = models.CharField(
-        max_length=50,
-        choices=MealTypeChoices.choices(),
-        verbose_name="Tipo de comida",
-        help_text="Tipo de comida en la que se consumió",
-    )
     notes = models.TextField(blank=True, verbose_name="Notas")
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Alimento consumido"
-        verbose_name_plural = "Alimentos consumidos"
-        ordering = ["-date", "-created_at"]
+        verbose_name = "Suplemento de comida diaria"
+        verbose_name_plural = "Suplementos de comida diaria"
 
     def __str__(self):
-        return f"{self.user.username} - {self.food.name} ({self.date})"
-
-    def save(self, *args, **kwargs):
-        """Calcula las calorías automáticamente si no se proporcionan"""
-        if not self.calories and self.food.calories_per_100g:
-            self.calories = (self.food.calories_per_100g * self.quantity_grams) / 100
-        super().save(*args, **kwargs)
-
-
-class EatenSupplement(models.Model):
-    """Registro de suplementos realmente consumidos por el usuario"""
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="eaten_supplements",
-        verbose_name="Usuario",
-    )
-    meal = models.ForeignKey(
-        Meal,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name="Comida planificada",
-        help_text="Comida de la dieta que se estaba siguiendo (opcional)",
-    )
-    supplement = models.ForeignKey(
-        Supplement, on_delete=models.CASCADE, verbose_name="Suplemento"
-    )
-    quantity = models.FloatField(verbose_name="Cantidad consumida")
-    date = models.DateField(verbose_name="Fecha de consumo")
-    meal_type = models.CharField(
-        max_length=50,
-        choices=MealTypeChoices.choices(),
-        null=True,
-        blank=True,
-        verbose_name="Tipo de comida",
-        help_text="Tipo de comida en la que se consumió (opcional)",
-    )
-    notes = models.TextField(blank=True, verbose_name="Notas")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name = "Suplemento consumido"
-        verbose_name_plural = "Suplementos consumidos"
-        ordering = ["-date", "-created_at"]
-
-    def __str__(self):
-        return f"{self.user.username} - {self.supplement.name} ({self.date})"
+        unit_str = f"{self.quantity} {self.supplement.unit}"
+        return f"{self.daily_meal} - {self.supplement.name} ({unit_str})"
