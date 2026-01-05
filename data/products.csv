@@ -1,32 +1,32 @@
-name,description,calories_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g,saturated_fat_per_100g,monounsaturated_fat_per_100g,polyunsaturated_fat_per_100g,sugars_per_100g,polyols_per_100g,fiber_per_100g,salt_per_100g,stock
-Maíz dulce pack-3 (lata Hacendado escurrido),Verduras legumbres y fruta en conserva,82,2.5,14,1.4,0.3,0.4,0.7,6.7,0,2.5,0.5,yes
-Guisantes pack-3,Guisantes en conserva estándar,75,5,11,0.75,0.1,0.2,0.45,3,0,5,0.7,yes
-Remolacha en tiras,Remolacha en conserva,35,1.25,8,0.1,0,0.05,0.05,7,0,2,0.45,yes
-Zanahoria en tiras,Zanahoria en conserva,30,0.75,7,0.1,0,0.05,0.05,5,0,2.5,0.45,yes
-Patatas cocidas bote,Patatas cocidas escurridas,60,1.75,13,0.15,0,0.05,0.1,0.5,0,2,0.55,yes
-Piña pelada en rodajas,Piña en su jugo,60,0.4,14,0.1,0,0.03,0.07,12,0,1,0.01,yes
-Espárrago mediano blanco,Espárrago blanco en conserva,20,2.5,2.5,0.25,0,0.1,0.15,2,0,2,1,yes
-Tomate ensalada,Tomate fresco,19,0.9,3.5,0.2,0.03,0.1,0.07,3,0,1.2,0,yes
-Infusión té verde,Infusión té verde bolsitas Hacendado,2,0.4,0.5,0.2,0,0.1,0.1,0,0,0,0.05,yes
-Té verde maracuyá mango,Té verde maracuyá mango Hacendado refresco,19,0,4.75,0,0,0,0,4.5,0,0,0,yes
-Té soluble limón,Té soluble limón sobres sin azúcar,11,0,0.5,0,0,0,0,0,0,0,0.01,yes
-Té soluble melocotón,Té soluble melocotón sobres sin azúcar,12.5,0,0.5,0,0,0,0,0,0,0,0.01,yes
-Zumo 100% naranja,Zumo 100% naranja refrigerado o brick Mercadona,45,0.65,10,0.2,0.03,0.1,0.07,9,0,0.2,0,yes
-Té melocotón refresco,Té melocotón refresco listo tipo té helado,21.5,0,5.25,0,0,0,0,5,0,0,0,yes
-Tomillo seco,Tomillo seco especias,260,9,60,7,2,2.5,2.5,0,0,37,0,yes
-Ajo seco granulados,Ajo seco granulados 250g,330,17,70,0.7,0.1,0.2,0.4,0,0,9,0,yes
-Ajo y perejil mezcla,Ajo y perejil mezcla seca,275,17.5,45,3.5,0.5,1.5,1.5,0,0,20,0,yes
-Perejil troceado seco,Perejil troceado seco,280,27.5,45,5,1,2,2,0,0,27.5,0,yes
-Eneldo seco,Eneldo seco,275,17.5,55,4.5,0.5,2,2,0,0,20,0,yes
-Orégano seco,Orégano seco,265,9,68,4,1,1.5,1.5,0,0,42,0,yes
-Pimentón dulce picante,Pimentón dulce picante incluido D.O.,290,14,52.5,13,2,5,6,0,0,35,0,yes
-Cayena molida,Cayena molida,315,12,57.5,17,3,6,8,0,0,25,0,yes
-Pimienta negra molida,Pimienta negra molida,255,10,64,3,0.5,1,1.5,0,0,25,0,yes
-Surtido hierbas provenzal,Surtido hierbas provenzal,265,12.5,55,6.5,1,2.5,3,0,0,30,0,yes
-Aliño carne,Aliño carne mezcla de especias,225,12.5,35,7.5,1.5,3,3,0,0,15,0.5,yes
-Mostaza Dijon,Mostaza Dijon tarro Hacendado genérico,135,7,4,10,0.5,5,4.5,2,0,3,4.5,yes
-Salsa Piri Piri,Salsa Piri Piri tipo salsa picante,30,0.5,4.5,1.5,0.2,0.7,0.6,3,0,1,2.5,yes
-Copos de avena Hacendado,Copos de avena Hacendado,370,12.5,61,7.5,1.3,2.5,3.7,1,0,9,0,yes
-Mozzarella light Hacendado,Mozzarella light Hacendado,200,22,2,13,9,3,1,1,0,0,1,yes
-Atún claro en aceite de girasol,Atún claro en aceite de girasol pack-3 escurrido,200,25,0,12,2,3,7,0,0,0,1,yes
-Filete de melva en aceite de oliva,Filete de melva en aceite de oliva,225,24.5,0,15,2.5,10,2.5,0,0,0,1.25,yes
+product_id,name,description,calories_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g,saturated_fat_per_100g,monounsaturated_fat_per_100g,polyunsaturated_fat_per_100g,sugars_per_100g,polyols_per_100g,fiber_per_100g,salt_per_100g,stock
+1,Maíz dulce pack-3 (lata Hacendado escurrido),Verduras legumbres y fruta en conserva,82,2.5,14,1.4,0.3,0.4,0.7,6.7,0,2.5,0.5,yes
+2,Guisantes pack-3,Guisantes en conserva estándar,75,5,11,0.75,0.1,0.2,0.45,3,0,5,0.7,yes
+3,Remolacha en tiras,Remolacha en conserva,35,1.25,8,0.1,0,0.05,0.05,7,0,2,0.45,yes
+4,Zanahoria en tiras,Zanahoria en conserva,30,0.75,7,0.1,0,0.05,0.05,5,0,2.5,0.45,yes
+5,Patatas cocidas bote,Patatas cocidas escurridas,60,1.75,13,0.15,0,0.05,0.1,0.5,0,2,0.55,yes
+6,Piña pelada en rodajas,Piña en su jugo,60,0.4,14,0.1,0,0.03,0.07,12,0,1,0.01,yes
+7,Espárrago mediano blanco,Espárrago blanco en conserva,20,2.5,2.5,0.25,0,0.1,0.15,2,0,2,1,yes
+8,Tomate ensalada,Tomate fresco,19,0.9,3.5,0.2,0.03,0.1,0.07,3,0,1.2,0,yes
+9,Infusión té verde,Infusión té verde bolsitas Hacendado,2,0.4,0.5,0.2,0,0.1,0.1,0,0,0,0.05,yes
+10,Té verde maracuyá mango,Té verde maracuyá mango Hacendado refresco,19,0,4.75,0,0,0,0,4.5,0,0,0,yes
+11,Té soluble limón,Té soluble limón sobres sin azúcar,11,0,0.5,0,0,0,0,0,0,0,0.01,yes
+12,Té soluble melocotón,Té soluble melocotón sobres sin azúcar,12.5,0,0.5,0,0,0,0,0,0,0,0.01,yes
+13,Zumo 100% naranja,Zumo 100% naranja refrigerado o brick Mercadona,45,0.65,10,0.2,0.03,0.1,0.07,9,0,0.2,0,yes
+14,Té melocotón refresco,Té melocotón refresco listo tipo té helado,21.5,0,5.25,0,0,0,0,5,0,0,0,yes
+15,Tomillo seco,Tomillo seco especias,260,9,60,7,2,2.5,2.5,0,0,37,0,yes
+16,Ajo seco granulados,Ajo seco granulados 250g,330,17,70,0.7,0.1,0.2,0.4,0,0,9,0,yes
+17,Ajo y perejil mezcla,Ajo y perejil mezcla seca,275,17.5,45,3.5,0.5,1.5,1.5,0,0,20,0,yes
+18,Perejil troceado seco,Perejil troceado seco,280,27.5,45,5,1,2,2,0,0,27.5,0,yes
+19,Eneldo seco,Eneldo seco,275,17.5,55,4.5,0.5,2,2,0,0,20,0,yes
+20,Orégano seco,Orégano seco,265,9,68,4,1,1.5,1.5,0,0,42,0,yes
+21,Pimentón dulce picante,Pimentón dulce picante incluido D.O.,290,14,52.5,13,2,5,6,0,0,35,0,yes
+22,Cayena molida,Cayena molida,315,12,57.5,17,3,6,8,0,0,25,0,yes
+23,Pimienta negra molida,Pimienta negra molida,255,10,64,3,0.5,1,1.5,0,0,25,0,yes
+24,Surtido hierbas provenzal,Surtido hierbas provenzal,265,12.5,55,6.5,1,2.5,3,0,0,30,0,yes
+25,Aliño carne,Aliño carne mezcla de especias,225,12.5,35,7.5,1.5,3,3,0,0,15,0.5,yes
+26,Mostaza Dijon,Mostaza Dijon tarro Hacendado genérico,135,7,4,10,0.5,5,4.5,2,0,3,4.5,yes
+27,Salsa Piri Piri,Salsa Piri Piri tipo salsa picante,30,0.5,4.5,1.5,0.2,0.7,0.6,3,0,1,2.5,yes
+28,Copos de avena Hacendado,Copos de avena Hacendado,370,12.5,61,7.5,1.3,2.5,3.7,1,0,9,0,yes
+29,Mozzarella light Hacendado,Mozzarella light Hacendado,200,22,2,13,9,3,1,1,0,0,1,yes
+30,Atún claro en aceite de girasol,Atún claro en aceite de girasol pack-3 escurrido,200,25,0,12,2,3,7,0,0,0,1,yes
+31,Filete de melva en aceite de oliva,Filete de melva en aceite de oliva,225,24.5,0,15,2.5,10,2.5,0,0,0,1.25,yes

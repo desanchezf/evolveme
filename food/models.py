@@ -10,7 +10,7 @@ from food.enums import StockChoices, MarketChoices
 
 
 # Products -> productos de la tienda
-class Products(models.Model):
+class Product(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nombre")
     description = models.TextField(verbose_name="Descripción", blank=True)
     market = models.CharField(
@@ -81,9 +81,27 @@ class Products(models.Model):
     class Meta:
         verbose_name = "Producto"
         verbose_name_plural = "Productos"
+        db_table = "food_products"
 
     def __str__(self):
         return self.name
+
+
+class ProductQuantity(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, verbose_name="Producto"
+    )
+    quantity = models.FloatField(default=0, verbose_name="Cantidad")
+    unit = models.CharField(max_length=255, verbose_name="Unidad", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Cantidad de producto"
+        verbose_name_plural = "Cantidades de productos"
+
+    def __str__(self):
+        return f"{self.product.name} - {self.quantity} {self.unit}"
 
 
 class DailyDiet(models.Model):
@@ -96,7 +114,9 @@ class DailyDiet(models.Model):
         help_text="Usuario al que se asigna la dieta (opcional)",
     )
     date = models.DateField(verbose_name="Fecha")
-    products = models.ManyToManyField(Products, verbose_name="Productos")
+    products = models.ManyToManyField(
+        ProductQuantity, verbose_name="Productos y cantidad ingerida"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

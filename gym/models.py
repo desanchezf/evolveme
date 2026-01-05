@@ -16,6 +16,8 @@ class MusculationExercise(models.Model):
         blank=True,
         verbose_name="Parte del cuerpo",
     )
+    sets = models.IntegerField(null=False, blank=False, verbose_name="Series")
+    reps = models.IntegerField(null=False, blank=False, verbose_name="Repeticiones")
     image_base64 = models.TextField(null=True, blank=True, verbose_name="Imagen")
 
     class Meta:
@@ -112,4 +114,4 @@ class TrainingSession(models.Model):
         verbose_name_plural = "Sesiones de entrenamiento"
 
     def __str__(self):
-        return f"{self.user} - {self.session_date} - {self.activity_type}"
+        return f"{self.user} - {self.session_date}"

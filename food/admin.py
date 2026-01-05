@@ -1,10 +1,10 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
-from food.models import Products, DailyDiet, MealMetrics
+from food.models import DailyDiet, MealMetrics, Product, ProductQuantity
 
 
-@admin.register(Products)
+@admin.register(Product)
 class ProductsAdmin(UnfoldModelAdmin):
     list_display = (
         "name",
@@ -66,6 +66,23 @@ class ProductsAdmin(UnfoldModelAdmin):
     )
 
 
+@admin.register(ProductQuantity)
+class ProductQuantityAdmin(UnfoldModelAdmin):
+    list_display = ("product", "quantity", "unit", "created_at")
+    list_filter = ("product", "unit", "created_at")
+    search_fields = ("product__name", "product__description")
+    date_hierarchy = "created_at"
+    ordering = ("-created_at",)
+    fieldsets = (
+        (
+            "Información básica",
+            {
+                "fields": ("product", "quantity", "unit"),
+            },
+        ),
+    )
+
+
 @admin.register(DailyDiet)
 class DailyDietAdmin(UnfoldModelAdmin):
     list_display = ("user", "date", "created_at")
@@ -82,7 +99,7 @@ class DailyDietAdmin(UnfoldModelAdmin):
             },
         ),
         (
-            "Productos",
+            "Productos y cantidades",
             {
                 "fields": ("products",),
             },

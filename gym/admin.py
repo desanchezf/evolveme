@@ -11,7 +11,7 @@ from gym.models import (
 
 @admin.register(MusculationExercise)
 class MusculationExerciseAdmin(UnfoldModelAdmin):
-    list_display = ("name", "body_part")
+    list_display = ("name", "body_part", "sets", "reps")
     list_filter = ("body_part",)
     search_fields = ("name", "description")
     fieldsets = (
@@ -19,6 +19,12 @@ class MusculationExerciseAdmin(UnfoldModelAdmin):
             "Información básica",
             {
                 "fields": ("name", "description", "body_part"),
+            },
+        ),
+        (
+            "Series y repeticiones",
+            {
+                "fields": ("sets", "reps"),
             },
         ),
         (
