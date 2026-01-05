@@ -9,24 +9,40 @@ class CardioSessionAdmin(UnfoldModelAdmin):
     list_display = (
         "user",
         "name",
+        "exercise_type",
         "date",
+        "session_start",
+        "session_end",
+        "location",
         "workout_time",
         "distance",
+        "avg_speed",
         "active_calories",
         "total_calories",
-        "average_heart_rate",
-        "avg_speed",
         "elevation_gain",
+        "average_heart_rate",
     )
-    list_filter = ("name", "date", "user")
-    search_fields = ("user__username", "user__email", "name")
+    list_filter = ("exercise_type", "name", "date", "user", "location")
+    search_fields = ("user__username", "user__email", "name", "location")
     date_hierarchy = "date"
-    ordering = ("-date", "-workout_time")
+    ordering = ("-date", "-session_start")
     fieldsets = (
         (
             "Información básica",
             {
-                "fields": ("user", "name", "date"),
+                "fields": ("user", "name", "exercise_type", "date"),
+            },
+        ),
+        (
+            "Fecha y hora",
+            {
+                "fields": ("session_start", "session_end"),
+            },
+        ),
+        (
+            "Ubicación",
+            {
+                "fields": ("location",),
             },
         ),
         (

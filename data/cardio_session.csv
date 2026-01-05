@@ -1,0 +1,8 @@
+user,name,exercise_type,session_start,session_end,date,location,workout_time,distance,avg_speed,active_calories,total_calories,elevation_gain,average_heart_rate
+david,Outdoor Walk,walking_outside,2024-12-31 21:01:00,2024-12-31 21:44:00,2024-12-31,Córdoba,0:43:23,2.85,,265,377,9,126
+david,Indoor Cycle,cycling_treadmill,2024-12-30 18:27:00,2024-12-30 18:37:00,2024-12-30,Córdoba,0:10:02,,,74,100,,126
+david,Outdoor Cycle,cycling_outside,2024-08-20 21:29:00,2024-08-20 22:07:00,2024-08-20,Córdoba,0:37:58,8.80,13.9,222,312,15,116
+david,Indoor Cycle,cycling_treadmill,2024-12-29 18:13:00,2024-12-29 18:24:00,2024-12-29,Córdoba,0:10:09,,,81,107,,125
+david,Indoor Cycle,cycling_treadmill,2024-12-23 19:53:00,2024-12-23 20:03:00,2024-12-23,Córdoba,0:10:05,,,86,112,,128
+david,Outdoor Walk,walking_outside,2024-12-24 20:46:00,2024-12-24 21:18:00,2024-12-24,Córdoba,0:31:33,2.41,,217,299,,129
+david,Outdoor Walk,walking_outside,2024-12-24 18:53:00,2024-12-24 19:16:00,2024-12-24,Córdoba,0:22:32,1.05,,108,166,,119
