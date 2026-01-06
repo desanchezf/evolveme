@@ -6,11 +6,12 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_duration
 
 from cardio.models import CardioSession
 from evolveme.models import Measure
-from food.models import Product
+from nutrition.models import Product
 from gym.models import MusculationExercise, Routine, TrainingSession
 
 logger = logging.getLogger(__name__)
@@ -62,6 +63,18 @@ class Command(BaseCommand):
                 )
             )
         return os.path.join(project_root, "data", filename)
+
+    def parse_datetime_safe(self, value):
+        """Parsea un datetime y lo convierte a timezone-aware si es necesario"""
+        if not value:
+            return None
+        parsed = parse_datetime(value)
+        if parsed:
+            # Convertir a timezone-aware si es naive
+            if timezone.is_naive(parsed):
+                return timezone.make_aware(parsed)
+            return parsed
+        return None
 
     def user_data(self):
         """Crea el usuario 'david' si no existe"""
@@ -168,16 +181,8 @@ class Command(BaseCommand):
                     continue
 
                 # Parsear fechas y duraciones
-                session_start = (
-                    parse_datetime(row["session_start"])
-                    if row.get("session_start")
-                    else None
-                )
-                session_end = (
-                    parse_datetime(row["session_end"])
-                    if row.get("session_end")
-                    else None
-                )
+                session_start = self.parse_datetime_safe(row.get("session_start"))
+                session_end = self.parse_datetime_safe(row.get("session_end"))
                 date_obj = datetime.strptime(row["date"], "%Y-%m-%d").date()
                 workout_time = (
                     parse_duration(row["workout_time"])
@@ -233,6 +238,21 @@ class Command(BaseCommand):
             logger.error(f"El archivo {csv_path} no existe")
             return False
 
+        def safe_float(value, default=None):
+            """Convierte un valor a float de forma segura"""
+            if not value or (isinstance(value, str) and value.strip() == ""):
+                return default
+            try:
+                return float(value)
+            except (ValueError, TypeError):
+                return default
+
+        def safe_str(value, default=""):
+            """Convierte un valor a string de forma segura"""
+            if not value or (isinstance(value, str) and value.strip() == ""):
+                return default
+            return str(value).strip()
+
         created_count = 0
         with open(csv_path, newline="", encoding="utf-8") as csvfile:
             products_reader = csv.DictReader(csvfile)
@@ -249,48 +269,44 @@ class Command(BaseCommand):
                 if not Product.objects.filter(name=row["name"]).exists():
                     Product.objects.create(
                         name=row["name"],
-                        description=row.get("description", "") or "",
-                        market=row.get("market") or "",
-                        calories_per_100g=float(row["calories_per_100g"])
-                        if row.get("calories_per_100g")
-                        else 0,
-                        protein_per_100g=float(row["protein_per_100g"])
-                        if row.get("protein_per_100g")
-                        else 0,
-                        carbs_per_100g=float(row["carbs_per_100g"])
-                        if row.get("carbs_per_100g")
-                        else 0,
-                        fat_per_100g=float(row["fat_per_100g"])
-                        if row.get("fat_per_100g")
-                        else 0,
-                        saturated_fat_per_100g=(
-                            float(row["saturated_fat_per_100g"])
-                            if row.get("saturated_fat_per_100g")
-                            else 0
+                        description=safe_str(row.get("description", "")),
+                        barcode=safe_str(row.get("barcode")) or None,
+                        market=safe_str(row.get("market", "")),
+                        energy_kj_per_100g=safe_float(
+                            row.get("energy_kj_per_100g"), None
                         ),
-                        monounsaturated_fat_per_100g=(
-                            float(row["monounsaturated_fat_per_100g"])
-                            if row.get("monounsaturated_fat_per_100g")
-                            else 0
+                        calories_per_100g=safe_float(row.get("calories_per_100g"), 0),
+                        protein_per_100g=safe_float(row.get("protein_per_100g"), 0),
+                        carbs_per_100g=safe_float(row.get("carbs_per_100g"), 0),
+                        fat_per_100g=safe_float(row.get("fat_per_100g"), 0),
+                        saturated_fat_per_100g=safe_float(
+                            row.get("saturated_fat_per_100g"), None
                         ),
-                        polyunsaturated_fat_per_100g=(
-                            float(row["polyunsaturated_fat_per_100g"])
-                            if row.get("polyunsaturated_fat_per_100g")
-                            else 0
+                        monounsaturated_fat_per_100g=safe_float(
+                            row.get("monounsaturated_fat_per_100g"), None
                         ),
-                        sugars_per_100g=float(row["sugars_per_100g"])
-                        if row.get("sugars_per_100g")
-                        else 0,
-                        polyols_per_100g=float(row["polyols_per_100g"])
-                        if row.get("polyols_per_100g")
-                        else 0,
-                        fiber_per_100g=float(row["fiber_per_100g"])
-                        if row.get("fiber_per_100g")
-                        else 0,
-                        salt_per_100g=float(row["salt_per_100g"])
-                        if row.get("salt_per_100g")
-                        else 0,
-                        stock=row.get("stock", "no") or "no",
+                        polyunsaturated_fat_per_100g=safe_float(
+                            row.get("polyunsaturated_fat_per_100g"), None
+                        ),
+                        sugars_per_100g=safe_float(row.get("sugars_per_100g"), None),
+                        polyols_per_100g=safe_float(row.get("polyols_per_100g"), None),
+                        fiber_per_100g=safe_float(row.get("fiber_per_100g"), None),
+                        salt_per_100g=safe_float(row.get("salt_per_100g"), None),
+                        omega3_epa_dha_per_100g=safe_float(
+                            row.get("omega3_epa_dha_per_100g"), None
+                        ),
+                        thiamine_b1_per_100g=safe_float(
+                            row.get("thiamine_b1_per_100g"), None
+                        ),
+                        phosphorus_per_100g=safe_float(
+                            row.get("phosphorus_per_100g"), None
+                        ),
+                        magnesium_per_100g=safe_float(
+                            row.get("magnesium_per_100g"), None
+                        ),
+                        iron_per_100g=safe_float(row.get("iron_per_100g"), None),
+                        zinc_per_100g=safe_float(row.get("zinc_per_100g"), None),
+                        stock=safe_str(row.get("stock", "no")) or "no",
                     )
                     created_count += 1
 
@@ -329,16 +345,12 @@ class Command(BaseCommand):
                             # Crear rutina básica si no existe
                             routine = Routine.objects.create(
                                 user=user,
-                                start_date=datetime.now(),
+                                start_date=timezone.now(),
                             )
                     except (ValueError, TypeError):
                         pass
 
-                session_date = (
-                    parse_datetime(row["session_date"])
-                    if row.get("session_date")
-                    else None
-                )
+                session_date = self.parse_datetime_safe(row.get("session_date"))
                 workout_time = (
                     parse_duration(row["workout_time"])
                     if row.get("workout_time")

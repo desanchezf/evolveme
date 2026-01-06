@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     # Project apps
     "evolveme",
     "cardio",
-    "food",
+    "nutrition",
     "gym",
     # Project commands
     "project_commands",

@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from food.enums import StockChoices, MarketChoices
+from nutrition.enums import StockChoices, MarketChoices
 
 # Products -> productos de la tienda
 # Supplements -> suplementos
@@ -13,11 +13,23 @@ from food.enums import StockChoices, MarketChoices
 class Product(models.Model):
     name = models.CharField(max_length=255, verbose_name="Nombre")
     description = models.TextField(verbose_name="Descripción", blank=True)
+    barcode = models.CharField(
+        max_length=255,
+        verbose_name="Código de barras",
+        null=True,
+        blank=True,
+    )
     market = models.CharField(
         max_length=255,
         verbose_name="Mercado",
         blank=True,
         choices=MarketChoices.choices(),
+    )
+    energy_kj_per_100g = models.FloatField(
+        default=0,
+        null=True,
+        blank=True,
+        verbose_name="Valor energético por 100g (kJ)",
     )
     calories_per_100g = models.FloatField(default=0, verbose_name="Calorías por 100g")
     protein_per_100g = models.FloatField(
@@ -68,6 +80,43 @@ class Product(models.Model):
         null=True,
         blank=True,
         verbose_name="Sal por 100g (g)",
+    )
+    omega3_epa_dha_per_100g = models.FloatField(
+        default=0,
+        null=True,
+        blank=True,
+        verbose_name="Omega-3 (EPA+DHA) por 100g (g)",
+    )
+    # Micronutrientes
+    thiamine_b1_per_100g = models.FloatField(
+        default=0,
+        null=True,
+        blank=True,
+        verbose_name="Tiamina B1 por 100g (mg)",
+    )
+    phosphorus_per_100g = models.FloatField(
+        default=0,
+        null=True,
+        blank=True,
+        verbose_name="Fósforo por 100g (mg)",
+    )
+    magnesium_per_100g = models.FloatField(
+        default=0,
+        null=True,
+        blank=True,
+        verbose_name="Magnesio por 100g (mg)",
+    )
+    iron_per_100g = models.FloatField(
+        default=0,
+        null=True,
+        blank=True,
+        verbose_name="Hierro por 100g (mg)",
+    )
+    zinc_per_100g = models.FloatField(
+        default=0,
+        null=True,
+        blank=True,
+        verbose_name="Zinc por 100g (mg)",
     )
     stock = models.CharField(
         max_length=10,

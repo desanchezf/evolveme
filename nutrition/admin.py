@@ -1,34 +1,53 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
-from food.models import DailyDiet, MealMetrics, Product, ProductQuantity
+from nutrition.models import DailyDiet, MealMetrics, Product, ProductQuantity
 
 
 @admin.register(Product)
 class ProductsAdmin(UnfoldModelAdmin):
     list_display = (
         "name",
+        "barcode",
         "market",
+        "energy_kj_per_100g",
         "calories_per_100g",
         "protein_per_100g",
         "carbs_per_100g",
         "fat_per_100g",
         "stock",
+        "created_at",
     )
-    list_filter = ("stock", "market")
-    search_fields = ("name", "description")
+    list_filter = ("stock", "market", "created_at")
+    search_fields = ("name", "description", "barcode")
+    date_hierarchy = "created_at"
+    ordering = ("-created_at",)
     fieldsets = (
         (
             "Información básica",
             {
-                "fields": ("name", "description", "market", "stock"),
+                "fields": (
+                    "name",
+                    "description",
+                    "barcode",
+                    "market",
+                    "stock",
+                ),
             },
         ),
         (
-            "Valores nutricionales básicos",
+            "Valor energético",
             {
                 "fields": (
+                    "energy_kj_per_100g",
                     "calories_per_100g",
+                ),
+            },
+        ),
+        (
+            "Macronutrientes",
+            {
+                "fields": (
                     "protein_per_100g",
                     "carbs_per_100g",
                     "fat_per_100g",
@@ -42,6 +61,7 @@ class ProductsAdmin(UnfoldModelAdmin):
                     "saturated_fat_per_100g",
                     "monounsaturated_fat_per_100g",
                     "polyunsaturated_fat_per_100g",
+                    "omega3_epa_dha_per_100g",
                 ),
             },
         ),
@@ -51,6 +71,7 @@ class ProductsAdmin(UnfoldModelAdmin):
                 "fields": (
                     "sugars_per_100g",
                     "polyols_per_100g",
+                    "fiber_per_100g",
                 ),
             },
         ),
@@ -58,12 +79,34 @@ class ProductsAdmin(UnfoldModelAdmin):
             "Otros nutrientes",
             {
                 "fields": (
-                    "fiber_per_100g",
                     "salt_per_100g",
                 ),
             },
         ),
+        (
+            "Micronutrientes",
+            {
+                "fields": (
+                    "thiamine_b1_per_100g",
+                    "phosphorus_per_100g",
+                    "magnesium_per_100g",
+                    "iron_per_100g",
+                    "zinc_per_100g",
+                ),
+            },
+        ),
+        (
+            "Información del sistema",
+            {
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                ),
+                "classes": ("collapse",),
+            },
+        ),
     )
+    readonly_fields = ("created_at", "updated_at")
 
 
 @admin.register(ProductQuantity)
