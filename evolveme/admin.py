@@ -44,12 +44,11 @@ class MeasureAdmin(UnfoldModelAdmin):
         "user",
         "date",
         "weight",
-        "arm",
-        "chest",
-        "waist",
-        "leg",
+        "bmi",
         "fat_perc",
         "muscle_mass",
+        "body_water_percentage",
+        "visceral_fat_rating",
     )
     search_fields = (
         "user__username",
@@ -80,11 +79,47 @@ class MeasureAdmin(UnfoldModelAdmin):
             },
         ),
         (
-            "Composición corporal",
+            "Composición corporal básica",
             {
                 "fields": (
+                    "bmi",
                     "fat_perc",
+                    "fat_mass",
                     "muscle_mass",
+                    "muscle_percentage",
+                    "skeletal_muscle_mass",
+                ),
+            },
+        ),
+        (
+            "Agua y minerales",
+            {
+                "fields": (
+                    "body_water_mass",
+                    "body_water_percentage",
+                    "bone_mineral_content",
+                    "bone_mineral_percentage",
+                ),
+            },
+        ),
+        (
+            "Proteína y otros",
+            {
+                "fields": (
+                    "protein_mass",
+                    "protein_percentage",
+                    "fat_free_body_weight",
+                ),
+            },
+        ),
+        (
+            "Métricas avanzadas",
+            {
+                "fields": (
+                    "visceral_fat_rating",
+                    "basal_metabolic_rate",
+                    "waist_to_hip_ratio",
+                    "body_age",
                 ),
             },
         ),

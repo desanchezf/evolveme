@@ -100,6 +100,24 @@ class Command(BaseCommand):
             logger.error(f"El archivo {csv_path} no existe")
             return False
 
+        def safe_float(value, default=None):
+            """Convierte un valor a float de forma segura"""
+            if not value or (isinstance(value, str) and value.strip() == ""):
+                return default
+            try:
+                return float(value)
+            except (ValueError, TypeError):
+                return default
+
+        def safe_int(value, default=None):
+            """Convierte un valor a int de forma segura"""
+            if not value or (isinstance(value, str) and value.strip() == ""):
+                return default
+            try:
+                return int(float(value))
+            except (ValueError, TypeError):
+                return default
+
         with open(csv_path, newline="", encoding="utf-8") as csvfile:
             measures_reader = csv.DictReader(csvfile)
             created_count = 0
@@ -114,17 +132,40 @@ class Command(BaseCommand):
                     Measure.objects.create(
                         user=user,
                         date=row["date"],
-                        weight=float(row["weight"]) if row.get("weight") else None,
-                        arm=float(row["arm"]) if row.get("arm") else None,
-                        chest=float(row["chest"]) if row.get("chest") else None,
-                        waist=float(row["waist"]) if row.get("waist") else None,
-                        leg=float(row["leg"]) if row.get("leg") else None,
-                        fat_perc=float(row["fat_perc"])
-                        if row.get("fat_perc")
-                        else None,
-                        muscle_mass=float(row["muscle_mass"])
-                        if row.get("muscle_mass")
-                        else None,
+                        weight=safe_float(row.get("weight")),
+                        arm=safe_float(row.get("arm")),
+                        chest=safe_float(row.get("chest")),
+                        waist=safe_float(row.get("waist")),
+                        leg=safe_float(row.get("leg")),
+                        fat_perc=safe_float(row.get("fat_perc")),
+                        muscle_mass=safe_float(row.get("muscle_mass")),
+                        bmi=safe_float(row.get("bmi")),
+                        body_water_mass=safe_float(row.get("body_water_mass")),
+                        body_water_percentage=safe_float(
+                            row.get("body_water_percentage")
+                        ),
+                        fat_mass=safe_float(row.get("fat_mass")),
+                        bone_mineral_content=safe_float(
+                            row.get("bone_mineral_content")
+                        ),
+                        bone_mineral_percentage=safe_float(
+                            row.get("bone_mineral_percentage")
+                        ),
+                        protein_mass=safe_float(row.get("protein_mass")),
+                        protein_percentage=safe_float(row.get("protein_percentage")),
+                        muscle_percentage=safe_float(row.get("muscle_percentage")),
+                        skeletal_muscle_mass=safe_float(
+                            row.get("skeletal_muscle_mass")
+                        ),
+                        visceral_fat_rating=safe_float(row.get("visceral_fat_rating")),
+                        basal_metabolic_rate=safe_float(
+                            row.get("basal_metabolic_rate")
+                        ),
+                        waist_to_hip_ratio=safe_float(row.get("waist_to_hip_ratio")),
+                        body_age=safe_int(row.get("body_age")),
+                        fat_free_body_weight=safe_float(
+                            row.get("fat_free_body_weight")
+                        ),
                     )
                     created_count += 1
 

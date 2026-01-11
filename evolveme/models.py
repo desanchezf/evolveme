@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from evolveme.enums import GenderChoices, ObjectiveChoices
-from gym.enums import BodyPartChoices
 
 
 class GymUserProfile(models.Model):
@@ -57,10 +56,54 @@ class Measure(models.Model):
     waist = models.FloatField(null=True, blank=True, verbose_name="Cintura (cm)")
     leg = models.FloatField(null=True, blank=True, verbose_name="Pierna (cm)")
     fat_perc = models.FloatField(
-        null=True, blank=True, verbose_name="Porcentaje de masa grasa (Kg)"
+        null=True, blank=True, verbose_name="Porcentaje de masa grasa (%)"
     )
     muscle_mass = models.FloatField(
-        null=True, blank=True, verbose_name="Masa muscular (Kg)"
+        null=True, blank=True, verbose_name="Masa muscular (kg)"
+    )
+    # Composición corporal
+    bmi = models.FloatField(
+        null=True, blank=True, verbose_name="Índice de masa corporal (BMI)"
+    )
+    body_water_mass = models.FloatField(
+        null=True, blank=True, verbose_name="Masa de agua corporal (kg)"
+    )
+    body_water_percentage = models.FloatField(
+        null=True, blank=True, verbose_name="Porcentaje de agua corporal (%)"
+    )
+    fat_mass = models.FloatField(null=True, blank=True, verbose_name="Masa grasa (kg)")
+    bone_mineral_content = models.FloatField(
+        null=True, blank=True, verbose_name="Contenido mineral óseo (kg)"
+    )
+    bone_mineral_percentage = models.FloatField(
+        null=True, blank=True, verbose_name="Porcentaje de mineral óseo (%)"
+    )
+    protein_mass = models.FloatField(
+        null=True, blank=True, verbose_name="Masa proteica (kg)"
+    )
+    protein_percentage = models.FloatField(
+        null=True, blank=True, verbose_name="Porcentaje de proteína (%)"
+    )
+    muscle_percentage = models.FloatField(
+        null=True, blank=True, verbose_name="Porcentaje muscular (%)"
+    )
+    skeletal_muscle_mass = models.FloatField(
+        null=True, blank=True, verbose_name="Masa muscular esquelética (kg)"
+    )
+    visceral_fat_rating = models.FloatField(
+        null=True, blank=True, verbose_name="Calificación de grasa visceral"
+    )
+    basal_metabolic_rate = models.FloatField(
+        null=True, blank=True, verbose_name="Tasa metabólica basal (Kcal)"
+    )
+    waist_to_hip_ratio = models.FloatField(
+        null=True, blank=True, verbose_name="Ratio cintura-cadera"
+    )
+    body_age = models.IntegerField(
+        null=True, blank=True, verbose_name="Edad corporal (años)"
+    )
+    fat_free_body_weight = models.FloatField(
+        null=True, blank=True, verbose_name="Peso corporal libre de grasa (kg)"
     )
 
     class Meta:
@@ -69,5 +112,3 @@ class Measure(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.date}"
-
-
