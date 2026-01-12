@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.urls import path
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from gym.models import (
@@ -7,6 +8,7 @@ from gym.models import (
     Routine,
     TrainingSession,
 )
+from gym.views import MusculationRecordFormsetView
 
 
 @admin.register(MusculationExercise)
@@ -77,6 +79,24 @@ class MusculationRecordAdmin(UnfoldModelAdmin):
         ),
     )
 
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "add-formset/",
+                self.admin_site.admin_view(
+                    MusculationRecordFormsetView.as_view()
+                ),
+                name="gym_musculationrecord_add_formset",
+            ),
+        ]
+        return custom_urls + urls
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["add_formset_url"] = "admin:gym_musculationrecord_add_formset"
+        return super().changelist_view(request, extra_context=extra_context)
+
 
 @admin.register(Routine)
 class RoutineAdmin(UnfoldModelAdmin):
@@ -85,7 +105,7 @@ class RoutineAdmin(UnfoldModelAdmin):
     search_fields = ("user__username", "user__email")
     date_hierarchy = "start_date"
     ordering = ("-start_date",)
-    filter_horizontal = ("Exercises",)
+    filter_horizontal = ("exercises",)
     fieldsets = (
         (
             "Información básica",
@@ -96,7 +116,7 @@ class RoutineAdmin(UnfoldModelAdmin):
         (
             "Ejercicios",
             {
-                "fields": ("Exercises",),
+                "fields": ("exercises",),
             },
         ),
     )

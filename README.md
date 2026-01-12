@@ -12,7 +12,7 @@
 - **evolveme**: App principal con perfiles de usuario y medidas corporales
 - **cardio**: Gestión de ejercicios y sesiones de cardio
 - **gym**: Gestión de ejercicios de musculación, rutinas y sesiones de entrenamiento
-- **food**: Gestión de alimentos, suplementos y dietas
+- **nutrition**: Gestión de alimentos, suplementos y dietas
 
 ---
 

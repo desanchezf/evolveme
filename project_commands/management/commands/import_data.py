@@ -1,7 +1,7 @@
 import csv
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -366,6 +366,27 @@ class Command(BaseCommand):
             logger.error(f"El archivo {csv_path} no existe")
             return False
 
+        # Crear una sola rutina por usuario antes de procesar las sesiones
+        routines_by_user = {}
+        with open(csv_path, newline="", encoding="utf-8") as csvfile:
+            sessions_reader = csv.DictReader(csvfile)
+            for row in sessions_reader:
+                username = row.get("user", "david")
+                if username not in routines_by_user:
+                    user = User.objects.filter(username=username).first()
+                    if user:
+                        # Buscar o crear una rutina para este usuario
+                        routine = Routine.objects.filter(user=user).first()
+                        if not routine:
+                            start_date = timezone.now()
+                            end_date = start_date + timedelta(weeks=6)
+                            routine = Routine.objects.create(
+                                user=user,
+                                start_date=start_date,
+                                end_date=end_date,
+                            )
+                        routines_by_user[username] = routine
+
         created_count = 0
         with open(csv_path, newline="", encoding="utf-8") as csvfile:
             sessions_reader = csv.DictReader(csvfile)
@@ -376,20 +397,8 @@ class Command(BaseCommand):
                     logger.warning(f"Usuario {username} no encontrado, saltando sesión")
                     continue
 
-                # Obtener o crear rutina si se especifica routine_id
-                routine = None
-                if row.get("routine_id"):
-                    try:
-                        routine_id = int(row["routine_id"])
-                        routine = Routine.objects.filter(id=routine_id).first()
-                        if not routine:
-                            # Crear rutina básica si no existe
-                            routine = Routine.objects.create(
-                                user=user,
-                                start_date=timezone.now(),
-                            )
-                    except (ValueError, TypeError):
-                        pass
+                # Usar la rutina creada para este usuario
+                routine = routines_by_user.get(username)
 
                 session_date = self.parse_datetime_safe(row.get("session_date"))
                 workout_time = (

@@ -34,10 +34,14 @@ class MusculationRecord(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="musculation_records",
         verbose_name="Usuario",
     )
     exercise = models.ForeignKey(
-        MusculationExercise, on_delete=models.CASCADE, verbose_name="Ejercicio"
+        MusculationExercise,
+        on_delete=models.CASCADE,
+        related_name="records",
+        verbose_name="Ejercicio",
     )
     sets = models.IntegerField(null=False, blank=False, verbose_name="Series")
     reps = models.IntegerField(null=False, blank=False, verbose_name="Repeticiones")
@@ -60,9 +64,12 @@ class Routine(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="routines",
         verbose_name="Usuario",
     )
-    Exercises = models.ManyToManyField(MusculationExercise, verbose_name="Ejercicios")
+    exercises = models.ManyToManyField(
+        MusculationExercise, related_name="routines", verbose_name="Ejercicios"
+    )
     start_date = models.DateTimeField(
         null=True, blank=True, verbose_name="Fecha de inicio"
     )
@@ -85,10 +92,16 @@ class TrainingSession(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
+        related_name="training_sessions",
         verbose_name="Usuario",
     )
     routine = models.ForeignKey(
-        Routine, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Rutina"
+        Routine,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="sessions",
+        verbose_name="Rutina",
     )
     session_date = models.DateTimeField(
         null=True, blank=True, verbose_name="Fecha y hora de la sesión"

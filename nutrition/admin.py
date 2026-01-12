@@ -1,7 +1,9 @@
 from django.contrib import admin
+from django.urls import path
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from nutrition.models import DailyDiet, MealMetrics, Product, ProductQuantity
+from nutrition.views import DailyDietFormsetView
 
 
 @admin.register(Product)
@@ -148,6 +150,22 @@ class DailyDietAdmin(UnfoldModelAdmin):
             },
         ),
     )
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "add-formset/",
+                self.admin_site.admin_view(DailyDietFormsetView.as_view()),
+                name="nutrition_dailydiet_add_formset",
+            ),
+        ]
+        return custom_urls + urls
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["add_formset_url"] = "admin:nutrition_dailydiet_add_formset"
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 @admin.register(MealMetrics)

@@ -1,0 +1,37 @@
+{% extends "admin/base.html" %}
+{% load admin_urls crispy_forms_tags i18n unfold %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% url 'admin:jsi18n' %}"></script>
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col gap-8">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">Información de la Dieta</h2>
+                {% crispy form "unfold_crispy" %}
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">Productos Consumidos</h2>
+                {% crispy formset formset_helper "unfold_crispy" %}
+            </div>
+
+            <div class="flex justify-end gap-4">
+                <a href="{% url 'admin:nutrition_dailydiet_changelist' %}"
+                   class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Guardar Dieta
+                </button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
