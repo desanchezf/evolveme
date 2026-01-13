@@ -5,7 +5,6 @@ from crispy_forms.layout import Layout, Row, Column
 from unfold.widgets import (
     UnfoldAdminTextInputWidget,
     UnfoldAdminSelectWidget,
-    UnfoldAdminDateInputWidget,
 )
 
 from nutrition.models import DailyDiet, ProductQuantity, Product
@@ -72,7 +71,7 @@ class DailyDietForm(forms.Form):
     )
     date = forms.DateField(
         required=True,
-        widget=UnfoldAdminDateInputWidget(),
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
         label="Fecha",
     )
 
@@ -85,3 +84,20 @@ class DailyDietForm(forms.Form):
         if user:
             self.fields["user"].initial = user
             self.fields["user"].widget.attrs["readonly"] = True
+
+
+class DietJSONForm(forms.Form):
+    """Formulario para generar dieta semanal desde JSON"""
+
+    json_data = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                "rows": 20,
+                "class": "form-control",
+                "placeholder": 'Pega aquí el JSON generado por la IA. Ejemplo:\n{\n  "user": "david",\n  "week_start_date": "01/01/2026",\n  "diet": {\n    "monday": {...},\n    "tuesday": {...}\n  }\n}',
+            }
+        ),
+        label="JSON de la Dieta Semanal",
+        help_text="Pega el JSON generado por la IA siguiendo el formato de nutrition_response.txt",
+        required=True,
+    )

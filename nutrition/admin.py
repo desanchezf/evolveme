@@ -3,7 +3,7 @@ from django.urls import path
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from nutrition.models import DailyDiet, MealMetrics, Product, ProductQuantity
-from nutrition.views import DailyDietFormsetView
+from nutrition.views import DailyDietFormsetView, DietJSONView
 
 
 @admin.register(Product)
@@ -159,12 +159,18 @@ class DailyDietAdmin(UnfoldModelAdmin):
                 self.admin_site.admin_view(DailyDietFormsetView.as_view()),
                 name="nutrition_dailydiet_add_formset",
             ),
+            path(
+                "generate-from-json/",
+                self.admin_site.admin_view(DietJSONView.as_view()),
+                name="nutrition_dailydiet_generate_from_json",
+            ),
         ]
         return custom_urls + urls
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         extra_context["add_formset_url"] = "admin:nutrition_dailydiet_add_formset"
+        extra_context["generate_json_url"] = "admin:nutrition_dailydiet_generate_from_json"
         return super().changelist_view(request, extra_context=extra_context)
 
 

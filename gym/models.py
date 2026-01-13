@@ -70,6 +70,14 @@ class Routine(models.Model):
     exercises = models.ManyToManyField(
         MusculationExercise, related_name="routines", verbose_name="Ejercicios"
     )
+    exercise_types = models.JSONField(
+        default=list,
+        null=True,
+        blank=True,
+        verbose_name="Tipos de ejercicios",
+        help_text="Lista de tipos de ejercicios: ['push', 'pull', 'legs', 'core', 'full_body', 'lower_body', 'upper_body', 'abs', 'forearms']",
+    )
+    warmup = models.TextField(null=True, blank=True, verbose_name="Calentamiento")
     start_date = models.DateTimeField(
         null=True, blank=True, verbose_name="Fecha de inicio"
     )

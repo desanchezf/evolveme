@@ -8,7 +8,7 @@ from gym.models import (
     Routine,
     TrainingSession,
 )
-from gym.views import MusculationRecordFormsetView
+from gym.views import MusculationRecordFormsetView, RoutineJSONView
 
 
 @admin.register(MusculationExercise)
@@ -100,7 +100,7 @@ class MusculationRecordAdmin(UnfoldModelAdmin):
 
 @admin.register(Routine)
 class RoutineAdmin(UnfoldModelAdmin):
-    list_display = ("user", "start_date", "end_date", "created_at")
+    list_display = ("user", "exercise_types", "start_date", "end_date", "created_at")
     list_filter = ("start_date", "end_date", "user")
     search_fields = ("user__username", "user__email")
     date_hierarchy = "start_date"
@@ -114,12 +114,41 @@ class RoutineAdmin(UnfoldModelAdmin):
             },
         ),
         (
+            "Tipos de ejercicios",
+            {
+                "fields": ("exercise_types",),
+                "description": "Lista de tipos de ejercicios: ['push', 'pull', 'legs', 'core', 'full_body', 'lower_body', 'upper_body', 'abs', 'forearms']",
+            },
+        ),
+        (
+            "Calentamiento",
+            {
+                "fields": ("warmup",),
+            },
+        ),
+        (
             "Ejercicios",
             {
                 "fields": ("exercises",),
             },
         ),
     )
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "generate-from-json/",
+                self.admin_site.admin_view(RoutineJSONView.as_view()),
+                name="gym_routine_generate_from_json",
+            ),
+        ]
+        return custom_urls + urls
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["generate_json_url"] = "admin:gym_routine_generate_from_json"
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 @admin.register(TrainingSession)

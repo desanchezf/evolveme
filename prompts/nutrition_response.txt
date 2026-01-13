@@ -1,0 +1,116 @@
+{
+    "user": "username",
+    "week_start_date": "DD/MM/YYYY",
+    "diet": {
+        "monday": {
+            "date": "DD/MM/YYYY",
+            "breakfast": [
+                {
+                    "product_name": "Nombre del producto",
+                    "quantity": 100,
+                    "unit": "g"
+                },
+                {
+                    "product_name": "Nombre del producto 2",
+                    "quantity": 200,
+                    "unit": "ml"
+                }
+            ],
+            "mid_morning": [
+                {
+                    "product_name": "Nombre del producto (opcional)",
+                    "quantity": 50,
+                    "unit": "g"
+                }
+            ],
+            "lunch": [
+                {
+                    "product_name": "Nombre del producto",
+                    "quantity": 150,
+                    "unit": "g"
+                }
+            ],
+            "snack": [
+                {
+                    "product_name": "Nombre del producto (opcional)",
+                    "quantity": 30,
+                    "unit": "g"
+                }
+            ],
+            "dinner": [
+                {
+                    "product_name": "Nombre del producto",
+                    "quantity": 200,
+                    "unit": "g"
+                }
+            ]
+        },
+        "tuesday": {
+            "date": "DD/MM/YYYY",
+            "breakfast": [
+                {
+                    "product_name": "Nombre del producto",
+                    "quantity": 100,
+                    "unit": "g"
+                }
+            ],
+            "lunch": [
+                {
+                    "product_name": "Nombre del producto",
+                    "quantity": 150,
+                    "unit": "g"
+                }
+            ],
+            "dinner": [
+                {
+                    "product_name": "Nombre del producto",
+                    "quantity": 200,
+                    "unit": "g"
+                }
+            ]
+        },
+        "wednesday": {
+            "date": "DD/MM/YYYY",
+            "breakfast": [],
+            "lunch": [],
+            "dinner": []
+        },
+        "thursday": {
+            "date": "DD/MM/YYYY",
+            "breakfast": [],
+            "lunch": [],
+            "dinner": []
+        },
+        "friday": {
+            "date": "DD/MM/YYYY",
+            "breakfast": [],
+            "lunch": [],
+            "dinner": []
+        },
+        "saturday": {
+            "date": "DD/MM/YYYY",
+            "breakfast": [],
+            "lunch": [],
+            "dinner": []
+        }
+    }
+}
+
+NOTAS IMPORTANTES:
+- "user": debe ser el username del usuario (string, requerido)
+- "week_start_date": fecha de inicio de la semana en formato "DD/MM/YYYY" (string, requerido)
+- "diet": objeto con los días de la semana (lunes a sábado)
+- Cada día debe tener:
+  * "date": fecha específica del día en formato "DD/MM/YYYY" (string, requerido)
+  * "breakfast": array de productos para el desayuno (requerido, puede ser array vacío)
+  * "mid_morning": array de productos para media mañana (opcional, puede omitirse o ser array vacío)
+  * "lunch": array de productos para el almuerzo (requerido, puede ser array vacío)
+  * "snack": array de productos para la merienda (opcional, puede omitirse o ser array vacío)
+  * "dinner": array de productos para la cena (requerido, puede ser array vacío)
+- Cada producto en un array debe tener:
+  * "product_name": nombre del producto (string, requerido) - debe coincidir con el nombre en la base de datos
+  * "quantity": cantidad del producto (float, requerido)
+  * "unit": unidad de medida (string, requerido) - ejemplos: "g", "ml", "unidades", "cucharadas", etc.
+- Las comidas opcionales (mid_morning, snack) pueden omitirse del JSON o enviarse como arrays vacíos
+- Según el prompt de nutrición: 3-5 comidas diarias flexibles, priorizar verduras y proteínas
+- Los días van de lunes a sábado (según especificación del prompt)

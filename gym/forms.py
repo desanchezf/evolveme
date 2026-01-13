@@ -5,9 +5,6 @@ from crispy_forms.layout import Layout, Row, Column
 from unfold.widgets import (
     UnfoldAdminTextInputWidget,
     UnfoldAdminSelectWidget,
-    UnfoldAdminDateInputWidget,
-    UnfoldAdminCheckboxInputWidget,
-    UnfoldAdminTextareaWidget,
 )
 
 from gym.models import MusculationRecord, MusculationExercise
@@ -24,8 +21,8 @@ class MusculationRecordForm(forms.ModelForm):
             "sets": UnfoldAdminTextInputWidget(),
             "reps": UnfoldAdminTextInputWidget(),
             "weight": UnfoldAdminTextInputWidget(),
-            "tbi": UnfoldAdminCheckboxInputWidget(),
-            "observation": UnfoldAdminTextareaWidget(attrs={"rows": 2}),
+            "tbi": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "observation": forms.Textarea(attrs={"rows": 2, "class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -80,7 +77,7 @@ class TrainingSessionForm(forms.Form):
     )
     record_date = forms.DateTimeField(
         required=True,
-        widget=UnfoldAdminDateInputWidget(),
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
         label="Fecha y hora del entrenamiento",
     )
 
@@ -93,3 +90,20 @@ class TrainingSessionForm(forms.Form):
         if user:
             self.fields["user"].initial = user
             self.fields["user"].widget.attrs["readonly"] = True
+
+
+class RoutineJSONForm(forms.Form):
+    """Formulario para generar rutina desde JSON"""
+
+    json_data = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                "rows": 20,
+                "class": "form-control",
+                "placeholder": 'Pega aquí el JSON generado por la IA. Ejemplo:\n{\n  "user": "david",\n  "start_date": "01/01/2026 08:00",\n  "end_date": "01/02/2026 08:00",\n  "warmup": "Calentamiento...",\n  "exercise_types": ["push", "pull"],\n  "routine": {...}\n}',
+            }
+        ),
+        label="JSON de la Rutina",
+        help_text="Pega el JSON generado por la IA siguiendo el formato de gym_response.txt",
+        required=True,
+    )

@@ -62,3 +62,5 @@ product_id,name,description,barcode,market,energy_kj_per_100g,calories_per_100g,
 61,Pata pulpo cocido,Pata de pulpo cocido,,mercadona,,,,,,,,,,,,,,,,,yes
 62,Tomate rama,Tomate en rama fresco,,mercadona,,,,,,,,,,,,,,,,,yes
 63,Tortilla avena 6 unidades,Tortilla de avena pack 6 unidades,,mercadona,,,,,,,,,,,,,,,,,yes
+64,Mayonesa Hacendado,Mayonesa Hacendado,,mercadona,,,,,,,,,,,,,,,,,yes
+65, Salsa Piri Piri,Salsa Piri Piri,,mercadona,,,,,,,,,,,,,,,,,yes

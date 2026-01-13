@@ -1,0 +1,58 @@
+{
+    "user": "username",
+    "start_date": "DD/MM/YYYY HH:MM",
+    "end_date": "DD/MM/YYYY HH:MM",
+    "warmup": "Descripción del calentamiento (opcional, puede ser null o string vacío)",
+    "exercise_types": ["push","pull","core"]
+    "routine": {
+        "day-1": [
+            {
+                "name": "Nombre del ejercicio (requerido)",
+                "description": "Descripción detallada del ejercicio (opcional, puede ser null o string vacío)",
+                "body_part": "chest|back|legs|arms|shoulders|abs|forearms|core (opcional, puede ser null o string vacío)",
+                "sets": 3,
+                "reps": 10
+            },
+            {
+                "name": "Nombre del ejercicio 2",
+                "description": "Descripción del ejercicio (opcional)",
+                "body_part": "back",
+                "sets": 4,
+                "reps": 12
+            }
+        ],
+        "day-2": [
+            {
+                "name": "Nombre del ejercicio",
+                "description": "Descripción del ejercicio (opcional)",
+                "body_part": "legs",
+                "sets": 3,
+                "reps": 8
+            }
+        ],
+        "day-3":
+        [
+            {
+                "name": "Nombre del ejercicio",
+                "description": "Descripción del ejercicio (opcional)",
+                "body_part": "arms",
+                "sets": 3,
+                "reps": 10
+            }
+        ]
+    }
+}
+
+NOTAS IMPORTANTES:
+- "user": debe ser el username del usuario (string)
+- "start_date" y "end_date": formato "DD/MM/YYYY HH:MM" (string)
+- "warmup": texto opcional, puede ser null, string vacío o descripción del calentamiento
+- "routine": objeto con días numerados (day-1, day-2, day-3, etc.)
+- Cada día es un array de ejercicios
+- Cada ejercicio debe tener:
+  * "name": nombre del ejercicio (requerido, string)
+  * "description": descripción opcional (puede ser null, string vacío o texto)
+  * "body_part": parte del cuerpo, valores válidos: "chest", "back", "legs", "arms", "shoulders", "abs", "forearms", "core" (opcional, puede ser null o string vacío)
+  * "sets": número de series (requerido, integer)
+  * "reps": número de repeticiones (requerido, integer)
+- Los campos opcionales pueden omitirse del JSON o enviarse como null/string vacío

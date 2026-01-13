@@ -13,6 +13,7 @@ from cardio.models import CardioSession
 from evolveme.models import Measure
 from nutrition.models import Product
 from gym.models import MusculationExercise, Routine, TrainingSession
+from ia.models import Promtps
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,11 @@ class Command(BaseCommand):
             return
         else:
             print(" ✅ Sesiones de entrenamiento cargadas correctamente 💪")
+        if not self.prompts_data():
+            print(" ❌ Error al cargar los prompts 🤖")
+            return
+        else:
+            print(" ✅ Prompts cargados correctamente 🤖")
 
     def get_csv_path(self, filename):
         """Obtiene la ruta del archivo CSV en la carpeta data/"""
@@ -63,6 +69,18 @@ class Command(BaseCommand):
                 )
             )
         return os.path.join(project_root, "data", filename)
+
+    def get_prompt_path(self, filename):
+        """Obtiene la ruta del archivo de prompt en la carpeta prompts/"""
+        try:
+            project_root = settings.BASE_DIR
+        except AttributeError:
+            project_root = os.path.dirname(
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+                )
+            )
+        return os.path.join(project_root, "prompts", filename)
 
     def parse_datetime_safe(self, value):
         """Parsea un datetime y lo convierte a timezone-aware si es necesario"""
@@ -432,5 +450,67 @@ class Command(BaseCommand):
         logger.info(
             f"Sesiones de entrenamiento cargadas correctamente ✅ "
             f"({created_count} creadas)"
+        )
+        return True
+
+    def prompts_data(self):
+        """Carga los prompts desde los archivos de texto en la carpeta prompts/"""
+        logger.info("Cargando prompts 🤖 ...")
+
+        prompts_config = [
+            {"name": "gym", "filename": "gym.txt"},
+            {"name": "nutrition", "filename": "nutrition.txt"},
+        ]
+
+        created_count = 0
+        updated_count = 0
+
+        for prompt_config in prompts_config:
+            prompt_name = prompt_config["name"]
+            prompt_filename = prompt_config["filename"]
+            prompt_path = self.get_prompt_path(prompt_filename)
+
+            if not os.path.exists(prompt_path):
+                logger.warning(
+                    f"El archivo {prompt_path} no existe, saltando prompt '{prompt_name}'"
+                )
+                continue
+
+            try:
+                # Leer el contenido del archivo
+                with open(prompt_path, "r", encoding="utf-8") as f:
+                    prompt_content = f.read().strip()
+
+                if not prompt_content:
+                    logger.warning(
+                        f"El archivo {prompt_path} está vacío, saltando prompt '{prompt_name}'"
+                    )
+                    continue
+
+                # Buscar o crear el prompt
+                prompt_obj, created = Promtps.objects.get_or_create(
+                    name=prompt_name,
+                    defaults={"prompt": prompt_content},
+                )
+
+                if not created:
+                    # Si ya existe, actualizar el contenido
+                    prompt_obj.prompt = prompt_content
+                    prompt_obj.save()
+                    updated_count += 1
+                    logger.info(f"Prompt '{prompt_name}' actualizado ✅")
+                else:
+                    created_count += 1
+                    logger.info(f"Prompt '{prompt_name}' creado ✅")
+
+            except Exception as e:
+                logger.error(
+                    f"Error al procesar el prompt '{prompt_name}' desde {prompt_path}: {e}"
+                )
+                continue
+
+        logger.info(
+            f"Prompts cargados correctamente ✅ "
+            f"({created_count} creados, {updated_count} actualizados)"
         )
         return True

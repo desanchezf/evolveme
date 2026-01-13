@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "cardio",
     "nutrition",
     "gym",
+    "ia",
     # Project commands
     "project_commands",
 ]
@@ -66,7 +67,7 @@ ROOT_URLCONF = "project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "project" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -128,6 +129,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -276,3 +281,18 @@ ROLE_PERMISSIONS = {
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = ["unfold_crispy"]
 CRISPY_TEMPLATE_PACK = "unfold_crispy"
+
+# Unfold Admin Configuration
+UNFOLD = {
+    # Color primario: naranja DuckDuckGo (#FF6600)
+    "PRIMARY_COLOR": "#FF6600",
+    # Colores adicionales
+    "SECONDARY_COLOR": "#3d3d3d",  # Gris claro para resaltes
+    "SUCCESS_COLOR": "#10b981",  # Verde para éxito
+    "WARNING_COLOR": "#f59e0b",  # Amarillo para advertencias
+    "ERROR_COLOR": "#ef4444",  # Rojo para errores
+    # Incluir CSS personalizado
+    "STYLES": [
+        "/static/css/unfold_custom.css",
+    ],
+}

@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% load admin_urls crispy_forms_tags i18n unfold %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% url 'admin:jsi18n' %}"></script>
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col gap-8">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <h3 class="text-lg font-semibold text-blue-800 mb-2">Instrucciones</h3>
+            <ul class="list-disc list-inside text-blue-700 space-y-1">
+                <li>Pega el JSON generado por la IA en el campo de texto</li>
+                <li>El JSON debe seguir el formato definido en <code>gym_response.txt</code></li>
+                <li>Los ejercicios se crearán automáticamente si no existen</li>
+                <li>La rutina se creará con todos los ejercicios especificados</li>
+            </ul>
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">JSON de la Rutina</h2>
+                {% crispy form "unfold_crispy" %}
+            </div>
+
+            <div class="flex justify-end gap-4">
+                <a href="{% url 'admin:gym_routine_changelist' %}"
+                   class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Generar Rutina
+                </button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

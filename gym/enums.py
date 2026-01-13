@@ -25,3 +25,31 @@ class BodyPartChoices(str):
     @classmethod
     def choices(cls):
         return BodyPartChoices.values
+
+
+class ExerciseTypesChoices(str):
+    Push = "push"
+    Pull = "pull"
+    Legs = "legs"
+    Core = "core"
+    FullBody = "full_body"
+    LowerBody = "lower_body"
+    UpperBody = "upper_body"
+    Abs = "abs"
+    Forearms = "forearms"
+
+    values = (
+        (Push, _("Push")),
+        (Pull, _("Pull")),
+        (Legs, _("Piernas")),
+        (Core, _("Core")),
+        (FullBody, _("Cuerpo completo")),
+        (LowerBody, _("Parte inferior")),
+        (UpperBody, _("Parte superior")),
+        (Abs, _("Abdomen")),
+        (Forearms, _("Antebrazos")),
+    )
+
+    @classmethod
+    def choices(cls):
+        return ExerciseTypesChoices.values
