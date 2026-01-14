@@ -1,116 +1,150 @@
 {
-    "user": "username",
-    "week_start_date": "DD/MM/YYYY",
-    "diet": {
-        "monday": {
-            "date": "DD/MM/YYYY",
-            "breakfast": [
-                {
-                    "product_name": "Nombre del producto",
-                    "quantity": 100,
-                    "unit": "g"
+    "type": "object",
+    "required": ["user", "week_start_date", "diet"],
+    "properties": {
+        "user": {
+            "type": "string",
+            "description": "Username del usuario",
+            "example": "david"
+        },
+        "week_start_date": {
+            "type": "string",
+            "description": "Fecha de inicio de la semana en formato DD/MM/YYYY",
+            "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+            "example": "01/01/2026"
+        },
+        "diet": {
+            "type": "object",
+            "description": "Dieta semanal con días de lunes a sábado",
+            "required": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+            "properties": {
+                "monday": {
+                    "$ref": "#/definitions/day"
                 },
-                {
-                    "product_name": "Nombre del producto 2",
-                    "quantity": 200,
-                    "unit": "ml"
+                "tuesday": {
+                    "$ref": "#/definitions/day"
+                },
+                "wednesday": {
+                    "$ref": "#/definitions/day"
+                },
+                "thursday": {
+                    "$ref": "#/definitions/day"
+                },
+                "friday": {
+                    "$ref": "#/definitions/day"
+                },
+                "saturday": {
+                    "$ref": "#/definitions/day"
                 }
-            ],
-            "mid_morning": [
-                {
-                    "product_name": "Nombre del producto (opcional)",
-                    "quantity": 50,
-                    "unit": "g"
+            }
+        }
+    },
+    "definitions": {
+        "day": {
+            "type": "object",
+            "required": ["date", "breakfast", "lunch", "dinner"],
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "description": "Fecha específica del día en formato DD/MM/YYYY",
+                    "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                    "example": "01/01/2026"
+                },
+                "breakfast": {
+                    "type": "array",
+                    "description": "Array de productos para el desayuno (requerido, puede ser array vacío)",
+                    "items": {
+                        "$ref": "#/definitions/product_quantity"
+                    }
+                },
+                "mid_morning": {
+                    "type": "array",
+                    "description": "Array de productos para media mañana (opcional)",
+                    "items": {
+                        "$ref": "#/definitions/product_quantity"
+                    }
+                },
+                "lunch": {
+                    "type": "array",
+                    "description": "Array de productos para el almuerzo (requerido, puede ser array vacío)",
+                    "items": {
+                        "$ref": "#/definitions/product_quantity"
+                    }
+                },
+                "snack": {
+                    "type": "array",
+                    "description": "Array de productos para la merienda (opcional)",
+                    "items": {
+                        "$ref": "#/definitions/product_quantity"
+                    }
+                },
+                "dinner": {
+                    "type": "array",
+                    "description": "Array de productos para la cena (requerido, puede ser array vacío)",
+                    "items": {
+                        "$ref": "#/definitions/product_quantity"
+                    }
                 }
-            ],
-            "lunch": [
-                {
-                    "product_name": "Nombre del producto",
-                    "quantity": 150,
-                    "unit": "g"
-                }
-            ],
-            "snack": [
-                {
-                    "product_name": "Nombre del producto (opcional)",
-                    "quantity": 30,
-                    "unit": "g"
-                }
-            ],
-            "dinner": [
-                {
-                    "product_name": "Nombre del producto",
-                    "quantity": 200,
-                    "unit": "g"
-                }
-            ]
+            }
         },
-        "tuesday": {
-            "date": "DD/MM/YYYY",
-            "breakfast": [
-                {
-                    "product_name": "Nombre del producto",
-                    "quantity": 100,
-                    "unit": "g"
+        "product_quantity": {
+            "type": "object",
+            "required": ["product_name", "quantity", "unit"],
+            "properties": {
+                "product_name": {
+                    "type": "string",
+                    "description": "Nombre del producto (debe coincidir con el nombre en la base de datos)",
+                    "example": "Copos de avena Hacendado"
+                },
+                "quantity": {
+                    "type": "number",
+                    "description": "Cantidad del producto",
+                    "minimum": 0,
+                    "example": 100
+                },
+                "unit": {
+                    "type": "string",
+                    "description": "Unidad de medida",
+                    "example": "g",
+                    "enum": ["g", "ml", "unidades", "cucharadas", "cucharaditas", "tazas", "piezas"]
                 }
-            ],
-            "lunch": [
-                {
-                    "product_name": "Nombre del producto",
-                    "quantity": 150,
-                    "unit": "g"
-                }
-            ],
-            "dinner": [
-                {
-                    "product_name": "Nombre del producto",
-                    "quantity": 200,
-                    "unit": "g"
-                }
-            ]
-        },
-        "wednesday": {
-            "date": "DD/MM/YYYY",
-            "breakfast": [],
-            "lunch": [],
-            "dinner": []
-        },
-        "thursday": {
-            "date": "DD/MM/YYYY",
-            "breakfast": [],
-            "lunch": [],
-            "dinner": []
-        },
-        "friday": {
-            "date": "DD/MM/YYYY",
-            "breakfast": [],
-            "lunch": [],
-            "dinner": []
-        },
-        "saturday": {
-            "date": "DD/MM/YYYY",
-            "breakfast": [],
-            "lunch": [],
-            "dinner": []
+            }
+        }
+    },
+    "example": {
+        "user": "david",
+        "week_start_date": "01/01/2026",
+        "diet": {
+            "monday": {
+                "date": "01/01/2026",
+                "breakfast": [
+                    {
+                        "product_name": "Copos de avena Hacendado",
+                        "quantity": 50,
+                        "unit": "g"
+                    }
+                ],
+                "lunch": [
+                    {
+                        "product_name": "Pollo",
+                        "quantity": 200,
+                        "unit": "g"
+                    }
+                ],
+                "dinner": [
+                    {
+                        "product_name": "Merluza",
+                        "quantity": 200,
+                        "unit": "g"
+                    }
+                ]
+            },
+            "tuesday": {
+                "date": "02/01/2026",
+                "breakfast": [],
+                "lunch": [],
+                "dinner": []
+            }
         }
     }
 }
-
-NOTAS IMPORTANTES:
-- "user": debe ser el username del usuario (string, requerido)
-- "week_start_date": fecha de inicio de la semana en formato "DD/MM/YYYY" (string, requerido)
-- "diet": objeto con los días de la semana (lunes a sábado)
-- Cada día debe tener:
-  * "date": fecha específica del día en formato "DD/MM/YYYY" (string, requerido)
-  * "breakfast": array de productos para el desayuno (requerido, puede ser array vacío)
-  * "mid_morning": array de productos para media mañana (opcional, puede omitirse o ser array vacío)
-  * "lunch": array de productos para el almuerzo (requerido, puede ser array vacío)
-  * "snack": array de productos para la merienda (opcional, puede omitirse o ser array vacío)
-  * "dinner": array de productos para la cena (requerido, puede ser array vacío)
-- Cada producto en un array debe tener:
-  * "product_name": nombre del producto (string, requerido) - debe coincidir con el nombre en la base de datos
-  * "quantity": cantidad del producto (float, requerido)
-  * "unit": unidad de medida (string, requerido) - ejemplos: "g", "ml", "unidades", "cucharadas", etc.
-- Las comidas opcionales (mid_morning, snack) pueden omitirse del JSON o enviarse como arrays vacíos
-- Según el prompt de nutrición: 3-5 comidas diarias flexibles, priorizar verduras y proteínas
-- Los días van de lunes a sábado (según especificación del prompt)

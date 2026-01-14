@@ -30,7 +30,7 @@ class Promtps(models.Model):
         return self.name
 
 
-class ModelGymResponse(models.Model):
+class GymLLMResponse(models.Model):
     response = models.TextField(verbose_name="Respuesta")
     stored = models.BooleanField(default=False, verbose_name="Almacenado")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -44,7 +44,7 @@ class ModelGymResponse(models.Model):
         return self.response
 
 
-class ModelNutritionResponse(models.Model):
+class NutritionLLMResponse(models.Model):
     response = models.TextField(verbose_name="Respuesta")
     stored = models.BooleanField(default=False, verbose_name="Almacenado")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -56,3 +56,9 @@ class ModelNutritionResponse(models.Model):
 
     def __str__(self):
         return self.response
+
+
+class ProductLLMResponse(models.Model):
+    products = models.JSONField(verbose_name="Productos")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

@@ -1,58 +1,119 @@
 {
-    "user": "username",
-    "start_date": "DD/MM/YYYY HH:MM",
-    "end_date": "DD/MM/YYYY HH:MM",
-    "warmup": "Descripción del calentamiento (opcional, puede ser null o string vacío)",
-    "exercise_types": ["push","pull","core"]
-    "routine": {
-        "day-1": [
-            {
-                "name": "Nombre del ejercicio (requerido)",
-                "description": "Descripción detallada del ejercicio (opcional, puede ser null o string vacío)",
-                "body_part": "chest|back|legs|arms|shoulders|abs|forearms|core (opcional, puede ser null o string vacío)",
-                "sets": 3,
-                "reps": 10
+    "type": "object",
+    "required": ["user", "start_date", "end_date", "routine"],
+    "properties": {
+        "user": {
+            "type": "string",
+            "description": "Username del usuario",
+            "example": "david"
+        },
+        "start_date": {
+            "type": "string",
+            "description": "Fecha de inicio en formato DD/MM/YYYY HH:MM",
+            "pattern": "^\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}$",
+            "example": "01/01/2026 08:00"
+        },
+        "end_date": {
+            "type": "string",
+            "description": "Fecha de fin en formato DD/MM/YYYY HH:MM",
+            "pattern": "^\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}$",
+            "example": "01/02/2026 08:00"
+        },
+        "warmup": {
+            "type": ["string", "null"],
+            "description": "Descripción del calentamiento (opcional)",
+            "example": "Calentamiento 5-10 min bici/elíptica"
+        },
+        "exercise_types": {
+            "type": "array",
+            "description": "Lista de tipos de ejercicios",
+            "items": {
+                "type": "string",
+                "enum": ["push", "pull", "legs", "core", "full_body", "lower_body", "upper_body", "abs", "forearms"]
             },
-            {
-                "name": "Nombre del ejercicio 2",
-                "description": "Descripción del ejercicio (opcional)",
-                "body_part": "back",
-                "sets": 4,
-                "reps": 12
+            "example": ["push", "pull", "core"]
+        },
+        "routine": {
+            "type": "object",
+            "description": "Rutina con días numerados",
+            "patternProperties": {
+                "^day-\\d+$": {
+                    "type": "array",
+                    "description": "Array de ejercicios para el día",
+                    "items": {
+                        "type": "object",
+                        "required": ["name", "sets", "reps"],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Nombre del ejercicio (requerido)",
+                                "example": "Press banca"
+                            },
+                            "description": {
+                                "type": ["string", "null"],
+                                "description": "Descripción detallada del ejercicio (opcional)",
+                                "example": "Press banca plano con barra"
+                            },
+                            "body_part": {
+                                "type": ["string", "null"],
+                                "description": "Parte del cuerpo",
+                                "enum": ["chest", "back", "legs", "arms", "shoulders", "abs", "forearms", "core", null, ""],
+                                "example": "chest"
+                            },
+                            "sets": {
+                                "type": "integer",
+                                "description": "Número de series (requerido)",
+                                "minimum": 1,
+                                "example": 3
+                            },
+                            "reps": {
+                                "type": "integer",
+                                "description": "Número de repeticiones (requerido)",
+                                "minimum": 1,
+                                "example": 10
+                            }
+                        }
+                    }
+                }
+            },
+            "example": {
+                "day-1": [
+                    {
+                        "name": "Press banca",
+                        "description": "Press banca plano",
+                        "body_part": "chest",
+                        "sets": 4,
+                        "reps": 8
+                    }
+                ]
             }
-        ],
-        "day-2": [
-            {
-                "name": "Nombre del ejercicio",
-                "description": "Descripción del ejercicio (opcional)",
-                "body_part": "legs",
-                "sets": 3,
-                "reps": 8
-            }
-        ],
-        "day-3":
-        [
-            {
-                "name": "Nombre del ejercicio",
-                "description": "Descripción del ejercicio (opcional)",
-                "body_part": "arms",
-                "sets": 3,
-                "reps": 10
-            }
-        ]
+        }
+    },
+    "example": {
+        "user": "david",
+        "start_date": "01/01/2026 08:00",
+        "end_date": "01/02/2026 08:00",
+        "warmup": "Calentamiento 5-10 min",
+        "exercise_types": ["push", "pull", "core"],
+        "routine": {
+            "day-1": [
+                {
+                    "name": "Press banca",
+                    "description": "Press banca plano",
+                    "body_part": "chest",
+                    "sets": 4,
+                    "reps": 8
+                }
+            ],
+            "day-2": [
+                {
+                    "name": "Peso muerto",
+                    "description": "Peso muerto rumano",
+                    "body_part": "back",
+                    "sets": 3,
+                    "reps": 10
+                }
+            ]
+        }
     }
 }
-
-NOTAS IMPORTANTES:
-- "user": debe ser el username del usuario (string)
-- "start_date" y "end_date": formato "DD/MM/YYYY HH:MM" (string)
-- "warmup": texto opcional, puede ser null, string vacío o descripción del calentamiento
-- "routine": objeto con días numerados (day-1, day-2, day-3, etc.)
-- Cada día es un array de ejercicios
-- Cada ejercicio debe tener:
-  * "name": nombre del ejercicio (requerido, string)
-  * "description": descripción opcional (puede ser null, string vacío o texto)
-  * "body_part": parte del cuerpo, valores válidos: "chest", "back", "legs", "arms", "shoulders", "abs", "forearms", "core" (opcional, puede ser null o string vacío)
-  * "sets": número de series (requerido, integer)
-  * "reps": número de repeticiones (requerido, integer)
-- Los campos opcionales pueden omitirse del JSON o enviarse como null/string vacío
