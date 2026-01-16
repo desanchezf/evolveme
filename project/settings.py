@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "cardio",
     "nutrition",
     "gym",
-    "ia",
+    "ia.apps.IaConfig",
     # Project commands
     "project_commands",
 ]
@@ -282,17 +282,73 @@ ROLE_PERMISSIONS = {
 CRISPY_ALLOWED_TEMPLATE_PACKS = ["unfold_crispy"]
 CRISPY_TEMPLATE_PACK = "unfold_crispy"
 
-# Unfold Admin Configuration
+# Unfold Configuration
 UNFOLD = {
-    # Color primario: naranja DuckDuckGo (#FF6600)
-    "PRIMARY_COLOR": "#FF6600",
-    # Colores adicionales
-    "SECONDARY_COLOR": "#3d3d3d",  # Gris claro para resaltes
-    "SUCCESS_COLOR": "#10b981",  # Verde para éxito
-    "WARNING_COLOR": "#f59e0b",  # Amarillo para advertencias
-    "ERROR_COLOR": "#ef4444",  # Rojo para errores
-    # Incluir CSS personalizado
-    "STYLES": [
-        "/static/css/unfold_custom.css",
+    "SITE_TITLE": "EvolveMe",
+    "SITE_HEADER": "EvolveMe",
+    "SITE_SUBHEADER": "Panel de Administración",
+    "SITE_URL": "/",
+    "SITE_ICON": {
+        "light": lambda request: "/static/ico_dark.png",  # Icono oscuro en tema claro
+        "dark": lambda request: "/static/ico_light.png",  # Icono claro en tema oscuro
+    },
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "type": "image/png",
+            "href": lambda request: "/static/ico_dark.png",  # Icono oscuro para tema claro
+        },
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "type": "image/png",
+            "href": lambda request: "/static/ico_light.png",  # Icono claro para tema oscuro
+            "media": "(prefers-color-scheme: dark)",
+        },
     ],
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "SHOW_BACK_BUTTON": False,
+    "BORDER_RADIUS": "8px",
+    "THEME": None,  # Permite cambio de tema (claro/oscuro)
+    "COLORS": {
+        "base": {
+            # Grises oscuros - basado en #2b2b2b (gris oscuro) y #212121 (gris muy oscuro)
+            # Modo claro: colores un poco más oscuros que blanco perfecto
+            "50": "oklch(95% 0 0)",  # Gris muy claro (no blanco perfecto)
+            "100": "oklch(88% 0 0)",  # Gris claro
+            "200": "oklch(75% 0 0)",  # Gris medio-claro
+            "300": "oklch(60% 0 0)",  # Gris medio
+            "400": "oklch(50% 0 0)",  # Gris medio-oscuro
+            "500": "oklch(40% 0 0)",  # Gris oscuro (#2b2b2b aproximado)
+            "600": "oklch(35% 0 0)",  # Gris más oscuro
+            "700": "oklch(30% 0 0)",  # Gris muy oscuro (#212121 aproximado)
+            "800": "oklch(25% 0 0)",  # Gris casi negro
+            "900": "oklch(20% 0 0)",  # Gris negro
+            "950": "oklch(15% 0 0)",  # Negro
+        },
+        "primary": {
+            # Amarillo - basado en #ba9e00
+            "50": "oklch(95% 0.05 90)",  # Amarillo muy claro
+            "100": "oklch(90% 0.08 90)",  # Amarillo claro
+            "200": "oklch(85% 0.10 90)",  # Amarillo medio-claro
+            "300": "oklch(80% 0.12 90)",  # Amarillo medio
+            "400": "oklch(75% 0.14 90)",  # Amarillo
+            "500": "oklch(70% 0.15 90)",  # Amarillo principal (#ba9e00 aproximado)
+            "600": "oklch(65% 0.15 90)",  # Amarillo oscuro
+            "700": "oklch(60% 0.14 90)",  # Amarillo más oscuro
+            "800": "oklch(55% 0.12 90)",  # Amarillo muy oscuro
+            "900": "oklch(50% 0.10 90)",  # Amarillo casi negro
+            "950": "oklch(45% 0.08 90)",  # Amarillo negro
+        },
+        "font": {
+            "subtle-light": "var(--color-base-500)",
+            "subtle-dark": "var(--color-base-400)",
+            "default-light": "var(--color-base-600)",
+            "default-dark": "var(--color-base-300)",
+            "important-light": "var(--color-base-900)",
+            "important-dark": "var(--color-base-100)",
+        },
+    },
 }
