@@ -19,44 +19,207 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Cargar datos iniciales desde archivos CSV"
+    help = "Eliminar y recargar datos desde archivos CSV"
 
     def handle(self, *args, **options):
+        self.stdout.write(self.style.WARNING("🗑️  Iniciando eliminación de datos..."))
+
+        # Fase 1: Eliminar datos existentes
+        if not self.delete_training_sessions():
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al eliminar las sesiones de entrenamiento 💪")
+            )
+            return
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Sesiones de entrenamiento eliminadas correctamente 💪")
+            )
+
+        if not self.delete_food_products():
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al eliminar los productos alimentarios 🍎")
+            )
+            return
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Productos alimentarios eliminados correctamente 🍎")
+            )
+
+        if not self.delete_cardio_training_session():
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al eliminar las sesiones de cardio 🚴")
+            )
+            return
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Sesiones de cardio eliminadas correctamente 🚴")
+            )
+
+        if not self.delete_musculation_exercises():
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al eliminar los ejercicios de musculación 💪")
+            )
+            return
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Ejercicios de musculación eliminados correctamente 💪")
+            )
+
+        if not self.delete_measures_data():
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al eliminar las medidas 📏")
+            )
+            return
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Medidas eliminadas correctamente 📏")
+            )
+
+        if not self.delete_routines():
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al eliminar las rutinas 💪")
+            )
+            return
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Rutinas eliminadas correctamente 💪")
+            )
+
+        self.stdout.write(self.style.SUCCESS("\n✅ Fase de eliminación completada\n"))
+        self.stdout.write(self.style.WARNING("📥 Iniciando carga de datos...\n"))
+
+        # Fase 2: Importar datos
         if not self.user_data():
-            print(" ❌ Error al cargar la información de los usuarios 👤")
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al cargar la información de los usuarios 👤")
+            )
             return
         else:
-            print(" ✅ Información cargada correctamente 👤")
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Información cargada correctamente 👤")
+            )
+
         if not self.measures_data():
-            print(" ❌ Error al cargar las medidas 📏")
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al cargar las medidas 📏")
+            )
             return
         else:
-            print(" ✅ Medidas cargadas correctamente 📏")
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Medidas cargadas correctamente 📏")
+            )
+
         if not self.musculation_exercises():
-            print(" ❌ Error al cargar los ejercicios de musculación 💪")
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al cargar los ejercicios de musculación 💪")
+            )
             return
         else:
-            print(" ✅ Ejercicios de musculación cargados correctamente 💪")
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Ejercicios de musculación cargados correctamente 💪")
+            )
+
         if not self.cardio_training_session():
-            print(" ❌ Error al cargar las sesiones de cardio 🚴")
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al cargar las sesiones de cardio 🚴")
+            )
             return
         else:
-            print(" ✅ Sesiones de cardio cargadas correctamente 🚴")
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Sesiones de cardio cargadas correctamente 🚴")
+            )
+
         if not self.food_products():
-            print(" ❌ Error al cargar los productos alimentarios 🍎")
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al cargar los productos alimentarios 🍎")
+            )
             return
         else:
-            print(" ✅ Productos alimentarios cargados correctamente 🍎")
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Productos alimentarios cargados correctamente 🍎")
+            )
+
         if not self.training_sessions():
-            print(" ❌ Error al cargar las sesiones de entrenamiento 💪")
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al cargar las sesiones de entrenamiento 💪")
+            )
             return
         else:
-            print(" ✅ Sesiones de entrenamiento cargadas correctamente 💪")
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Sesiones de entrenamiento cargadas correctamente 💪")
+            )
+
         if not self.prompts_data():
-            print(" ❌ Error al cargar los prompts 🤖")
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al cargar los prompts 🤖")
+            )
             return
         else:
-            print(" ✅ Prompts cargados correctamente 🤖")
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Prompts cargados correctamente 🤖")
+            )
+
+        self.stdout.write(
+            self.style.SUCCESS("\n✅ Proceso de actualización completado correctamente!")
+        )
+
+    # ========== Métodos de eliminación ==========
+
+    def delete_training_sessions(self):
+        """Elimina las sesiones de entrenamiento"""
+        logger.info("Eliminando sesiones de entrenamiento 💪 ...")
+        deleted_count, _ = TrainingSession.objects.all().delete()
+        logger.info(
+            f"Sesiones de entrenamiento eliminadas correctamente ✅ "
+            f"({deleted_count} eliminadas)"
+        )
+        return True
+
+    def delete_food_products(self):
+        """Elimina los productos alimentarios"""
+        logger.info("Eliminando productos alimentarios 🍎 ...")
+        deleted_count, _ = Product.objects.all().delete()
+        logger.info(
+            f"Productos alimentarios eliminados correctamente ✅ "
+            f"({deleted_count} eliminados)"
+        )
+        return True
+
+    def delete_cardio_training_session(self):
+        """Elimina las sesiones de cardio"""
+        logger.info("Eliminando sesiones de cardio 🚴 ...")
+        deleted_count, _ = CardioSession.objects.all().delete()
+        logger.info(
+            f"Sesiones de cardio eliminadas correctamente ✅ "
+            f"({deleted_count} eliminadas)"
+        )
+        return True
+
+    def delete_musculation_exercises(self):
+        """Elimina los ejercicios de musculación"""
+        logger.info("Eliminando ejercicios de musculación 💪 ...")
+        deleted_count, _ = MusculationExercise.objects.all().delete()
+        logger.info(
+            f"Ejercicios de musculación eliminados correctamente ✅ "
+            f"({deleted_count} eliminados)"
+        )
+        return True
+
+    def delete_measures_data(self):
+        """Elimina las medidas"""
+        logger.info("Eliminando medidas 📏 ...")
+        deleted_count, _ = Measure.objects.all().delete()
+        logger.info(f"Medidas eliminadas correctamente ✅ ({deleted_count} eliminadas)")
+        return True
+
+    def delete_routines(self):
+        """Elimina las rutinas creadas por el comando de importación"""
+        logger.info("Eliminando rutinas 💪 ...")
+        deleted_count, _ = Routine.objects.all().delete()
+        logger.info(f"Rutinas eliminadas correctamente ✅ ({deleted_count} eliminadas)")
+        return True
+
+    # ========== Métodos de importación ==========
 
     def get_csv_path(self, filename):
         """Obtiene la ruta del archivo CSV en la carpeta data/"""

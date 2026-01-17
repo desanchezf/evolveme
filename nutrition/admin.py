@@ -4,6 +4,7 @@ from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from nutrition.models import DailyDiet, MealMetrics, Product, ProductQuantity
 from nutrition.views import DailyDietFormsetView, DietJSONView
+from nutrition.forms_admin import DailyDietAdminForm
 
 
 @admin.register(Product)
@@ -130,6 +131,7 @@ class ProductQuantityAdmin(UnfoldModelAdmin):
 
 @admin.register(DailyDiet)
 class DailyDietAdmin(UnfoldModelAdmin):
+    form = DailyDietAdminForm
     list_display = ("user", "date", "created_at")
     list_filter = ("date", "user")
     search_fields = ("user__username", "user__email")

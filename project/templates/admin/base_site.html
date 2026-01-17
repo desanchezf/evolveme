@@ -4,4 +4,78 @@
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{% static 'css/unfold_custom.css' %}">
+    <script>
+        // Detectar modo oscuro y aplicar filtro amarillo a iconos de calendario
+        (function() {
+            function applyYellowCalendarIcons() {
+                // Múltiples formas de detectar modo oscuro
+                const isDarkMode =
+                    (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
+                    document.documentElement.getAttribute('data-theme') === 'dark' ||
+                    document.body.classList.contains('dark') ||
+                    document.documentElement.classList.contains('dark') ||
+                    document.querySelector('body[class*="dark"]') !== null;
+
+                if (isDarkMode) {
+                    // Crear estilo global para todos los inputs de fecha
+                    if (!document.getElementById('calendar-icon-yellow-style')) {
+                        const style = document.createElement('style');
+                        style.id = 'calendar-icon-yellow-style';
+                        style.textContent = `
+                            input[type="date"]::-webkit-calendar-picker-indicator,
+                            input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+                                filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg) brightness(0.6) !important;
+                                opacity: 1 !important;
+                            }
+                            input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                            input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+                                filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg) brightness(0.75) !important;
+                                opacity: 1 !important;
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                } else {
+                    // Remover el estilo si no está en modo oscuro
+                    const existingStyle = document.getElementById('calendar-icon-yellow-style');
+                    if (existingStyle) {
+                        existingStyle.remove();
+                    }
+                }
+            }
+
+            // Aplicar al cargar
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', applyYellowCalendarIcons);
+            } else {
+                applyYellowCalendarIcons();
+            }
+
+            // Observar cambios en el tema
+            if (window.matchMedia) {
+                const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                darkModeQuery.addEventListener('change', applyYellowCalendarIcons);
+            }
+
+            // Observar cambios en el atributo data-theme
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' &&
+                        (mutation.attributeName === 'data-theme' || mutation.attributeName === 'class')) {
+                        applyYellowCalendarIcons();
+                    }
+                });
+            });
+
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['data-theme', 'class']
+            });
+
+            observer.observe(document.body, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        })();
+    </script>
 {% endblock %}

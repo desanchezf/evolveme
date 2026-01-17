@@ -2,18 +2,29 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from evolveme.models import GymUserProfile, Measure
+from evolveme.forms import GymUserProfileAdminForm, MeasureAdminForm
 
 
 @admin.register(GymUserProfile)
 class GymUserProfileAdmin(UnfoldModelAdmin):
-    list_display = ("user", "birth_date", "gender", "height", "objective")
+    form = GymUserProfileAdminForm
+    list_display = (
+        "user",
+        "birth_date",
+        "gender",
+        "height",
+        "objective",
+        "active_routine",
+        "start_date",
+        "end_date",
+    )
     search_fields = (
         "user__username",
         "user__email",
         "user__first_name",
         "user__last_name",
     )
-    list_filter = ("gender", "objective")
+    list_filter = ("gender", "objective", "active_routine", "start_date", "end_date")
     date_hierarchy = "birth_date"
     ordering = ("-birth_date",)
     fieldsets = (
@@ -35,11 +46,18 @@ class GymUserProfileAdmin(UnfoldModelAdmin):
                 "fields": ("objective",),
             },
         ),
+        (
+            "Rutina activa",
+            {
+                "fields": ("active_routine", "start_date", "end_date"),
+            },
+        ),
     )
 
 
 @admin.register(Measure)
 class MeasureAdmin(UnfoldModelAdmin):
+    form = MeasureAdminForm
     list_display = (
         "user",
         "date",

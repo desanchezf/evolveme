@@ -2,13 +2,14 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from cardio.models import CardioSession
+from cardio.forms import CardioSessionAdminForm
 
 
 @admin.register(CardioSession)
 class CardioSessionAdmin(UnfoldModelAdmin):
+    form = CardioSessionAdminForm
     list_display = (
         "user",
-        "name",
         "exercise_type",
         "date",
         "session_start",

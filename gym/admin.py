@@ -9,6 +9,11 @@ from gym.models import (
     TrainingSession,
 )
 from gym.views import MusculationRecordFormsetView, RoutineJSONView
+from gym.forms import (
+    RoutineAdminForm,
+    TrainingSessionAdminForm,
+    MusculationRecordAdminForm,
+)
 
 
 @admin.register(MusculationExercise)
@@ -40,6 +45,7 @@ class MusculationExerciseAdmin(UnfoldModelAdmin):
 
 @admin.register(MusculationRecord)
 class MusculationRecordAdmin(UnfoldModelAdmin):
+    form = MusculationRecordAdminForm
     list_display = (
         "user",
         "exercise",
@@ -100,24 +106,25 @@ class MusculationRecordAdmin(UnfoldModelAdmin):
 
 @admin.register(Routine)
 class RoutineAdmin(UnfoldModelAdmin):
-    list_display = ("user", "exercise_types", "start_date", "end_date", "created_at")
-    list_filter = ("start_date", "end_date", "user")
+    form = RoutineAdminForm
+    list_display = ("user", "exercise_types", "duration", "created_at")
+    list_filter = ("created_at", "user")
     search_fields = ("user__username", "user__email")
-    date_hierarchy = "start_date"
-    ordering = ("-start_date",)
+    date_hierarchy = "created_at"
+    ordering = ("-created_at",)
     filter_horizontal = ("exercises",)
     fieldsets = (
         (
             "Información básica",
             {
-                "fields": ("user", "start_date", "end_date"),
+                "fields": ("user", "duration"),
             },
         ),
         (
             "Tipos de ejercicios",
             {
                 "fields": ("exercise_types",),
-                "description": "Lista de tipos de ejercicios: ['push', 'pull', 'legs', 'core', 'full_body', 'lower_body', 'upper_body', 'abs', 'forearms']",
+                "description": "Selecciona los tipos de ejercicios para esta rutina",
             },
         ),
         (
@@ -153,6 +160,7 @@ class RoutineAdmin(UnfoldModelAdmin):
 
 @admin.register(TrainingSession)
 class TrainingSessionAdmin(UnfoldModelAdmin):
+    form = TrainingSessionAdminForm
     list_display = (
         "user",
         "routine",

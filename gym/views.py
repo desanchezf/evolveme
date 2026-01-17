@@ -123,13 +123,6 @@ class RoutineJSONView(UnfoldModelAdminViewMixin, FormView):
             messages.error(self.request, "El JSON debe contener el campo 'user'")
             return self.form_invalid(form)
 
-        if "start_date" not in data or "end_date" not in data:
-            messages.error(
-                self.request,
-                "El JSON debe contener los campos 'start_date' y 'end_date'",
-            )
-            return self.form_invalid(form)
-
         # Obtener usuario
         try:
             user = User.objects.get(username=data["user"])
@@ -139,31 +132,49 @@ class RoutineJSONView(UnfoldModelAdminViewMixin, FormView):
             )
             return self.form_invalid(form)
 
-        # Parsear fechas
-        start_date = self.parse_date(data["start_date"])
-        end_date = self.parse_date(data["end_date"])
-
-        if not start_date or not end_date:
-            messages.error(
-                self.request,
-                "Formato de fecha incorrecto. Use DD/MM/YYYY HH:MM o DD/MM/YYYY",
-            )
-            return self.form_invalid(form)
-
-        # Convertir a timezone-aware
-        if timezone.is_naive(start_date):
-            start_date = timezone.make_aware(start_date)
-        if timezone.is_naive(end_date):
-            end_date = timezone.make_aware(end_date)
+        # Parsear duración si está presente
+        duration = None
+        if "duration" in data:
+            try:
+                from django.utils.dateparse import parse_duration
+                duration = parse_duration(data["duration"])
+            except (ValueError, TypeError):
+                messages.error(
+                    self.request,
+                    "Formato de duración incorrecto. Use formato ISO 8601 (ej: P1DT12H30M o 1 12:30:00)",
+                )
+                return self.form_invalid(form)
 
         # Crear rutina
         routine = Routine.objects.create(
             user=user,
-            start_date=start_date,
-            end_date=end_date,
+            duration=duration,
             warmup=data.get("warmup", ""),
             exercise_types=data.get("exercise_types", []),
         )
+
+        # Actualizar perfil del usuario con start_date y end_date si están presentes
+        from evolveme.models import GymUserProfile
+        profile, _ = GymUserProfile.objects.get_or_create(user=user)
+
+        if "start_date" in data:
+            start_date = self.parse_date(data["start_date"])
+            if start_date:
+                if timezone.is_naive(start_date):
+                    start_date = timezone.make_aware(start_date)
+                profile.start_date = start_date.date()
+
+        if "end_date" in data:
+            end_date = self.parse_date(data["end_date"])
+            if end_date:
+                if timezone.is_naive(end_date):
+                    end_date = timezone.make_aware(end_date)
+                profile.end_date = end_date.date()
+
+        if not profile.active_routine:
+            profile.active_routine = routine
+
+        profile.save()
 
         # Procesar ejercicios por día
         routine_data = data.get("routine", {})

@@ -75,23 +75,26 @@ class Routine(models.Model):
         null=True,
         blank=True,
         verbose_name="Tipos de ejercicios",
-        help_text="Lista de tipos de ejercicios: ['push', 'pull', 'legs', 'core', 'full_body', 'lower_body', 'upper_body', 'abs', 'forearms']",
+        help_text="Múltiples selecciones de tipos de ejercicios",
     )
     warmup = models.TextField(null=True, blank=True, verbose_name="Calentamiento")
-    start_date = models.DateTimeField(
-        null=True, blank=True, verbose_name="Fecha de inicio"
+    duration = models.DurationField(
+        null=True, blank=True, verbose_name="Duración de la rutina"
     )
-    end_date = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de fin")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Rutina"
         verbose_name_plural = "Rutinas"
-        ordering = ["-start_date"]
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.user} - {self.start_date} - {self.end_date}"
+        exercise_types_str = ""
+        if self.exercise_types:
+            exercise_types_str = f" - {', '.join(self.exercise_types)}"
+        duration_str = f" - {self.duration}" if self.duration else ""
+        return f"{exercise_types_str}{duration_str} - {self.user}"
 
 
 class TrainingSession(models.Model):

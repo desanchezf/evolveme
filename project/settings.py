@@ -292,6 +292,10 @@ UNFOLD = {
         "light": lambda request: "/static/ico_dark.png",  # Icono oscuro en tema claro
         "dark": lambda request: "/static/ico_light.png",  # Icono claro en tema oscuro
     },
+    "SITE_LOGO": {
+        "light": lambda request: "/static/ico_dark.png",  # Logo oscuro en tema claro
+        "dark": lambda request: "/static/ico_light.png",  # Logo claro en tema oscuro
+    },
     "SITE_FAVICONS": [
         {
             "rel": "icon",
@@ -312,6 +316,9 @@ UNFOLD = {
     "SHOW_BACK_BUTTON": False,
     "BORDER_RADIUS": "8px",
     "THEME": None,  # Permite cambio de tema (claro/oscuro)
+    "STYLES": [
+        "/static/css/unfold_custom.css",
+    ],
     "COLORS": {
         "base": {
             # Grises oscuros - basado en #2b2b2b (gris oscuro) y #212121 (gris muy oscuro)

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from evolveme.enums import GenderChoices, ObjectiveChoices
+from gym.models import Routine
 
 
 class GymUserProfile(models.Model):
@@ -25,6 +26,16 @@ class GymUserProfile(models.Model):
         blank=True,
         verbose_name="Altura (cm)",
     )
+    active_routine = models.ForeignKey(
+        Routine,
+        on_delete=models.SET_NULL,
+        related_name="active_routine",
+        verbose_name="Rutina activa",
+        null=True,
+        blank=True,
+    )
+    start_date = models.DateField(null=True, blank=True, verbose_name="Fecha de inicio")
+    end_date = models.DateField(null=True, blank=True, verbose_name="Fecha de fin")
     objective = models.CharField(
         max_length=255,
         choices=ObjectiveChoices.choices(),
