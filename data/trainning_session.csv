@@ -1,5 +1,8 @@
 user,routine_id,session_date,location,workout_time,active_kilocalories,total_kilocalories,avg_heart_rate
 david,1,2026-01-13 18:14:00,Córdoba,0:33:58,209,300,125
+david,1,2026-01-16 17:09:00,Córdoba,0:43:08,249,362,123
+david,1,2026-01-14 18:13:00,Córdoba,0:35:37,198,292,117
+david,1,2026-01-12 20:16:00,Córdoba,0:47:32,337,464,132
 david,1,2026-01-02 17:54:00,Córdoba,0:32:36,188,273,124
 david,1,2024-12-29 18:29:00,Córdoba,0:42:45,294,405,130
 david,1,2024-12-23 20:06:00,Córdoba,0:35:54,219,314,127
