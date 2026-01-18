@@ -19,8 +19,17 @@ class ProductsAdmin(UnfoldModelAdmin):
         "carbs_per_100g",
         "fat_per_100g",
         "stock",
-        "created_at",
+        "formatted_created_at",
     )
+
+    def formatted_created_at(self, obj):
+        """Formatea la fecha de creación como DD/MM/YYYY HH:MM:SS"""
+        if obj.created_at:
+            return obj.created_at.strftime("%d/%m/%Y %H:%M:%S")
+        return "-"
+
+    formatted_created_at.short_description = "Fecha de creación"
+    formatted_created_at.admin_order_field = "created_at"
     list_filter = ("stock", "market", "created_at")
     search_fields = ("name", "description", "barcode")
     date_hierarchy = "created_at"
@@ -114,7 +123,16 @@ class ProductsAdmin(UnfoldModelAdmin):
 
 @admin.register(ProductQuantity)
 class ProductQuantityAdmin(UnfoldModelAdmin):
-    list_display = ("product", "quantity", "unit", "created_at")
+    list_display = ("product", "quantity", "unit", "formatted_created_at")
+
+    def formatted_created_at(self, obj):
+        """Formatea la fecha de creación como DD/MM/YYYY HH:MM:SS"""
+        if obj.created_at:
+            return obj.created_at.strftime("%d/%m/%Y %H:%M:%S")
+        return "-"
+
+    formatted_created_at.short_description = "Fecha de creación"
+    formatted_created_at.admin_order_field = "created_at"
     list_filter = ("product", "unit", "created_at")
     search_fields = ("product__name", "product__description")
     date_hierarchy = "created_at"
@@ -132,7 +150,25 @@ class ProductQuantityAdmin(UnfoldModelAdmin):
 @admin.register(DailyDiet)
 class DailyDietAdmin(UnfoldModelAdmin):
     form = DailyDietAdminForm
-    list_display = ("user", "date", "created_at")
+    list_display = ("user", "formatted_date", "formatted_created_at")
+
+    def formatted_date(self, obj):
+        """Formatea la fecha como DD/MM/YYYY"""
+        if obj.date:
+            return obj.date.strftime("%d/%m/%Y")
+        return "-"
+
+    formatted_date.short_description = "Fecha"
+    formatted_date.admin_order_field = "date"
+
+    def formatted_created_at(self, obj):
+        """Formatea la fecha de creación como DD/MM/YYYY HH:MM:SS"""
+        if obj.created_at:
+            return obj.created_at.strftime("%d/%m/%Y %H:%M:%S")
+        return "-"
+
+    formatted_created_at.short_description = "Fecha de creación"
+    formatted_created_at.admin_order_field = "created_at"
     list_filter = ("date", "user")
     search_fields = ("user__username", "user__email")
     date_hierarchy = "date"
@@ -184,8 +220,17 @@ class MealMetricsAdmin(UnfoldModelAdmin):
         "protein",
         "carbs",
         "fat",
-        "created_at",
+        "formatted_created_at",
     )
+
+    def formatted_created_at(self, obj):
+        """Formatea la fecha de creación como DD/MM/YYYY HH:MM:SS"""
+        if obj.created_at:
+            return obj.created_at.strftime("%d/%m/%Y %H:%M:%S")
+        return "-"
+
+    formatted_created_at.short_description = "Fecha de creación"
+    formatted_created_at.admin_order_field = "created_at"
     list_filter = ("daily_diet", "created_at")
     search_fields = ("daily_diet__id",)
     date_hierarchy = "created_at"

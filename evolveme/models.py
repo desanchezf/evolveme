@@ -62,10 +62,32 @@ class Measure(models.Model):
     )
     date = models.DateField(verbose_name="Fecha")
     weight = models.FloatField(null=True, blank=True, verbose_name="Peso (kg)")
-    arm = models.FloatField(null=True, blank=True, verbose_name="Brazo (cm)")
+    arm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Brazo (cm)",
+        help_text="Brazo flexionado - Flexiona bíceps a 90°, mide punto más grueso (fitness/progreso muscular)",
+    )
+    arm_relaxed = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Brazo relajado (cm)",
+        help_text="Brazo relajado - Punto medio entre hombro-codo, brazo colgando relajado (antropometría médica/nutricional)",
+    )
     chest = models.FloatField(null=True, blank=True, verbose_name="Pecho (cm)")
     waist = models.FloatField(null=True, blank=True, verbose_name="Cintura (cm)")
-    leg = models.FloatField(null=True, blank=True, verbose_name="Pierna (cm)")
+    leg = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Pierna (cm)",
+        help_text="Pierna flexionada - Flexiona cuádriceps, mide muslo más ancho (fitness/progreso muscular)",
+    )
+    leg_relaxed = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Pierna relajada (cm)",
+        help_text="Pierna relajada - Sin tensión (antropometría médica/nutricional)",
+    )
     fat_perc = models.FloatField(
         null=True, blank=True, verbose_name="Porcentaje de masa grasa (%)"
     )

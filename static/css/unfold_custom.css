@@ -3,12 +3,23 @@
 /* Estilizar iconos de calendario en inputs de tipo date */
 /* Para modo oscuro: cambiar el color del icono a amarillo (#ba9e00) */
 
+/* Estilos base - siempre aplicar transición */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    transition: filter 0.2s ease, opacity 0.2s ease;
+    cursor: pointer;
+}
+
+input[type="date"],
+input[type="datetime-local"] {
+    color-scheme: light dark;
+}
+
 /* Modo oscuro por preferencia del sistema */
 @media (prefers-color-scheme: dark) {
     input[type="date"]::-webkit-calendar-picker-indicator,
     input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg) brightness(0.6) !important;
-        cursor: pointer;
         opacity: 1 !important;
     }
 
@@ -19,46 +30,65 @@
     }
 }
 
-/* Selectores para modo oscuro de Unfold */
+/* Selectores para modo oscuro de Unfold - con máxima especificidad y múltiples variantes */
 html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
 html[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] * input[type="date"]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] * input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] form input[type="date"]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] form input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] .form-control[type="date"]::-webkit-calendar-picker-indicator,
+html[data-theme="dark"] .form-control[type="datetime-local"]::-webkit-calendar-picker-indicator,
 [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
 [data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] * input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] * input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] form input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] form input[type="datetime-local"]::-webkit-calendar-picker-indicator,
 .dark input[type="date"]::-webkit-calendar-picker-indicator,
 .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+.dark * input[type="date"]::-webkit-calendar-picker-indicator,
+.dark * input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+.dark form input[type="date"]::-webkit-calendar-picker-indicator,
+.dark form input[type="datetime-local"]::-webkit-calendar-picker-indicator,
 body.dark input[type="date"]::-webkit-calendar-picker-indicator,
-body.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+body.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+body.dark * input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark * input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+body.dark form input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg) brightness(0.6) !important;
-    cursor: pointer;
     opacity: 1 !important;
+    cursor: pointer !important;
 }
 
 html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator:hover,
 html[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+html[data-theme="dark"] * input[type="date"]::-webkit-calendar-picker-indicator:hover,
+html[data-theme="dark"] * input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+html[data-theme="dark"] form input[type="date"]::-webkit-calendar-picker-indicator:hover,
+html[data-theme="dark"] form input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+html[data-theme="dark"] .form-control[type="date"]::-webkit-calendar-picker-indicator:hover,
+html[data-theme="dark"] .form-control[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
 [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator:hover,
 [data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+[data-theme="dark"] * input[type="date"]::-webkit-calendar-picker-indicator:hover,
+[data-theme="dark"] * input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+[data-theme="dark"] form input[type="date"]::-webkit-calendar-picker-indicator:hover,
+[data-theme="dark"] form input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
 .dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
 .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+.dark * input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.dark * input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+.dark form input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.dark form input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
 body.dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
-body.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+body.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+body.dark * input[type="date"]::-webkit-calendar-picker-indicator:hover,
+body.dark * input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+body.dark form input[type="date"]::-webkit-calendar-picker-indicator:hover,
+body.dark form input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
     filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg) brightness(0.75) !important;
     opacity: 1 !important;
-}
-
-/* Estilos base */
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    transition: filter 0.2s ease, opacity 0.2s ease;
-    opacity: 0.7;
-    cursor: pointer;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator:hover,
-input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
-}
-
-input[type="date"],
-input[type="datetime-local"] {
-    color-scheme: light dark;
+    cursor: pointer !important;
 }

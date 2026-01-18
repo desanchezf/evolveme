@@ -10,14 +10,41 @@ class GymUserProfileAdmin(UnfoldModelAdmin):
     form = GymUserProfileAdminForm
     list_display = (
         "user",
-        "birth_date",
+        "formatted_birth_date",
         "gender",
         "height",
         "objective",
         "active_routine",
-        "start_date",
-        "end_date",
+        "formatted_start_date",
+        "formatted_end_date",
     )
+
+    def formatted_birth_date(self, obj):
+        """Formatea la fecha de nacimiento como DD/MM/YYYY"""
+        if obj.birth_date:
+            return obj.birth_date.strftime("%d/%m/%Y")
+        return "-"
+
+    formatted_birth_date.short_description = "Fecha de nacimiento"
+    formatted_birth_date.admin_order_field = "birth_date"
+
+    def formatted_start_date(self, obj):
+        """Formatea la fecha de inicio como DD/MM/YYYY"""
+        if obj.start_date:
+            return obj.start_date.strftime("%d/%m/%Y")
+        return "-"
+
+    formatted_start_date.short_description = "Fecha de inicio"
+    formatted_start_date.admin_order_field = "start_date"
+
+    def formatted_end_date(self, obj):
+        """Formatea la fecha de fin como DD/MM/YYYY"""
+        if obj.end_date:
+            return obj.end_date.strftime("%d/%m/%Y")
+        return "-"
+
+    formatted_end_date.short_description = "Fecha de fin"
+    formatted_end_date.admin_order_field = "end_date"
     search_fields = (
         "user__username",
         "user__email",
@@ -60,14 +87,29 @@ class MeasureAdmin(UnfoldModelAdmin):
     form = MeasureAdminForm
     list_display = (
         "user",
-        "date",
+        "formatted_date",
         "weight",
+        "arm",
+        "arm_relaxed",
+        "chest",
+        "waist",
+        "leg",
+        "leg_relaxed",
         "bmi",
         "fat_perc",
         "muscle_mass",
         "body_water_percentage",
         "visceral_fat_rating",
     )
+
+    def formatted_date(self, obj):
+        """Formatea la fecha como DD/MM/YYYY"""
+        if obj.date:
+            return obj.date.strftime("%d/%m/%Y")
+        return "-"
+
+    formatted_date.short_description = "Fecha"
+    formatted_date.admin_order_field = "date"
     search_fields = (
         "user__username",
         "user__email",
@@ -89,10 +131,26 @@ class MeasureAdmin(UnfoldModelAdmin):
             {
                 "fields": (
                     "weight",
-                    "arm",
                     "chest",
                     "waist",
+                ),
+            },
+        ),
+        (
+            "Medidas de brazo",
+            {
+                "fields": (
+                    "arm",
+                    "arm_relaxed",
+                ),
+            },
+        ),
+        (
+            "Medidas de pierna",
+            {
+                "fields": (
                     "leg",
+                    "leg_relaxed",
                 ),
             },
         ),

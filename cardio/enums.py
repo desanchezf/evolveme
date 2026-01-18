@@ -1,21 +1,23 @@
 from django.utils.translation import gettext_lazy as _
 
 
-class CardioExerciseChoices(str):
-    Walking_Outside = "walking_outside"
-    Walking_Treadmill = "walking_treadmill"
-    Cycling_Outside = "cycling_outside"
-    Cycling_Treadmill = "cycling_treadmill"
-    Elliptical_Treadmill = "elliptical_treadmill"
+class CardioExerciseNameChoices(str):
+    """Enum para los nombres de ejercicios de cardio"""
+
+    Outdoor_Walk = "Outdoor Walk"
+    Indoor_Walk = "Indoor Walk"
+    Outdoor_Cycle = "Outdoor Cycle"
+    Indoor_Cycle = "Indoor Cycle"
+    Elliptical = "Elliptical"
 
     values = (
-        (Walking_Outside, _("Caminar exterior")),
-        (Walking_Treadmill, _("Caminar cinta")),
-        (Cycling_Outside, _("Bicicleta exterior")),
-        (Cycling_Treadmill, _("Bicicleta cinta")),
-        (Elliptical_Treadmill, _("Elíptica cinta")),
+        (Outdoor_Walk, _("Caminar exterior")),
+        (Indoor_Walk, _("Caminar cinta")),
+        (Outdoor_Cycle, _("Bicicleta exterior")),
+        (Indoor_Cycle, _("Bicicleta estática")),
+        (Elliptical, _("Elíptica")),
     )
 
     @classmethod
     def choices(cls):
-        return CardioExerciseChoices.values
+        return CardioExerciseNameChoices.values

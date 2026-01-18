@@ -1,4 +1,7 @@
 from django import forms
+from django.contrib.auth.models import User
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Row, Column, Submit
 
 from evolveme.models import GymUserProfile, Measure
 
@@ -105,3 +108,65 @@ class MeasureAdminForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             if self.instance.date:
                 self.fields["date"].initial = self.instance.date.strftime("%Y-%m-%d")
+
+
+class MeasureForm(forms.ModelForm):
+    """Formulario público para registrar medidas corporales"""
+
+    class Meta:
+        model = Measure
+        fields = [
+            "user",
+            "date",
+            "weight",
+            "arm",
+            "arm_relaxed",
+            "chest",
+            "waist",
+            "leg",
+            "leg_relaxed",
+        ]
+        widgets = {
+            "user": forms.Select(attrs={"class": "form-control"}),
+            "date": forms.DateInput(
+                attrs={
+                    "type": "date",
+                    "class": "form-control",
+                    "placeholder": "YYYY-MM-DD",
+                }
+            ),
+            "weight": forms.NumberInput(attrs={"class": "form-control", "step": "0.1"}),
+            "arm": forms.NumberInput(attrs={"class": "form-control", "step": "0.1"}),
+            "arm_relaxed": forms.NumberInput(
+                attrs={"class": "form-control", "step": "0.1"}
+            ),
+            "chest": forms.NumberInput(attrs={"class": "form-control", "step": "0.1"}),
+            "waist": forms.NumberInput(attrs={"class": "form-control", "step": "0.1"}),
+            "leg": forms.NumberInput(attrs={"class": "form-control", "step": "0.1"}),
+            "leg_relaxed": forms.NumberInput(
+                attrs={"class": "form-control", "step": "0.1"}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self.fields["user"].queryset = User.objects.all()
+        if user:
+            self.fields["user"].initial = user
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(Column("user", css_class="w-1/2"), Column("date", css_class="w-1/2")),
+            Row(Column("weight", css_class="w-full")),
+            Row(
+                Column("arm", css_class="w-1/2"),
+                Column("arm_relaxed", css_class="w-1/2"),
+            ),
+            Row(Column("chest", css_class="w-full")),
+            Row(Column("waist", css_class="w-full")),
+            Row(
+                Column("leg", css_class="w-1/2"),
+                Column("leg_relaxed", css_class="w-1/2"),
+            ),
+            Submit("submit", "Guardar Medidas", css_class="btn btn-primary"),
+        )

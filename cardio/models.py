@@ -1,7 +1,25 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from cardio.enums import CardioExerciseChoices
+from cardio.enums import CardioExerciseNameChoices
+
+
+class CardioExercise(models.Model):
+    name = models.CharField(
+        max_length=255,
+        verbose_name="Nombre del ejercicio",
+        choices=CardioExerciseNameChoices.choices(),
+    )
+    description = models.TextField(null=True, blank=True, verbose_name="Descripción")
+    image_base64 = models.TextField(null=True, blank=True, verbose_name="Imagen")
+
+    class Meta:
+        verbose_name = "Ejercicio de cardio"
+        verbose_name_plural = "Ejercicios de cardio"
+
+    def __str__(self):
+        """Devuelve el nombre del ejercicio en español"""
+        return self.get_name_display() or self.name
 
 
 class CardioSession(models.Model):
@@ -11,14 +29,11 @@ class CardioSession(models.Model):
         related_name="cardio_sessions",
         verbose_name="Usuario",
     )
-    name = models.CharField(
-        max_length=255,
-        verbose_name="Nombre del ejercicio",
-    )
-    exercise_type = models.CharField(
-        max_length=255,
-        verbose_name="Tipo de ejercicio",
-        choices=CardioExerciseChoices.choices(),
+    exercise = models.ForeignKey(
+        CardioExercise,
+        on_delete=models.CASCADE,
+        related_name="sessions",
+        verbose_name="Ejercicio",
         null=True,
         blank=True,
     )
@@ -85,4 +100,6 @@ class CardioSession(models.Model):
         ordering = ["-date", "-session_start"]
 
     def __str__(self):
-        return f"{self.user.username} - {self.name} - {self.date}"
+        if self.exercise:
+            return f"{self.user.username} - {self.exercise.name} - {self.date}"
+        return f"{self.user.username} - Sin ejercicio - {self.date}"

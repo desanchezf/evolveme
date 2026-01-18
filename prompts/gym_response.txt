@@ -95,8 +95,8 @@
         "end_date": "01/02/2026 08:00",
         "warmup": "Calentamiento 5-10 min",
         "exercise_types": ["push", "pull", "core"],
-        "routine": {
-            "day-1": [
+    "routine": {
+        "day-1": [
                 {
                     "name": "Press banca",
                     "description": "Press banca plano",
@@ -105,7 +105,7 @@
                     "reps": 8
                 }
             ],
-            "day-2": [
+        "day-2": [
                 {
                     "name": "Peso muerto",
                     "description": "Peso muerto rumano",
@@ -113,7 +113,7 @@
                     "sets": 3,
                     "reps": 10
                 }
-            ]
-        }
+        ]
+    }
     }
 }

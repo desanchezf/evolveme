@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
+from cardio.models import CardioExercise
 from gym.enums import BodyPartChoices
+from gym.enums import UnitChoices
 
 
 # Ejercicios de Musculación
@@ -18,6 +19,9 @@ class MusculationExercise(models.Model):
     )
     sets = models.IntegerField(null=False, blank=False, verbose_name="Series")
     reps = models.IntegerField(null=False, blank=False, verbose_name="Repeticiones")
+    unit = models.CharField(
+        max_length=255, verbose_name="Unidad", choices=UnitChoices.choices()
+    )
     image_base64 = models.TextField(null=True, blank=True, verbose_name="Imagen")
 
     class Meta:
@@ -77,7 +81,17 @@ class Routine(models.Model):
         verbose_name="Tipos de ejercicios",
         help_text="Múltiples selecciones de tipos de ejercicios",
     )
-    warmup = models.TextField(null=True, blank=True, verbose_name="Calentamiento")
+    warmup = models.ForeignKey(
+        CardioExercise,
+        on_delete=models.CASCADE,
+        related_name="routines",
+        verbose_name="Ejercicio de calentamiento",
+        null=True,
+        blank=True,
+    )
+    warmup_duration = models.DurationField(
+        null=True, blank=True, verbose_name="Duración de calentamiento"
+    )
     duration = models.DurationField(
         null=True, blank=True, verbose_name="Duración de la rutina"
     )

@@ -2,7 +2,9 @@ import json
 from datetime import datetime
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import FormView
@@ -11,8 +13,10 @@ from unfold.views import UnfoldModelAdminViewMixin
 from gym.forms import (
     MusculationRecordFormSet,
     MusculationRecordFormsetHelper,
+    MusculationRecordPublicForm,
     RoutineJSONForm,
     TrainingSessionForm,
+    TrainingSessionModelForm,
 )
 from gym.models import MusculationExercise, MusculationRecord, Routine
 
@@ -38,9 +42,7 @@ class MusculationRecordFormsetView(UnfoldModelAdminViewMixin, FormView):
 
         # Inicializar formset
         if self.request.method == "POST":
-            formset = MusculationRecordFormSet(
-                self.request.POST, prefix="records"
-            )
+            formset = MusculationRecordFormSet(self.request.POST, prefix="records")
         else:
             formset = MusculationRecordFormSet(
                 queryset=MusculationRecord.objects.none(), prefix="records"
@@ -55,9 +57,7 @@ class MusculationRecordFormsetView(UnfoldModelAdminViewMixin, FormView):
         return context
 
     def form_valid(self, form):
-        formset = MusculationRecordFormSet(
-            self.request.POST, prefix="records"
-        )
+        formset = MusculationRecordFormSet(self.request.POST, prefix="records")
 
         if formset.is_valid():
             user = form.cleaned_data["user"]
@@ -84,9 +84,7 @@ class MusculationRecordFormsetView(UnfoldModelAdminViewMixin, FormView):
             return self.form_invalid(form)
 
     def form_invalid(self, form):
-        messages.error(
-            self.request, "Por favor, corrige los errores en el formulario."
-        )
+        messages.error(self.request, "Por favor, corrige los errores en el formulario.")
         return super().form_invalid(form)
 
 
@@ -137,6 +135,7 @@ class RoutineJSONView(UnfoldModelAdminViewMixin, FormView):
         if "duration" in data:
             try:
                 from django.utils.dateparse import parse_duration
+
                 duration = parse_duration(data["duration"])
             except (ValueError, TypeError):
                 messages.error(
@@ -155,6 +154,7 @@ class RoutineJSONView(UnfoldModelAdminViewMixin, FormView):
 
         # Actualizar perfil del usuario con start_date y end_date si están presentes
         from evolveme.models import GymUserProfile
+
         profile, _ = GymUserProfile.objects.get_or_create(user=user)
 
         if "start_date" in data:
@@ -218,3 +218,33 @@ class RoutineJSONView(UnfoldModelAdminViewMixin, FormView):
             f"{exercises_added} ejercicio(s) añadido(s) a la rutina.",
         )
         return super().form_valid(form)
+
+
+@login_required
+def musculation_record_form_view(request):
+    """Vista para el formulario de registros de musculación"""
+    if request.method == "POST":
+        form = MusculationRecordPublicForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Registro de musculación guardado correctamente.")
+            return redirect("gym:musculation_record_form")
+    else:
+        form = MusculationRecordPublicForm(user=request.user)
+
+    return render(request, "gym/musculation_record_form.html", {"form": form})
+
+
+@login_required
+def training_session_form_view(request):
+    """Vista para el formulario de sesiones de entrenamiento"""
+    if request.method == "POST":
+        form = TrainingSessionModelForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Sesión de entrenamiento guardada correctamente.")
+            return redirect("gym:training_session_form")
+    else:
+        form = TrainingSessionModelForm(user=request.user)
+
+    return render(request, "gym/training_session_form.html", {"form": form})

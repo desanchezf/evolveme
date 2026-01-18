@@ -1,6 +1,64 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="{% static 'ico_dark.png' %}" alt="EvolveMe" style="height: 24px; width: 24px; margin-right: 8px; vertical-align: middle;" id="site-logo-light">
+        <img src="{% static 'ico_light.png' %}" alt="EvolveMe" style="height: 24px; width: 24px; margin-right: 8px; vertical-align: middle; display: none;" id="site-logo-dark">
+        EvolveMe
+    </a>
+</h1>
+<script>
+    // Cambiar logo según el tema
+    (function() {
+        function updateLogo() {
+            const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark' ||
+                              document.body.classList.contains('dark') ||
+                              document.documentElement.classList.contains('dark');
+
+            const lightLogo = document.getElementById('site-logo-light');
+            const darkLogo = document.getElementById('site-logo-dark');
+
+            if (isDarkMode) {
+                if (lightLogo) lightLogo.style.display = 'none';
+                if (darkLogo) darkLogo.style.display = 'inline';
+            } else {
+                if (lightLogo) lightLogo.style.display = 'inline';
+                if (darkLogo) darkLogo.style.display = 'none';
+            }
+        }
+
+        // Aplicar al cargar
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateLogo);
+        } else {
+            updateLogo();
+        }
+
+        // Observar cambios en el tema
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' &&
+                    (mutation.attributeName === 'data-theme' || mutation.attributeName === 'class')) {
+                    updateLogo();
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme', 'class']
+        });
+
+        observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    })();
+</script>
+{% endblock %}
+
 {% block extrahead %}
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{% static 'css/unfold_custom.css' %}">
@@ -14,27 +72,80 @@
                     document.documentElement.getAttribute('data-theme') === 'dark' ||
                     document.body.classList.contains('dark') ||
                     document.documentElement.classList.contains('dark') ||
-                    document.querySelector('body[class*="dark"]') !== null;
+                    document.querySelector('body[class*="dark"]') !== null ||
+                    document.querySelector('html[data-theme="dark"]') !== null;
 
                 if (isDarkMode) {
-                    // Crear estilo global para todos los inputs de fecha
-                    if (!document.getElementById('calendar-icon-yellow-style')) {
-                        const style = document.createElement('style');
+                    // Crear o actualizar estilo global para todos los inputs de fecha
+                    let style = document.getElementById('calendar-icon-yellow-style');
+                    if (!style) {
+                        style = document.createElement('style');
                         style.id = 'calendar-icon-yellow-style';
-                        style.textContent = `
-                            input[type="date"]::-webkit-calendar-picker-indicator,
-                            input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-                                filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg) brightness(0.6) !important;
-                                opacity: 1 !important;
-                            }
-                            input[type="date"]::-webkit-calendar-picker-indicator:hover,
-                            input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
-                                filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg) brightness(0.75) !important;
-                                opacity: 1 !important;
-                            }
-                        `;
                         document.head.appendChild(style);
                     }
+                    // Aplicar con máxima especificidad
+                    style.textContent = `
+                        html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+                        html[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        html[data-theme="dark"] * input[type="date"]::-webkit-calendar-picker-indicator,
+                        html[data-theme="dark"] * input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        html[data-theme="dark"] form input[type="date"]::-webkit-calendar-picker-indicator,
+                        html[data-theme="dark"] form input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        html[data-theme="dark"] .form-control[type="date"]::-webkit-calendar-picker-indicator,
+                        html[data-theme="dark"] .form-control[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+                        [data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        [data-theme="dark"] * input[type="date"]::-webkit-calendar-picker-indicator,
+                        [data-theme="dark"] * input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        [data-theme="dark"] form input[type="date"]::-webkit-calendar-picker-indicator,
+                        [data-theme="dark"] form input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        .dark input[type="date"]::-webkit-calendar-picker-indicator,
+                        .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        .dark * input[type="date"]::-webkit-calendar-picker-indicator,
+                        .dark * input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        .dark form input[type="date"]::-webkit-calendar-picker-indicator,
+                        .dark form input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        body.dark input[type="date"]::-webkit-calendar-picker-indicator,
+                        body.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        body.dark * input[type="date"]::-webkit-calendar-picker-indicator,
+                        body.dark * input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+                        body.dark form input[type="date"]::-webkit-calendar-picker-indicator,
+                        body.dark form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+                            filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg) brightness(0.6) !important;
+                            opacity: 1 !important;
+                            cursor: pointer !important;
+                        }
+                        html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        html[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        html[data-theme="dark"] * input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        html[data-theme="dark"] * input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        html[data-theme="dark"] form input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        html[data-theme="dark"] form input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        html[data-theme="dark"] .form-control[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        html[data-theme="dark"] .form-control[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        [data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        [data-theme="dark"] * input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        [data-theme="dark"] * input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        [data-theme="dark"] form input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        [data-theme="dark"] form input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        .dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        .dark * input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        .dark * input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        .dark form input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        .dark form input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        body.dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        body.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        body.dark * input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        body.dark * input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+                        body.dark form input[type="date"]::-webkit-calendar-picker-indicator:hover,
+                        body.dark form input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+                            filter: invert(1) sepia(1) saturate(5) hue-rotate(0deg) brightness(0.75) !important;
+                            opacity: 1 !important;
+                            cursor: pointer !important;
+                        }
+                    `;
                 } else {
                     // Remover el estilo si no está en modo oscuro
                     const existingStyle = document.getElementById('calendar-icon-yellow-style');

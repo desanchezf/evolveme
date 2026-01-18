@@ -18,9 +18,17 @@ from gym.forms import (
 
 @admin.register(MusculationExercise)
 class MusculationExerciseAdmin(UnfoldModelAdmin):
-    list_display = ("name", "body_part", "sets", "reps")
-    list_filter = ("body_part",)
+    list_display = ("name", "body_part", "sets", "reps", "formatted_unit")
+    list_filter = ("body_part", "unit")
     search_fields = ("name", "description")
+
+    def formatted_unit(self, obj):
+        """Muestra la unidad formateada"""
+        return obj.get_unit_display() if obj.unit else "-"
+
+    formatted_unit.short_description = "Unidad"
+    formatted_unit.admin_order_field = "unit"
+
     fieldsets = (
         (
             "Información básica",
@@ -31,7 +39,7 @@ class MusculationExerciseAdmin(UnfoldModelAdmin):
         (
             "Series y repeticiones",
             {
-                "fields": ("sets", "reps"),
+                "fields": ("sets", "reps", "unit"),
             },
         ),
         (
@@ -53,8 +61,17 @@ class MusculationRecordAdmin(UnfoldModelAdmin):
         "reps",
         "weight",
         "tbi",
-        "record_date",
+        "formatted_record_date",
     )
+
+    def formatted_record_date(self, obj):
+        """Formatea la fecha de registro como DD/MM/YYYY HH:MM:SS"""
+        if obj.record_date:
+            return obj.record_date.strftime("%d/%m/%Y %H:%M:%S")
+        return "-"
+
+    formatted_record_date.short_description = "Fecha de registro"
+    formatted_record_date.admin_order_field = "record_date"
     list_filter = ("tbi", "record_date", "exercise", "user")
     search_fields = (
         "user__username",
@@ -90,9 +107,7 @@ class MusculationRecordAdmin(UnfoldModelAdmin):
         custom_urls = [
             path(
                 "add-formset/",
-                self.admin_site.admin_view(
-                    MusculationRecordFormsetView.as_view()
-                ),
+                self.admin_site.admin_view(MusculationRecordFormsetView.as_view()),
                 name="gym_musculationrecord_add_formset",
             ),
         ]
@@ -107,7 +122,16 @@ class MusculationRecordAdmin(UnfoldModelAdmin):
 @admin.register(Routine)
 class RoutineAdmin(UnfoldModelAdmin):
     form = RoutineAdminForm
-    list_display = ("user", "exercise_types", "duration", "created_at")
+    list_display = ("user", "exercise_types", "duration", "formatted_created_at")
+
+    def formatted_created_at(self, obj):
+        """Formatea la fecha de creación como DD/MM/YYYY HH:MM:SS"""
+        if obj.created_at:
+            return obj.created_at.strftime("%d/%m/%Y %H:%M:%S")
+        return "-"
+
+    formatted_created_at.short_description = "Fecha de creación"
+    formatted_created_at.admin_order_field = "created_at"
     list_filter = ("created_at", "user")
     search_fields = ("user__username", "user__email")
     date_hierarchy = "created_at"
@@ -130,7 +154,7 @@ class RoutineAdmin(UnfoldModelAdmin):
         (
             "Calentamiento",
             {
-                "fields": ("warmup",),
+                "fields": ("warmup", "warmup_duration"),
             },
         ),
         (
@@ -164,13 +188,22 @@ class TrainingSessionAdmin(UnfoldModelAdmin):
     list_display = (
         "user",
         "routine",
-        "session_date",
+        "formatted_session_date",
         "location",
         "workout_time",
         "active_kilocalories",
         "total_kilocalories",
         "avg_heart_rate",
     )
+
+    def formatted_session_date(self, obj):
+        """Formatea la fecha de sesión como DD/MM/YYYY HH:MM:SS"""
+        if obj.session_date:
+            return obj.session_date.strftime("%d/%m/%Y %H:%M:%S")
+        return "-"
+
+    formatted_session_date.short_description = "Fecha y hora de la sesión"
+    formatted_session_date.admin_order_field = "session_date"
     list_filter = ("routine", "session_date", "user", "location")
     search_fields = (
         "user__username",

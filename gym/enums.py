@@ -53,3 +53,17 @@ class ExerciseTypesChoices(str):
     @classmethod
     def choices(cls):
         return ExerciseTypesChoices.values
+
+
+class UnitChoices(str):
+    reps = "reps"
+    seconds = "seconds"
+
+    values = (
+        (reps, _("Repeticiones")),
+        (seconds, _("Segundos")),
+    )
+
+    @classmethod
+    def choices(cls):
+        return UnitChoices.values

@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_duration
 
-from cardio.models import CardioSession
+from cardio.models import CardioExercise, CardioSession
 from evolveme.models import GymUserProfile, Measure
 from nutrition.models import Product
 from gym.models import MusculationExercise, Routine, TrainingSession
@@ -27,12 +27,16 @@ class Command(BaseCommand):
         # Fase 1: Eliminar datos existentes
         if not self.delete_training_sessions():
             self.stdout.write(
-                self.style.ERROR(" ❌ Error al eliminar las sesiones de entrenamiento 💪")
+                self.style.ERROR(
+                    " ❌ Error al eliminar las sesiones de entrenamiento 💪"
+                )
             )
             return
         else:
             self.stdout.write(
-                self.style.SUCCESS(" ✅ Sesiones de entrenamiento eliminadas correctamente 💪")
+                self.style.SUCCESS(
+                    " ✅ Sesiones de entrenamiento eliminadas correctamente 💪"
+                )
             )
 
         if not self.delete_food_products():
@@ -42,7 +46,9 @@ class Command(BaseCommand):
             return
         else:
             self.stdout.write(
-                self.style.SUCCESS(" ✅ Productos alimentarios eliminados correctamente 🍎")
+                self.style.SUCCESS(
+                    " ✅ Productos alimentarios eliminados correctamente 🍎"
+                )
             )
 
         if not self.delete_cardio_training_session():
@@ -57,18 +63,32 @@ class Command(BaseCommand):
 
         if not self.delete_musculation_exercises():
             self.stdout.write(
-                self.style.ERROR(" ❌ Error al eliminar los ejercicios de musculación 💪")
+                self.style.ERROR(
+                    " ❌ Error al eliminar los ejercicios de musculación 💪"
+                )
             )
             return
         else:
             self.stdout.write(
-                self.style.SUCCESS(" ✅ Ejercicios de musculación eliminados correctamente 💪")
+                self.style.SUCCESS(
+                    " ✅ Ejercicios de musculación eliminados correctamente 💪"
+                )
+            )
+
+        if not self.delete_cardio_exercises():
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al eliminar los ejercicios de cardio 🏃")
+            )
+            return
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(
+                    " ✅ Ejercicios de cardio eliminados correctamente 🏃"
+                )
             )
 
         if not self.delete_measures_data():
-            self.stdout.write(
-                self.style.ERROR(" ❌ Error al eliminar las medidas 📏")
-            )
+            self.stdout.write(self.style.ERROR(" ❌ Error al eliminar las medidas 📏"))
             return
         else:
             self.stdout.write(
@@ -76,9 +96,7 @@ class Command(BaseCommand):
             )
 
         if not self.delete_routines():
-            self.stdout.write(
-                self.style.ERROR(" ❌ Error al eliminar las rutinas 💪")
-            )
+            self.stdout.write(self.style.ERROR(" ❌ Error al eliminar las rutinas 💪"))
             return
         else:
             self.stdout.write(
@@ -91,7 +109,9 @@ class Command(BaseCommand):
         # Fase 2: Importar datos
         if not self.user_data():
             self.stdout.write(
-                self.style.ERROR(" ❌ Error al cargar la información de los usuarios 👤")
+                self.style.ERROR(
+                    " ❌ Error al cargar la información de los usuarios 👤"
+                )
             )
             return
         else:
@@ -100,9 +120,7 @@ class Command(BaseCommand):
             )
 
         if not self.measures_data():
-            self.stdout.write(
-                self.style.ERROR(" ❌ Error al cargar las medidas 📏")
-            )
+            self.stdout.write(self.style.ERROR(" ❌ Error al cargar las medidas 📏"))
             return
         else:
             self.stdout.write(
@@ -116,7 +134,19 @@ class Command(BaseCommand):
             return
         else:
             self.stdout.write(
-                self.style.SUCCESS(" ✅ Ejercicios de musculación cargados correctamente 💪")
+                self.style.SUCCESS(
+                    " ✅ Ejercicios de musculación cargados correctamente 💪"
+                )
+            )
+
+        if not self.cardio_exercises():
+            self.stdout.write(
+                self.style.ERROR(" ❌ Error al cargar los ejercicios de cardio 🏃")
+            )
+            return
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(" ✅ Ejercicios de cardio cargados correctamente 🏃")
             )
 
         if not self.cardio_training_session():
@@ -136,7 +166,9 @@ class Command(BaseCommand):
             return
         else:
             self.stdout.write(
-                self.style.SUCCESS(" ✅ Productos alimentarios cargados correctamente 🍎")
+                self.style.SUCCESS(
+                    " ✅ Productos alimentarios cargados correctamente 🍎"
+                )
             )
 
         if not self.training_sessions():
@@ -146,13 +178,13 @@ class Command(BaseCommand):
             return
         else:
             self.stdout.write(
-                self.style.SUCCESS(" ✅ Sesiones de entrenamiento cargadas correctamente 💪")
+                self.style.SUCCESS(
+                    " ✅ Sesiones de entrenamiento cargadas correctamente 💪"
+                )
             )
 
         if not self.prompts_data():
-            self.stdout.write(
-                self.style.ERROR(" ❌ Error al cargar los prompts 🤖")
-            )
+            self.stdout.write(self.style.ERROR(" ❌ Error al cargar los prompts 🤖"))
             return
         else:
             self.stdout.write(
@@ -160,7 +192,9 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(
-            self.style.SUCCESS("\n✅ Proceso de actualización completado correctamente!")
+            self.style.SUCCESS(
+                "\n✅ Proceso de actualización completado correctamente!"
+            )
         )
 
     # ========== Métodos de eliminación ==========
@@ -201,6 +235,16 @@ class Command(BaseCommand):
         deleted_count, _ = MusculationExercise.objects.all().delete()
         logger.info(
             f"Ejercicios de musculación eliminados correctamente ✅ "
+            f"({deleted_count} eliminados)"
+        )
+        return True
+
+    def delete_cardio_exercises(self):
+        """Elimina los ejercicios de cardio"""
+        logger.info("Eliminando ejercicios de cardio 🏃 ...")
+        deleted_count, _ = CardioExercise.objects.all().delete()
+        logger.info(
+            f"Ejercicios de cardio eliminados correctamente ✅ "
             f"({deleted_count} eliminados)"
         )
         return True
@@ -315,9 +359,11 @@ class Command(BaseCommand):
                         date=row["date"],
                         weight=safe_float(row.get("weight")),
                         arm=safe_float(row.get("arm")),
+                        arm_relaxed=safe_float(row.get("arm_relaxed")),
                         chest=safe_float(row.get("chest")),
                         waist=safe_float(row.get("waist")),
                         leg=safe_float(row.get("leg")),
+                        leg_relaxed=safe_float(row.get("leg_relaxed")),
                         fat_perc=safe_float(row.get("fat_perc")),
                         muscle_mass=safe_float(row.get("muscle_mass")),
                         bmi=safe_float(row.get("bmi")),
@@ -373,6 +419,7 @@ class Command(BaseCommand):
                         body_part=row.get("body_part") or None,
                         sets=int(row["sets"]) if row.get("sets") else 0,
                         reps=int(row["reps"]) if row.get("reps") else 0,
+                        unit=row.get("unit", "reps") or "reps",
                         image_base64=row.get("image_base64") or None,
                     )
                     created_count += 1
@@ -380,6 +427,38 @@ class Command(BaseCommand):
         logger.info(
             f"Ejercicios de musculación cargados correctamente ✅ "
             f"({created_count} creados)"
+        )
+        return True
+
+    def cardio_exercises(self):
+        """Carga los ejercicios de cardio desde cardio_exercises.csv"""
+        logger.info("Cargando ejercicios de cardio 🏃 ...")
+
+        csv_path = self.get_csv_path("cardio_exercises.csv")
+        if not os.path.exists(csv_path):
+            logger.warning(
+                f"El archivo {csv_path} no existe, saltando carga de ejercicios de cardio"
+            )
+            return True  # No es crítico si no existe el archivo
+
+        created_count = 0
+        with open(csv_path, newline="", encoding="utf-8") as csvfile:
+            exercises_reader = csv.DictReader(csvfile)
+            for row in exercises_reader:
+                exercise_name = row["name"]
+                if not CardioExercise.objects.filter(name=exercise_name).exists():
+                    exercise = CardioExercise.objects.create(
+                        name=exercise_name,
+                        description=row.get("description", "") or None,
+                        image_base64=row.get("image_base64") or None,
+                    )
+                    created_count += 1
+                    logger.info(
+                        f"Ejercicio de cardio creado: {exercise.get_name_display() or exercise.name} ✅"
+                    )
+
+        logger.info(
+            f"Ejercicios de cardio cargados correctamente ✅ ({created_count} creados)"
         )
         return True
 
@@ -412,14 +491,30 @@ class Command(BaseCommand):
                     else None
                 )
 
+                # Buscar o crear el ejercicio de cardio
+                exercise_name = row.get("name", "").strip()
+                if not exercise_name:
+                    logger.warning("Nombre de ejercicio vacío, saltando sesión")
+                    continue
+
+                exercise, created = CardioExercise.objects.get_or_create(
+                    name=exercise_name,
+                    defaults={
+                        "description": "",
+                    },
+                )
+                if created:
+                    logger.info(
+                        f"Ejercicio de cardio creado: {exercise.get_name_display() or exercise.name} ✅"
+                    )
+
                 # Verificar si ya existe
                 if not CardioSession.objects.filter(
-                    user=user, name=row["name"], date=date_obj
+                    user=user, exercise=exercise, date=date_obj
                 ).exists():
                     CardioSession.objects.create(
                         user=user,
-                        name=row["name"],
-                        exercise_type=row.get("exercise_type") or None,
+                        exercise=exercise,
                         session_start=session_start,
                         session_end=session_end,
                         date=date_obj,
@@ -568,7 +663,9 @@ class Command(BaseCommand):
                         if not profile.start_date:
                             profile.start_date = timezone.now().date()
                         if not profile.end_date:
-                            profile.end_date = (timezone.now() + timedelta(weeks=6)).date()
+                            profile.end_date = (
+                                timezone.now() + timedelta(weeks=6)
+                            ).date()
                         if not profile.active_routine:
                             profile.active_routine = routine
                         profile.save()

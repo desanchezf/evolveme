@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.forms import modelformset_factory
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column
+from crispy_forms.layout import Layout, Row, Column, Submit
 from unfold.widgets import (
     UnfoldAdminTextInputWidget,
     UnfoldAdminSelectWidget,
@@ -37,6 +37,17 @@ class MusculationRecordForm(forms.ModelForm):
         # Filtrar ejercicios si es necesario
         self.fields["exercise"].queryset = MusculationExercise.objects.all()
         self.fields["exercise"].empty_label = "Selecciona un ejercicio"
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(Column("exercise", css_class="w-full")),
+            Row(
+                Column("sets", css_class="w-1/3"),
+                Column("reps", css_class="w-1/3"),
+                Column("weight", css_class="w-1/3"),
+            ),
+            Row(Column("tbi", css_class="w-full")),
+            Row(Column("observation", css_class="w-full")),
+        )
 
 
 class MusculationRecordAdminForm(forms.ModelForm):
@@ -133,6 +144,13 @@ class TrainingSessionForm(forms.Form):
         if user:
             self.fields["user"].initial = user
             self.fields["user"].widget.attrs["readonly"] = True
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column("user", css_class="w-1/2"),
+                Column("record_date", css_class="w-1/2"),
+            ),
+        )
 
 
 class RoutineJSONForm(forms.Form):
@@ -166,6 +184,13 @@ class RoutineAdminForm(forms.ModelForm):
                     "type": "text",
                     "class": "form-control",
                     "placeholder": "DD HH:MM:SS o HH:MM:SS (ej: 1 12:30:00)",
+                }
+            ),
+            "warmup_duration": forms.TextInput(
+                attrs={
+                    "type": "text",
+                    "class": "form-control",
+                    "placeholder": "HH:MM:SS (ej: 00:15:00)",
                 }
             ),
         }
@@ -207,6 +232,20 @@ class RoutineAdminForm(forms.ModelForm):
             "Formato: DD HH:MM:SS o HH:MM:SS. "
             "Ejemplo: '1 12:30:00' (1 día, 12 horas, 30 minutos) o '02:30:00' (2 horas, 30 minutos)"
         )
+
+        # Configurar widget de duración de calentamiento
+        if "warmup_duration" in self.fields:
+            self.fields["warmup_duration"].widget = forms.TextInput(
+                attrs={
+                    "type": "text",
+                    "class": "form-control",
+                    "placeholder": "HH:MM:SS (ej: 00:15:00)",
+                }
+            )
+            self.fields["warmup_duration"].help_text = (
+                "Formato: HH:MM:SS. "
+                "Ejemplo: '00:15:00' (15 minutos) o '00:30:00' (30 minutos)"
+            )
 
     def clean_exercise_types(self):
         """Limpia y valida los tipos de ejercicios seleccionados"""
@@ -253,3 +292,118 @@ class TrainingSessionAdminForm(forms.ModelForm):
                 self.fields[
                     "session_date"
                 ].initial = self.instance.session_date.strftime("%Y-%m-%dT%H:%M")
+
+
+class TrainingSessionModelForm(forms.ModelForm):
+    """Formulario público para registrar sesiones de entrenamiento"""
+
+    class Meta:
+        model = TrainingSession
+        fields = [
+            "user",
+            "routine",
+            "session_date",
+            "location",
+            "workout_time",
+            "active_kilocalories",
+            "total_kilocalories",
+            "avg_heart_rate",
+        ]
+        widgets = {
+            "user": forms.Select(attrs={"class": "form-control"}),
+            "routine": forms.Select(attrs={"class": "form-control"}),
+            "session_date": forms.DateTimeInput(
+                attrs={
+                    "type": "datetime-local",
+                    "class": "form-control",
+                    "placeholder": "YYYY-MM-DDTHH:MM",
+                }
+            ),
+            "location": forms.TextInput(attrs={"class": "form-control"}),
+            "workout_time": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "HH:MM:SS"}
+            ),
+            "active_kilocalories": forms.NumberInput(attrs={"class": "form-control"}),
+            "total_kilocalories": forms.NumberInput(attrs={"class": "form-control"}),
+            "avg_heart_rate": forms.NumberInput(attrs={"class": "form-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self.fields["user"].queryset = User.objects.all()
+        self.fields["routine"].queryset = Routine.objects.all()
+        if user:
+            self.fields["user"].initial = user
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column("user", css_class="w-1/2"), Column("routine", css_class="w-1/2")
+            ),
+            Row(Column("session_date", css_class="w-full")),
+            Row(Column("location", css_class="w-full")),
+            Row(Column("workout_time", css_class="w-1/3")),
+            Row(
+                Column("active_kilocalories", css_class="w-1/3"),
+                Column("total_kilocalories", css_class="w-1/3"),
+                Column("avg_heart_rate", css_class="w-1/3"),
+            ),
+            Submit("submit", "Guardar Sesión", css_class="btn btn-primary"),
+        )
+
+
+class MusculationRecordPublicForm(forms.ModelForm):
+    """Formulario público para registrar un ejercicio de musculación"""
+
+    class Meta:
+        model = MusculationRecord
+        fields = [
+            "user",
+            "exercise",
+            "sets",
+            "reps",
+            "weight",
+            "tbi",
+            "observation",
+            "record_date",
+        ]
+        widgets = {
+            "user": forms.Select(attrs={"class": "form-control"}),
+            "exercise": forms.Select(attrs={"class": "form-control"}),
+            "sets": forms.NumberInput(attrs={"class": "form-control"}),
+            "reps": forms.NumberInput(attrs={"class": "form-control"}),
+            "weight": forms.NumberInput(attrs={"class": "form-control", "step": "0.1"}),
+            "tbi": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "observation": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
+            "record_date": forms.DateTimeInput(
+                attrs={
+                    "type": "datetime-local",
+                    "class": "form-control",
+                    "placeholder": "YYYY-MM-DDTHH:MM",
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self.fields["user"].queryset = User.objects.all()
+        self.fields["exercise"].queryset = MusculationExercise.objects.all()
+        if user:
+            self.fields["user"].initial = user
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column("user", css_class="w-1/2"),
+                Column("record_date", css_class="w-1/2"),
+            ),
+            Row(Column("exercise", css_class="w-full")),
+            Row(
+                Column("sets", css_class="w-1/3"),
+                Column("reps", css_class="w-1/3"),
+                Column("weight", css_class="w-1/3"),
+            ),
+            Row(Column("tbi", css_class="w-full")),
+            Row(Column("observation", css_class="w-full")),
+            Submit("submit", "Guardar Registro", css_class="btn btn-primary"),
+        )

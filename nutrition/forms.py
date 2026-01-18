@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import modelformset_factory
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column
+from crispy_forms.layout import Layout, Row, Column, Submit
 from unfold.widgets import (
     UnfoldAdminTextInputWidget,
     UnfoldAdminSelectWidget,
@@ -101,3 +101,49 @@ class DietJSONForm(forms.Form):
         help_text="Pega el JSON generado por la IA siguiendo el formato de nutrition_response.txt",
         required=True,
     )
+
+
+class ProductForm(forms.ModelForm):
+    """Formulario público para registrar productos"""
+
+    class Meta:
+        model = Product
+        fields = [
+            "name",
+            "description",
+            "barcode",
+            "market",
+            "calories_per_100g",
+            "protein_per_100g",
+            "carbs_per_100g",
+            "fat_per_100g",
+        ]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
+            "barcode": forms.TextInput(attrs={"class": "form-control"}),
+            "market": forms.Select(attrs={"class": "form-control"}),
+            "calories_per_100g": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "protein_per_100g": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "carbs_per_100g": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "fat_per_100g": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(Column("name", css_class="w-full")),
+            Row(Column("description", css_class="w-full")),
+            Row(
+                Column("barcode", css_class="w-1/2"),
+                Column("market", css_class="w-1/2"),
+            ),
+            Row(
+                Column("calories_per_100g", css_class="w-1/4"),
+                Column("protein_per_100g", css_class="w-1/4"),
+                Column("carbs_per_100g", css_class="w-1/4"),
+                Column("fat_per_100g", css_class="w-1/4"),
+            ),
+            Submit("submit", "Guardar Producto", css_class="btn btn-primary"),
+        )

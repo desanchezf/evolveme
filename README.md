@@ -21,6 +21,70 @@ Sistema completo de gestión para seguimiento de entrenamientos, nutrición y me
 
 ---
 
+## 🔗 URLs de Formularios Públicos
+
+Todos los formularios requieren autenticación (`@login_required`). Si el usuario no está autenticado, será redirigido automáticamente a la página de login.
+
+### Página Principal
+
+- **`/`** - Panel principal con tarjetas de acceso a todos los formularios
+  - Vista: `IndexView`
+  - Requiere autenticación: ✅
+
+### Formularios de Evolveme
+
+- **`/measure/`** - Registrar medidas corporales
+  - Vista: `measure_form_view`
+  - Formulario: `MeasureForm`
+  - Modelo: `Measure`
+  - Requiere autenticación: ✅
+
+### Formularios de Cardio
+
+- **`/cardio/cardio-session/`** - Registrar sesión de cardio
+  - Vista: `cardio_session_form_view`
+  - Formulario: `CardioSessionForm`
+  - Modelo: `CardioSession`
+  - Requiere autenticación: ✅
+
+### Formularios de Gym
+
+- **`/gym/musculation-record/`** - Registrar sesión de musculación
+  - Vista: `musculation_record_form_view`
+  - Formulario: `MusculationRecordPublicForm`
+  - Modelo: `MusculationRecord`
+  - Requiere autenticación: ✅
+
+- **`/gym/training-session/`** - Registrar sesión de entrenamiento
+  - Vista: `training_session_form_view`
+  - Formulario: `TrainingSessionModelForm`
+  - Modelo: `TrainingSession`
+  - Requiere autenticación: ✅
+
+### Formularios de Nutrition
+
+- **`/nutrition/product/`** - Registrar producto alimentario
+  - Vista: `product_form_view`
+  - Formulario: `ProductForm`
+  - Modelo: `Product`
+  - Requiere autenticación: ✅
+
+- **`/nutrition/daily-diet/`** - Registrar dieta del día
+  - Vista: `daily_diet_form_view`
+  - Formulario: `DailyDietForm` + `ProductQuantityFormSet`
+  - Modelo: `DailyDiet` + `ProductQuantity`
+  - Requiere autenticación: ✅
+
+### URLs del Admin
+
+- **`/admin/`** - Panel de administración de Django
+- **`/admin/gym/musculationrecord/add-formset/`** - Formset de registros de musculación (admin)
+- **`/admin/gym/routine/generate-from-json/`** - Generar rutina desde JSON (admin)
+- **`/admin/nutrition/dailydiet/add-formset/`** - Formset de dieta diaria (admin)
+- **`/admin/nutrition/dailydiet/generate-from-json/`** - Generar dieta semanal desde JSON (admin)
+
+---
+
 ## 📁 Estructura del Proyecto
 
 ### Apps Instaladas

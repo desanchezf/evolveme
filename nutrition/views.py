@@ -2,7 +2,9 @@ import json
 from datetime import datetime
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 from unfold.views import UnfoldModelAdminViewMixin
@@ -10,6 +12,7 @@ from unfold.views import UnfoldModelAdminViewMixin
 from nutrition.forms import (
     DailyDietForm,
     DietJSONForm,
+    ProductForm,
     ProductQuantityFormSet,
     ProductQuantityFormsetHelper,
 )
@@ -37,9 +40,7 @@ class DailyDietFormsetView(UnfoldModelAdminViewMixin, FormView):
 
         # Inicializar formset
         if self.request.method == "POST":
-            formset = ProductQuantityFormSet(
-                self.request.POST, prefix="products"
-            )
+            formset = ProductQuantityFormSet(self.request.POST, prefix="products")
         else:
             formset = ProductQuantityFormSet(
                 queryset=ProductQuantity.objects.none(), prefix="products"
@@ -54,18 +55,14 @@ class DailyDietFormsetView(UnfoldModelAdminViewMixin, FormView):
         return context
 
     def form_valid(self, form):
-        formset = ProductQuantityFormSet(
-            self.request.POST, prefix="products"
-        )
+        formset = ProductQuantityFormSet(self.request.POST, prefix="products")
 
         if formset.is_valid():
             user = form.cleaned_data["user"]
             date = form.cleaned_data["date"]
 
             # Obtener o crear DailyDiet
-            daily_diet, created = DailyDiet.objects.get_or_create(
-                user=user, date=date
-            )
+            daily_diet, created = DailyDiet.objects.get_or_create(user=user, date=date)
 
             # Guardar todos los productos
             instances = formset.save(commit=False)
@@ -87,9 +84,7 @@ class DailyDietFormsetView(UnfoldModelAdminViewMixin, FormView):
             return self.form_invalid(form)
 
     def form_invalid(self, form):
-        messages.error(
-            self.request, "Por favor, corrige los errores en el formulario."
-        )
+        messages.error(self.request, "Por favor, corrige los errores en el formulario.")
         return super().form_invalid(form)
 
 
@@ -170,9 +165,7 @@ class DietJSONView(UnfoldModelAdminViewMixin, FormView):
                 continue
 
             # Obtener o crear DailyDiet
-            daily_diet, created = DailyDiet.objects.get_or_create(
-                user=user, date=date
-            )
+            daily_diet, created = DailyDiet.objects.get_or_create(user=user, date=date)
             if created:
                 days_created += 1
 
@@ -193,9 +186,7 @@ class DietJSONView(UnfoldModelAdminViewMixin, FormView):
 
                     # Buscar producto por nombre (case-insensitive)
                     try:
-                        product = Product.objects.get(
-                            name__iexact=product_name
-                        )
+                        product = Product.objects.get(name__iexact=product_name)
                     except Product.DoesNotExist:
                         products_not_found.append(product_name)
                         continue
@@ -231,3 +222,62 @@ class DietJSONView(UnfoldModelAdminViewMixin, FormView):
 
         messages.success(self.request, success_msg)
         return super().form_valid(form)
+
+
+@login_required
+def product_form_view(request):
+    """Vista para el formulario de productos"""
+    if request.method == "POST":
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Producto guardado correctamente.")
+            return redirect("nutrition:product_form")
+    else:
+        form = ProductForm()
+
+    return render(request, "nutrition/product_form.html", {"form": form})
+
+
+@login_required
+def daily_diet_form_view(request):
+    """Vista para el formulario de dieta diaria"""
+    if request.method == "POST":
+        form = DailyDietForm(request.POST, user=request.user)
+        formset = ProductQuantityFormSet(request.POST, prefix="products")
+        if form.is_valid() and formset.is_valid():
+            user = form.cleaned_data["user"]
+            date = form.cleaned_data["date"]
+
+            # Obtener o crear DailyDiet
+            daily_diet, created = DailyDiet.objects.get_or_create(user=user, date=date)
+
+            # Guardar todos los productos
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.save()
+                daily_diet.products.add(instance)
+
+            # Eliminar los marcados para borrar
+            for obj in formset.deleted_objects:
+                daily_diet.products.remove(obj)
+                obj.delete()
+
+            messages.success(
+                request,
+                f"Dieta del {date} guardada correctamente con {len(instances)} producto(s).",
+            )
+            return redirect("nutrition:daily_diet_form")
+    else:
+        form = DailyDietForm(user=request.user)
+        formset = ProductQuantityFormSet(queryset=None, prefix="products")
+
+    return render(
+        request,
+        "nutrition/daily_diet_form.html",
+        {
+            "form": form,
+            "formset": formset,
+            "formset_helper": ProductQuantityFormsetHelper(),
+        },
+    )

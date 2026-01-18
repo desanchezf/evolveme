@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_duration
 
-from cardio.models import CardioSession
+from cardio.models import CardioExercise, CardioSession
 from evolveme.models import GymUserProfile, Measure
 from nutrition.models import Product
 from gym.models import MusculationExercise, Routine, TrainingSession
@@ -37,6 +37,11 @@ class Command(BaseCommand):
             return
         else:
             print(" ✅ Ejercicios de musculación cargados correctamente 💪")
+        if not self.cardio_exercises():
+            print(" ❌ Error al cargar los ejercicios de cardio 🏃")
+            return
+        else:
+            print(" ✅ Ejercicios de cardio cargados correctamente 🏃")
         if not self.cardio_training_session():
             print(" ❌ Error al cargar las sesiones de cardio 🚴")
             return
@@ -152,9 +157,11 @@ class Command(BaseCommand):
                         date=row["date"],
                         weight=safe_float(row.get("weight")),
                         arm=safe_float(row.get("arm")),
+                        arm_relaxed=safe_float(row.get("arm_relaxed")),
                         chest=safe_float(row.get("chest")),
                         waist=safe_float(row.get("waist")),
                         leg=safe_float(row.get("leg")),
+                        leg_relaxed=safe_float(row.get("leg_relaxed")),
                         fat_perc=safe_float(row.get("fat_perc")),
                         muscle_mass=safe_float(row.get("muscle_mass")),
                         bmi=safe_float(row.get("bmi")),
@@ -210,6 +217,7 @@ class Command(BaseCommand):
                         body_part=row.get("body_part") or None,
                         sets=int(row["sets"]) if row.get("sets") else 0,
                         reps=int(row["reps"]) if row.get("reps") else 0,
+                        unit=row.get("unit", "reps") or "reps",
                         image_base64=row.get("image_base64") or None,
                     )
                     created_count += 1
@@ -217,6 +225,38 @@ class Command(BaseCommand):
         logger.info(
             f"Ejercicios de musculación cargados correctamente ✅ "
             f"({created_count} creados)"
+        )
+        return True
+
+    def cardio_exercises(self):
+        """Carga los ejercicios de cardio desde cardio_exercises.csv"""
+        logger.info("Cargando ejercicios de cardio 🏃 ...")
+
+        csv_path = self.get_csv_path("cardio_exercises.csv")
+        if not os.path.exists(csv_path):
+            logger.warning(
+                f"El archivo {csv_path} no existe, saltando carga de ejercicios de cardio"
+            )
+            return True  # No es crítico si no existe el archivo
+
+        created_count = 0
+        with open(csv_path, newline="", encoding="utf-8") as csvfile:
+            exercises_reader = csv.DictReader(csvfile)
+            for row in exercises_reader:
+                exercise_name = row["name"]
+                if not CardioExercise.objects.filter(name=exercise_name).exists():
+                    exercise = CardioExercise.objects.create(
+                        name=exercise_name,
+                        description=row.get("description", "") or None,
+                        image_base64=row.get("image_base64") or None,
+                    )
+                    created_count += 1
+                    logger.info(
+                        f"Ejercicio de cardio creado: {exercise.get_name_display() or exercise.name} ✅"
+                    )
+
+        logger.info(
+            f"Ejercicios de cardio cargados correctamente ✅ ({created_count} creados)"
         )
         return True
 
@@ -249,14 +289,30 @@ class Command(BaseCommand):
                     else None
                 )
 
+                # Buscar o crear el ejercicio de cardio
+                exercise_name = row.get("name", "").strip()
+                if not exercise_name:
+                    logger.warning("Nombre de ejercicio vacío, saltando sesión")
+                    continue
+
+                exercise, created = CardioExercise.objects.get_or_create(
+                    name=exercise_name,
+                    defaults={
+                        "description": "",
+                    },
+                )
+                if created:
+                    logger.info(
+                        f"Ejercicio de cardio creado: {exercise.get_name_display() or exercise.name} ✅"
+                    )
+
                 # Verificar si ya existe
                 if not CardioSession.objects.filter(
-                    user=user, name=row["name"], date=date_obj
+                    user=user, exercise=exercise, date=date_obj
                 ).exists():
                     CardioSession.objects.create(
                         user=user,
-                        name=row["name"],
-                        exercise_type=row.get("exercise_type") or None,
+                        exercise=exercise,
                         session_start=session_start,
                         session_end=session_end,
                         date=date_obj,
@@ -405,7 +461,9 @@ class Command(BaseCommand):
                         if not profile.start_date:
                             profile.start_date = timezone.now().date()
                         if not profile.end_date:
-                            profile.end_date = (timezone.now() + timedelta(weeks=6)).date()
+                            profile.end_date = (
+                                timezone.now() + timedelta(weeks=6)
+                            ).date()
                         if not profile.active_routine:
                             profile.active_routine = routine
                         profile.save()

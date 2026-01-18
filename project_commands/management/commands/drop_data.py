@@ -2,7 +2,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from cardio.models import CardioSession
+from cardio.models import CardioExercise, CardioSession
 from evolveme.models import Measure
 from nutrition.models import Product
 from gym.models import MusculationExercise, Routine, TrainingSession
@@ -34,6 +34,11 @@ class Command(BaseCommand):
             return
         else:
             print(" ✅ Ejercicios de musculación eliminados correctamente 💪")
+        if not self.cardio_exercises():
+            print(" ❌ Error al eliminar los ejercicios de cardio 🏃")
+            return
+        else:
+            print(" ✅ Ejercicios de cardio eliminados correctamente 🏃")
         if not self.measures_data():
             print(" ❌ Error al eliminar las medidas 📏")
             return
@@ -81,6 +86,16 @@ class Command(BaseCommand):
         deleted_count, _ = MusculationExercise.objects.all().delete()
         logger.info(
             f"Ejercicios de musculación eliminados correctamente ✅ "
+            f"({deleted_count} eliminados)"
+        )
+        return True
+
+    def cardio_exercises(self):
+        """Elimina los ejercicios de cardio"""
+        logger.info("Eliminando ejercicios de cardio 🏃 ...")
+        deleted_count, _ = CardioExercise.objects.all().delete()
+        logger.info(
+            f"Ejercicios de cardio eliminados correctamente ✅ "
             f"({deleted_count} eliminados)"
         )
         return True
