@@ -3,15 +3,15 @@ product_id,name,description,barcode,market,energy_kj_per_100g,calories_per_100g,
 2,Guisantes pack-3,Guisantes en conserva estándar,,mercadona,,,,,,,,,,,,,,,,,,,yes
 3,Remolacha en tiras,Remolacha en conserva,,mercadona,,,,,,,,,,,,,,,,,,,yes
 4,Zanahoria en tiras,Zanahoria en conserva,,mercadona,,,,,,,,,,,,,,,,,,,yes
-5,Patatas cocidas bote,Patatas cocidas escurridas,,mercadona,,,,,,,,,,,,,,,,,,,yes
-6,Piña pelada en rodajas,Piña en su jugo,,mercadona,,,,,,,,,,,,,,,,,,,yes
+5,Patatas cocidas bote,Patatas cocidas escurridas,8402001014253,mercadona,224,53,1.2,11,0,0,,,1.0,,1.5,0.67,,,,,,,yes
+6,Piña pelada en rodajas,Piña en su jugo,2303024003629,mercadona,247,58,0.5,14,0,0,,,10,,,0,0,,,,,,,yes
 7,Espárrago mediano blanco,Espárrago blanco en conserva,,mercadona,,,,,,,,,,,,,,,,,,,yes
 8,Tomate ensalada,Tomate fresco,,mercadona,,,,,,,,,,,,,,,,,,,yes
 9,Infusión té verde,Infusión té verde bolsitas Hacendado,,mercadona,,,,,,,,,,,,,,,,,,,yes
 10,Té verde maracuyá mango,Té verde maracuyá mango Hacendado refresco,,mercadona,,,,,,,,,,,,,,,,,,,yes
-11,Té soluble limón,Té soluble limón sobres sin azúcar,,mercadona,,,,,,,,,,,,,,,,,,,yes
-12,Té soluble melocotón,Té soluble melocotón sobres sin azúcar,,mercadona,,,,,,,,,,,,,,,,,,,yes
-13,Zumo 100% naranja,Zumo 100% naranja refrigerado o brick Mercadona,,mercadona,,,,,,,,,,,,,,,,,,,yes
+11,Té soluble limón,Té soluble limón sobres sin azúcar,8480000113078,mercadona,9,2,0,0.5,0,0,,,0,,0,0.01,,,,,,,yes
+12,Té soluble melocotón,Té soluble melocotón sobres sin azúcar,8480000113191,mercadona,9,2,0,0.5,0,0,,,0,,0,0.01,,,,,,,yes
+13,Zumo 100% naranja,Zumo 100% naranja refrigerado o brick Mercadona,8402001014062,mercadona,187,44,0.6,10,0.1,0,,,10,,0,0,,,,,,,,yes
 14,Té melocotón refresco,Té melocotón refresco listo tipo té helado,,mercadona,,,,,,,,,,,,,,,,,,,yes
 15,Tomillo seco,Tomillo seco especias,,mercadona,,,,,,,,,,,,,,,,,,,yes
 16,Ajo seco granulados,Ajo seco granulados 250g,,mercadona,,,,,,,,,,,,,,,,,,,yes
@@ -30,37 +30,38 @@ product_id,name,description,barcode,market,energy_kj_per_100g,calories_per_100g,
 29,Mozzarella light Hacendado,Mozzarella light Hacendado,,mercadona,,,,,,,,,,,,,,,,,,,yes
 30,Atún claro en aceite de girasol,Atún claro en aceite de girasol pack-3 escurrido,8480024741226,mercadona,,,,,,,,,,,,,,,,,,,yes
 31,Filete de melva en aceite de oliva,Filete de melva en aceite de oliva,,mercadona,,,,,,,,,,,,,,,,,,,yes
-32,Solomillo pavo,Carne de pavo solomillo,,mercadona,,,,,,,,,,,,,,,,,yes
-33,Ternera extratierna,Carne de ternera extratierna,,mercadona,,,,,,,,,,,,,,,,,yes
+32,Solomillo pavo,Carne de pavo solomillo,,mercadona,406,96,23,1.0,0.5,0.2,,,0.0,,,0.59,,,,,,,yes
+33,Ternera extratierna,Carne de ternera extratierna,,mercadona,406,96,19,0.5,2.0,0.8,,,0.5,,,1.4,,,,,,,yes
 34,Bolsa plástico,Bolsa de plástico reutilizable,,mercadona,,,,,,,,,,,,,,,,,yes
-35,Pepinillo ag grande,Pepinillos en vinagre tamaño grande,,mercadona,,,,,,,,,,,,,,,,,yes
-36,Pincho pollo adobado,Pincho de pollo adobado,,mercadona,,,,,,,,,,,,,,,,,yes
-37,Aliño,Aliño para ensaladas,,mercadona,,,,,,,,,,,,,,,,,yes
-38,Boquerones al vinagre,Boquerones en vinagre,,mercadona,,,,,,,,,,,,,,,,,yes
-39,Boquerones aliñados,Boquerones aliñados,,mercadona,,,,,,,,,,,,,,,,,yes
+35,Pepinillo agridulce grande,Pepinillos en vinagre tamaño grande,8480000331878,mercadona,235,56,0.9,11,0.5,0.4,,,11,,1.0,2.3,,,,,,,yes
+36,Pincho pollo adobado,Pincho de pollo adobado,,mercadona,532,127,18.8,0.5,5.5,1.2,,,0.5,,,0.89,,,,,,,yes
+37,Aliño,Aliño para ensaladas,8480000172655,mercadona,3041,739,0.7,8.2,78,8.7,,,0,,,0.36,,,,,,,yes
+38,Boquerones al vinagre,Boquerones en vinagre,8480000804051,mercadona,863,203,19.4,0.8,13.6,1.86,,,0,, ,3.1,,,,,,,yes
+39,Boquerones aliñados,Boquerones aliñados,8402001013553,mercadona,1160,280,16,0,23,4,,,0,,,2.3,,,,,,,yes
 40,Pincho mexicano,Pincho estilo mexicano,,mercadona,,,,,,,,,,,,,,,,,yes
 41,Brocheta pollo,Brocheta de pollo,,mercadona,,,,,,,,,,,,,,,,,yes
-42,Aceitunas negras sin hueso,Aceitunas negras sin hueso,,mercadona,,,,,,,,,,,,,,,,,yes
-43,Sopa pollo y fideos,Sopa de pollo con fideos,,mercadona,,,,,,,,,,,,,,,,,yes
-44,Chili con carne,Chili con carne,,mercadona,,,,,,,,,,,,,,,,,yes
-45,Sopa de cebolla,Sopa de cebolla,,mercadona,,,,,,,,,,,,,,,,,yes
+42,Aceitunas negras sin hueso,Aceitunas negras sin hueso,8402001015007,mercadona,515,125,0.5,0,13,2.2,,,0,,,2.0,,,,,,,yes
+43,Sopa pollo y fideos,Sopa de pollo con fideos,8402001028830,mercadona,1387,327,15.3,60.4,2.0,0.5,,,2.4,,3.2,11.4,,,,,,,yes
+44,Chili con carne,Chili con carne,8480000231376,mercadona,476,114,8.2,7.7,4.7,1.1,,,2.8,,4.0,1.00,,,,,,,yes
+45,Sopa de cebolla,Sopa de cebolla,8402001017902,mercadona,1252,297,10.1,45.3,7.0,5.5,,,17.8,,5.0,22.10,,,,,,,yes
 46,Queso lonchas mozzarella,Queso mozzarella en lonchas,,mercadona,,,,,,,,,,,,,,,,,yes
-47,Jalapeños picantes,Jalapeños en conserva picantes,,mercadona,,,,,,,,,,,,,,,,,yes
-48,Barrita rellena arándanos,Barrita rellena de arándanos,,mercadona,,,,,,,,,,,,,,,,,yes
-49,Barrita proteína chocolate,Barrita de proteína sabor chocolate,,mercadona,,,,,,,,,,,,,,,,,yes
+47,Jalapeños picantes,Jalapeños en conserva picantes,8480000331892,mercadona,77,18,0.3,2.8,0.5,0.2,,,0.0,,1.1,1.3,,,,,,,yes
+48,Barrita rellena arándanos,Barrita rellena de arándanos,8402001013829,mercadona,1697,402,5.0,76.0,8.0,2.5,,,31.0,,3.0,0.81,,,,,,,yes
+49,Barrita proteína chocolate,Barrita de proteína sabor chocolate,8007640982163,mercadona,1690,402,26,45,13,4.7,,,34,,,1.2,,1.4,777,195,26,12,yes
 50,Ice tea melocotón 0,Ice tea sabor melocotón sin azúcar,,mercadona,,,,,,,,,,,,,,,,,yes
 51,Ice tea limón zero,Ice tea sabor limón sin azúcar,,mercadona,,,,,,,,,,,,,,,,,yes
-52,Champiñón laminado,Champiñones laminados en conserva,,mercadona,,,,,,,,,,,,,,,,,yes
-53,Bacon,Bacon o panceta,,mercadona,,,,,,,,,,,,,,,,,yes
-54,Queso fresco vaca light,Queso fresco de vaca light,,mercadona,,,,,,,,,,,,,,,,,yes
-55,Tiras pollo,Tiras de pollo natural,,mercadona,,,,,,,,,,,,,,,,,yes
-56,Gourmet maxi,Producto gourmet maxi,,mercadona,,,,,,,,,,,,,,,,,yes
-57,Ensalada de la casa,Ensalada de la casa,,mercadona,,,,,,,,,,,,,,,,,yes
-58,Salpicón,Salpicón,,mercadona,,,,,,,,,,,,,,,,,yes
+52,Champiñón laminado,Champiñones laminados en conserva,8480000166180,mercadona,86,21,2.8,1.5,0.1,0.0,,,0.3,,,1.0,,,,,,,yes
+53,Bacon,Bacon o panceta,8410973643395,mercadona,1460,353,15,1.0,32,13,,,1.0,,,2.4,,,,,,,yes
+54,Queso fresco vaca light,Queso fresco de vaca light,8480000511928,mercadona,490,117,13,3.8,5.7,3.9,,,3.6,,,0.85,,,,,,,yes
+55,Tiras pollo,Tiras de pollo natural,8480000566614,mercadona,452,107,23.4,0.6,1.2,0.4,,,0.6,,,1.8,,,,,,,yes
+56,Ensalada Gourmet maxi,Producto gourmet maxi,8425779044475,mercadona,89,21,1.5,2.2,0.5,0.1,,,1.9,,2.0,0.16,,,,,,,yes
+57,Ensalada de la casa,Ensalada de la casa,8437013139106,mercadona,190,45,1.3,6.0,1.3,0.2,,,1.7,,2.2,0.27,,,,,,,yes
+58,Salpicón,Salpicón,,mercadona,323,77,12.3,1.8,1.9,0.5,,,0.5,,,0.81,,,,,,,yes
 59,Muesli con chocolate,Muesli con chocolate,,mercadona,,,,,,,,,,,,,,,,,yes
 60,Proteínas flan,Flan con proteínas,,mercadona,,,,,,,,,,,,,,,,,yes
 61,Pata pulpo cocido,Pata de pulpo cocido,,mercadona,,,,,,,,,,,,,,,,,yes
 62,Tomate rama,Tomate en rama fresco,,mercadona,,,,,,,,,,,,,,,,,yes
-63,Tortilla avena 6 unidades,Tortilla de avena pack 6 unidades,,mercadona,,,,,,,,,,,,,,,,,yes
+63,Tortilla avena 6 unidades,Tortilla de avena pack 6 unidades,8480000805317,mercadona,1208,287,15,40,6.0,1.9,,,1.9,,5.4,1.3,,,,,,,yes
 64,Mayonesa Hacendado,Mayonesa Hacendado,,mercadona,,,,,,,,,,,,,,,,,yes
-65, Salsa Piri Piri,Salsa Piri Piri,,mercadona,,,,,,,,,,,,,,,,,yes
+65,Salsa Piri Piri,Salsa Piri Piri,,mercadona,,,,,,,,,,,,,,,,,yes
+66,Atún en aceite de girasol,Atún en aceite de girasol,8480000180865,mercadona,1504,363,18,0.5,32,5.4,,,0.5,,,0.87,,,,,,,yes
