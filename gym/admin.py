@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path
+from django.utils.safestring import mark_safe
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from gym.models import (
@@ -122,7 +123,27 @@ class MusculationRecordAdmin(UnfoldModelAdmin):
 @admin.register(Routine)
 class RoutineAdmin(UnfoldModelAdmin):
     form = RoutineAdminForm
-    list_display = ("user", "exercise_types", "duration", "formatted_created_at")
+    list_display = ("user", "formatted_exercise_types", "formatted_duration", "formatted_created_at")
+
+    def formatted_exercise_types(self, obj):
+        """Formatea los tipos de ejercicios como lista con viñetas"""
+        if obj.exercise_types and isinstance(obj.exercise_types, list):
+            # Crear lista con viñetas, cada elemento en una línea nueva
+            items = [f"- {item}" for item in obj.exercise_types]
+            return mark_safe("<br>".join(items))
+        return "-"
+
+    formatted_exercise_types.short_description = "Tipos de ejercicios"
+    formatted_exercise_types.admin_order_field = "exercise_types"
+
+    def formatted_duration(self, obj):
+        """Formatea la duración en semanas"""
+        if obj.duration:
+            return f"{obj.duration} semana{'s' if obj.duration != 1 else ''}"
+        return "-"
+
+    formatted_duration.short_description = "Duración de la rutina"
+    formatted_duration.admin_order_field = "duration"
 
     def formatted_created_at(self, obj):
         """Formatea la fecha de creación como DD/MM/YYYY HH:MM:SS"""

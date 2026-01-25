@@ -92,8 +92,9 @@ class Routine(models.Model):
     warmup_duration = models.DurationField(
         null=True, blank=True, verbose_name="Duración de calentamiento"
     )
-    duration = models.DurationField(
-        null=True, blank=True, verbose_name="Duración de la rutina"
+    duration = models.PositiveIntegerField(
+        null=True, blank=True, verbose_name="Duración de la rutina (semanas)",
+        help_text="Duración de la rutina en semanas"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -107,7 +108,7 @@ class Routine(models.Model):
         exercise_types_str = ""
         if self.exercise_types:
             exercise_types_str = f" - {', '.join(self.exercise_types)}"
-        duration_str = f" - {self.duration}" if self.duration else ""
+        duration_str = f" - {self.duration} semana(s)" if self.duration else ""
         return f"{exercise_types_str}{duration_str} - {self.user}"
 
 

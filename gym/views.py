@@ -130,17 +130,17 @@ class RoutineJSONView(UnfoldModelAdminViewMixin, FormView):
             )
             return self.form_invalid(form)
 
-        # Parsear duración si está presente
+        # Parsear duración si está presente (en semanas)
         duration = None
         if "duration" in data:
             try:
-                from django.utils.dateparse import parse_duration
-
-                duration = parse_duration(data["duration"])
+                duration = int(data["duration"])
+                if duration <= 0:
+                    raise ValueError("La duración debe ser un número positivo")
             except (ValueError, TypeError):
                 messages.error(
                     self.request,
-                    "Formato de duración incorrecto. Use formato ISO 8601 (ej: P1DT12H30M o 1 12:30:00)",
+                    "Formato de duración incorrecto. Debe ser un número entero positivo (semanas)",
                 )
                 return self.form_invalid(form)
 

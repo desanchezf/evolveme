@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.forms import modelformset_factory
+from django.utils.dateparse import parse_duration
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit
 from unfold.widgets import (
@@ -161,7 +162,7 @@ class RoutineJSONForm(forms.Form):
             attrs={
                 "rows": 20,
                 "class": "form-control",
-                "placeholder": 'Pega aquí el JSON generado por la IA. Ejemplo:\n{\n  "user": "david",\n  "duration": "1 12:30:00",\n  "warmup": "Calentamiento...",\n  "exercise_types": ["push", "pull"],\n  "routine": {...}\n}',
+                "placeholder": 'Pega aquí el JSON generado por la IA. Ejemplo:\n{\n  "user": "david",\n  "duration": 4,\n  "warmup": "Calentamiento...",\n  "exercise_types": ["push", "pull"],\n  "routine": {...}\n}',
             }
         ),
         label="JSON de la Rutina",
@@ -179,18 +180,20 @@ class RoutineAdminForm(forms.ModelForm):
         fields = "__all__"
         widgets = {
             "exercise_types": ExerciseTypesCheckboxWidget(),
-            "duration": forms.TextInput(
+            "duration": forms.NumberInput(
                 attrs={
-                    "type": "text",
+                    "type": "number",
                     "class": "form-control",
-                    "placeholder": "DD HH:MM:SS o HH:MM:SS (ej: 1 12:30:00)",
+                    "placeholder": "Número de semanas (ej: 4)",
+                    "min": "1",
+                    "step": "1",
                 }
             ),
             "warmup_duration": forms.TextInput(
                 attrs={
                     "type": "text",
                     "class": "form-control",
-                    "placeholder": "HH:MM:SS (ej: 00:15:00)",
+                    "placeholder": "HH:MM (ej: 00:15)",
                 }
             ),
         }
@@ -220,17 +223,19 @@ class RoutineAdminForm(forms.ModelForm):
                         except (json.JSONDecodeError, ValueError):
                             self.instance.exercise_types = []
 
-        # Configurar widget de duración
-        self.fields["duration"].widget = forms.TextInput(
+        # Configurar widget de duración (en semanas)
+        self.fields["duration"].widget = forms.NumberInput(
             attrs={
-                "type": "text",
+                "type": "number",
                 "class": "form-control",
-                "placeholder": "DD HH:MM:SS o HH:MM:SS (ej: 1 12:30:00)",
+                "placeholder": "Número de semanas (ej: 4)",
+                "min": "1",
+                "step": "1",
             }
         )
         self.fields["duration"].help_text = (
-            "Formato: DD HH:MM:SS o HH:MM:SS. "
-            "Ejemplo: '1 12:30:00' (1 día, 12 horas, 30 minutos) o '02:30:00' (2 horas, 30 minutos)"
+            "Duración de la rutina en semanas. "
+            "Ejemplo: '4' (4 semanas) o '8' (8 semanas)"
         )
 
         # Configurar widget de duración de calentamiento
@@ -239,12 +244,12 @@ class RoutineAdminForm(forms.ModelForm):
                 attrs={
                     "type": "text",
                     "class": "form-control",
-                    "placeholder": "HH:MM:SS (ej: 00:15:00)",
+                    "placeholder": "HH:MM (ej: 00:15)",
                 }
             )
             self.fields["warmup_duration"].help_text = (
-                "Formato: HH:MM:SS. "
-                "Ejemplo: '00:15:00' (15 minutos) o '00:30:00' (30 minutos)"
+                "Formato: HH:MM (solo horas y minutos, los segundos se establecen en 0). "
+                "Ejemplo: '00:15' (15 minutos) o '00:30' (30 minutos)"
             )
 
     def clean_exercise_types(self):
@@ -257,6 +262,55 @@ class RoutineAdminForm(forms.ModelForm):
             data = []
 
         return data
+
+    def clean_warmup_duration(self):
+        """Limpia y valida warmup_duration, convirtiendo HH:MM a HH:MM:00"""
+        warmup_duration = self.cleaned_data.get("warmup_duration")
+        
+        if not warmup_duration:
+            return None
+        
+        # Si ya es un timedelta, devolverlo directamente
+        if hasattr(warmup_duration, 'total_seconds'):
+            return warmup_duration
+        
+        # Si es una cadena, procesarla
+        if isinstance(warmup_duration, str):
+            warmup_duration = warmup_duration.strip()
+            
+            # Si está vacío, devolver None
+            if not warmup_duration:
+                return None
+            
+            # Si ya tiene formato HH:MM:SS, parsearlo directamente
+            if warmup_duration.count(':') == 2:
+                parsed = parse_duration(warmup_duration)
+                if parsed:
+                    return parsed
+            
+            # Si tiene formato HH:MM, agregar :00 para los segundos
+            elif warmup_duration.count(':') == 1:
+                try:
+                    # Validar formato HH:MM
+                    parts = warmup_duration.split(':')
+                    if len(parts) == 2:
+                        hours = int(parts[0])
+                        minutes = int(parts[1])
+                        # Convertir a formato HH:MM:00 y parsear
+                        formatted = f"{hours:02d}:{minutes:02d}:00"
+                        parsed = parse_duration(formatted)
+                        if parsed:
+                            return parsed
+                except (ValueError, IndexError):
+                    pass
+            
+            # Intentar parsear como está (por si acaso)
+            parsed = parse_duration(warmup_duration)
+            if parsed:
+                return parsed
+        
+        # Si no se pudo parsear, devolver el valor original
+        return warmup_duration
 
 
 class TrainingSessionAdminForm(forms.ModelForm):

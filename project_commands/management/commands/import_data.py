@@ -229,10 +229,10 @@ class Command(BaseCommand):
         return True
 
     def cardio_exercises(self):
-        """Carga los ejercicios de cardio desde cardio_exercises.csv"""
+        """Carga los ejercicios de cardio desde cardio_session.csv"""
         logger.info("Cargando ejercicios de cardio 🏃 ...")
 
-        csv_path = self.get_csv_path("cardio_exercises.csv")
+        csv_path = self.get_csv_path("cardio_session.csv")
         if not os.path.exists(csv_path):
             logger.warning(
                 f"El archivo {csv_path} no existe, saltando carga de ejercicios de cardio"
@@ -243,12 +243,12 @@ class Command(BaseCommand):
         with open(csv_path, newline="", encoding="utf-8") as csvfile:
             exercises_reader = csv.DictReader(csvfile)
             for row in exercises_reader:
-                exercise_name = row["name"]
-                if not CardioExercise.objects.filter(name=exercise_name).exists():
+                exercise_name = row.get("name", "").strip()
+                if exercise_name and not CardioExercise.objects.filter(name=exercise_name).exists():
                     exercise = CardioExercise.objects.create(
                         name=exercise_name,
-                        description=row.get("description", "") or None,
-                        image_base64=row.get("image_base64") or None,
+                        description="",
+                        image_base64=None,
                     )
                     created_count += 1
                     logger.info(
