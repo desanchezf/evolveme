@@ -19,6 +19,7 @@ from gym.forms import (
     TrainingSessionModelForm,
 )
 from gym.models import MusculationExercise, MusculationRecord, Routine
+from evolveme.models import GymUserProfile
 
 
 class MusculationRecordFormsetView(UnfoldModelAdminViewMixin, FormView):
@@ -153,8 +154,6 @@ class RoutineJSONView(UnfoldModelAdminViewMixin, FormView):
         )
 
         # Actualizar perfil del usuario con start_date y end_date si están presentes
-        from evolveme.models import GymUserProfile
-
         profile, _ = GymUserProfile.objects.get_or_create(user=user)
 
         if "start_date" in data:
