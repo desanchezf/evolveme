@@ -1,11 +1,7 @@
 from django import forms
 from django.forms import modelformset_factory
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit
-from unfold.widgets import (
-    UnfoldAdminTextInputWidget,
-    UnfoldAdminSelectWidget,
-)
+from crispy_forms.layout import Layout, Row, Column
 
 from nutrition.models import DailyDiet, ProductQuantity, Product
 
@@ -17,9 +13,9 @@ class ProductQuantityForm(forms.ModelForm):
         model = ProductQuantity
         fields = ["product", "quantity", "unit"]
         widgets = {
-            "product": UnfoldAdminSelectWidget(),
-            "quantity": UnfoldAdminTextInputWidget(),
-            "unit": UnfoldAdminTextInputWidget(),
+            "product": forms.Select(attrs={"class": "form-select"}),
+            "quantity": forms.NumberInput(attrs={"class": "form-control"}),
+            "unit": forms.TextInput(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -30,21 +26,22 @@ class ProductQuantityForm(forms.ModelForm):
 
 
 class ProductQuantityFormsetHelper(FormHelper):
-    """Helper para el formset de productos"""
+    """Helper para el formset de productos: Producto en una fila, Cantidad y Unidad en la siguiente."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.template = "unfold_crispy/layout/table_inline_formset.html"
+        self.form_tag = False
         self.form_id = "product-quantity-formset"
         self.form_add = True
         self.attrs = {
             "novalidate": "novalidate",
         }
         self.layout = Layout(
+            Row(Column("product", css_class="col-12"), css_class="mb-2"),
             Row(
-                Column("product", css_class="w-1/2"),
-                Column("quantity", css_class="w-1/4"),
-                Column("unit", css_class="w-1/4"),
+                Column("quantity", css_class="col-md-4"),
+                Column("unit", css_class="col-md-4"),
+                css_class="mb-3",
             ),
         )
 
@@ -66,7 +63,7 @@ class DailyDietForm(forms.Form):
     user = forms.ModelChoiceField(
         queryset=None,
         required=True,
-        widget=UnfoldAdminSelectWidget(),
+        widget=forms.Select(attrs={"class": "form-select"}),
         label="Usuario",
     )
     date = forms.DateField(
@@ -84,6 +81,16 @@ class DailyDietForm(forms.Form):
         if user:
             self.fields["user"].initial = user
             self.fields["user"].widget.attrs["readonly"] = True
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            Row(
+                Column("user", css_class="col-md-6"),
+                Column("date", css_class="col-md-6"),
+                css_class="mb-3",
+            ),
+        )
 
 
 class DietJSONForm(forms.Form):
@@ -133,17 +140,18 @@ class ProductForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
-            Row(Column("name", css_class="w-full")),
-            Row(Column("description", css_class="w-full")),
+            Row(Column("name", css_class="col-12"), css_class="mb-3"),
+            Row(Column("description", css_class="col-12"), css_class="mb-3"),
             Row(
-                Column("barcode", css_class="w-1/2"),
-                Column("market", css_class="w-1/2"),
+                Column("barcode", css_class="col-md-6"),
+                Column("market", css_class="col-md-6"),
+                css_class="mb-3",
             ),
             Row(
-                Column("calories_per_100g", css_class="w-1/4"),
-                Column("protein_per_100g", css_class="w-1/4"),
-                Column("carbs_per_100g", css_class="w-1/4"),
-                Column("fat_per_100g", css_class="w-1/4"),
+                Column("calories_per_100g", css_class="col-md-3"),
+                Column("protein_per_100g", css_class="col-md-3"),
+                Column("carbs_per_100g", css_class="col-md-3"),
+                Column("fat_per_100g", css_class="col-md-3"),
+                css_class="mb-3",
             ),
-            Submit("submit", "Guardar Producto", css_class="btn btn-primary"),
         )

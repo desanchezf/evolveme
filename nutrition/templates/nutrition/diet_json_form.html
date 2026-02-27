@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% load admin_urls crispy_forms_tags i18n unfold %}
+{% load admin_urls crispy_forms_tags i18n %}
 
 {% block extrahead %}
     {{ block.super }}
@@ -25,7 +25,7 @@
 
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-xl font-semibold mb-4">JSON de la Dieta Semanal</h2>
-                {% crispy form "unfold_crispy" %}
+                {% crispy form "bootstrap5" %}
             </div>
 
             <div class="flex justify-end gap-4">

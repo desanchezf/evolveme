@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit
+from crispy_forms.layout import Layout, Row, Column
 
 from evolveme.models import GymUserProfile, Measure
 
@@ -156,17 +156,22 @@ class MeasureForm(forms.ModelForm):
             self.fields["user"].initial = user
         self.helper = FormHelper()
         self.helper.layout = Layout(
-            Row(Column("user", css_class="w-1/2"), Column("date", css_class="w-1/2")),
-            Row(Column("weight", css_class="w-full")),
             Row(
-                Column("arm", css_class="w-1/2"),
-                Column("arm_relaxed", css_class="w-1/2"),
+                Column("user", css_class="col-md-6"),
+                Column("date", css_class="col-md-6"),
+                css_class="mb-3",
             ),
-            Row(Column("chest", css_class="w-full")),
-            Row(Column("waist", css_class="w-full")),
+            Row(Column("weight", css_class="col-12"), css_class="mb-3"),
             Row(
-                Column("leg", css_class="w-1/2"),
-                Column("leg_relaxed", css_class="w-1/2"),
+                Column("arm", css_class="col-md-6"),
+                Column("arm_relaxed", css_class="col-md-6"),
+                css_class="mb-3",
             ),
-            Submit("submit", "Guardar Medidas", css_class="btn btn-primary"),
+            Row(Column("chest", css_class="col-12"), css_class="mb-3"),
+            Row(Column("waist", css_class="col-12"), css_class="mb-3"),
+            Row(
+                Column("leg", css_class="col-md-6"),
+                Column("leg_relaxed", css_class="col-md-6"),
+                css_class="mb-3",
+            ),
         )

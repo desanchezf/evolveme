@@ -32,9 +32,9 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    # Unfold django theme
-    "unfold",
+    "jazzmin",
     "crispy_forms",
+    "crispy_bootstrap5",
     # Django apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -245,44 +245,89 @@ ROLE_PERMISSIONS = {
     ],
 }
 
-CRISPY_ALLOWED_TEMPLATE_PACKS = ["unfold_crispy"]
-CRISPY_TEMPLATE_PACK = "unfold_crispy"
+CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap5"]
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-# Unfold Configuration
-UNFOLD = {
-    "SITE_TITLE": "EvolveMe",
-    "SITE_HEADER": "EvolveMe",
-    "SITE_SUBHEADER": "Panel de Administración",
-    "SITE_URL": "/",
-    "SITE_ICON": {
-        "light": lambda request: "/static/ico_dark.png",  # Icono oscuro en tema claro
-        "dark": lambda request: "/static/ico_light.png",  # Icono claro en tema oscuro
-    },
-    "SITE_LOGO": {
-        "light": lambda request: "/static/ico_dark.png",  # Logo oscuro en tema claro
-        "dark": lambda request: "/static/ico_light.png",  # Logo claro en tema oscuro
-    },
-    "SITE_FAVICONS": [
-        {
-            "rel": "icon",
-            "sizes": "32x32",
-            "type": "image/png",
-            "href": lambda request: "/static/ico_dark.png",  # Icono oscuro para tema claro
-        },
-        {
-            "rel": "icon",
-            "sizes": "32x32",
-            "type": "image/png",
-            "href": lambda request: "/static/ico_light.png",  # Icono claro para tema oscuro
-            "media": "(prefers-color-scheme: dark)",
-        },
+# Jazzmin (admin theme)
+JAZZMIN_SETTINGS = {
+    "site_title": "EvolveMe",
+    "site_header": "EvolveMe",
+    "site_brand": "EvolveMe",
+    "site_logo": "ico_dark.png",
+    "site_icon": "ico_dark.png",
+    "login_logo": "ico_dark.png",
+    "welcome_sign": "Panel de Administración",
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    # Enlace en el menú superior para ir al portal de la app
+    "topmenu_links": [
+        {"name": "Portal EvolveMe", "url": "/", "icon": "fas fa-home"},
     ],
-    "SHOW_HISTORY": True,
-    "SHOW_VIEW_ON_SITE": True,
-    "SHOW_BACK_BUTTON": False,
-    "BORDER_RADIUS": "8px",
-    "THEME": None,  # Permite cambio de tema (claro/oscuro)
-    "LOGIN": {
-        "image": lambda request: "/static/background.png",
+    # Enlaces en el menú lateral a los formularios públicos
+    "custom_links": {
+        "evolveme": [
+            {
+                "name": "Registrar medidas",
+                "url": "/measure/",
+                "icon": "fas fa-ruler-combined",
+            },
+        ],
+        "gym": [
+            {
+                "name": "Registro de musculación",
+                "url": "/gym/musculation-record/",
+                "icon": "fas fa-dumbbell",
+            },
+            {
+                "name": "Sesión de entrenamiento",
+                "url": "/gym/training-session/",
+                "icon": "fas fa-calendar-check",
+            },
+        ],
+        "cardio": [
+            {
+                "name": "Sesión de cardio",
+                "url": "/cardio/cardio-session/",
+                "icon": "fas fa-running",
+            },
+        ],
+        "nutrition": [
+            {
+                "name": "Nuevo producto",
+                "url": "/nutrition/product/",
+                "icon": "fas fa-shopping-basket",
+            },
+            {
+                "name": "Dieta diaria",
+                "url": "/nutrition/daily-diet/",
+                "icon": "fas fa-utensils",
+            },
+        ],
     },
+    # Iconos por app y modelo (Font Awesome)
+    "icons": {
+        # Auth
+        "auth.user": "fas fa-user",
+        "auth.group": "fas fa-users",
+        # Cardio
+        "cardio.cardioexercise": "fas fa-heartbeat",
+        "cardio.cardiosession": "fas fa-running",
+        # Evolveme
+        "evolveme.gymuserprofile": "fas fa-id-card",
+        "evolveme.measure": "fas fa-ruler-combined",
+        # Gym
+        "gym.musculationexercise": "fas fa-dumbbell",
+        "gym.musculationrecord": "fas fa-clipboard-list",
+        "gym.routine": "fas fa-list-ol",
+        "gym.trainingsession": "fas fa-calendar-check",
+        # IA
+        "ia.promtps": "fas fa-robot",
+        # Nutrition
+        "nutrition.product": "fas fa-shopping-basket",
+        "nutrition.productquantity": "fas fa-weight-hanging",
+        "nutrition.dailydiet": "fas fa-utensils",
+        "nutrition.mealmetrics": "fas fa-chart-pie",
+    },
+    # CSS personalizado (fondo mosaico en login). Debe ser string, no lista.
+    "custom_css": "admin/css/jazzmin_custom.css",
 }

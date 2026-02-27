@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.urls import path
 from django.utils.safestring import mark_safe
-from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from gym.models import (
     MusculationExercise,
@@ -18,7 +17,7 @@ from gym.forms import (
 
 
 @admin.register(MusculationExercise)
-class MusculationExerciseAdmin(UnfoldModelAdmin):
+class MusculationExerciseAdmin(admin.ModelAdmin):
     list_display = ("name", "body_part", "sets", "reps", "formatted_unit")
     list_filter = ("body_part", "unit")
     search_fields = ("name", "description")
@@ -53,7 +52,7 @@ class MusculationExerciseAdmin(UnfoldModelAdmin):
 
 
 @admin.register(MusculationRecord)
-class MusculationRecordAdmin(UnfoldModelAdmin):
+class MusculationRecordAdmin(admin.ModelAdmin):
     form = MusculationRecordAdminForm
     list_display = (
         "user",
@@ -121,7 +120,7 @@ class MusculationRecordAdmin(UnfoldModelAdmin):
 
 
 @admin.register(Routine)
-class RoutineAdmin(UnfoldModelAdmin):
+class RoutineAdmin(admin.ModelAdmin):
     form = RoutineAdminForm
     list_display = ("user", "formatted_exercise_types", "formatted_duration", "formatted_created_at")
 
@@ -204,7 +203,7 @@ class RoutineAdmin(UnfoldModelAdmin):
 
 
 @admin.register(TrainingSession)
-class TrainingSessionAdmin(UnfoldModelAdmin):
+class TrainingSessionAdmin(admin.ModelAdmin):
     form = TrainingSessionAdminForm
     list_display = (
         "user",

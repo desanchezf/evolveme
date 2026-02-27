@@ -3,12 +3,12 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import FormView
-from unfold.views import UnfoldModelAdminViewMixin
 
 from gym.forms import (
     MusculationRecordFormSet,
@@ -22,13 +22,12 @@ from gym.models import MusculationExercise, MusculationRecord, Routine
 from evolveme.models import GymUserProfile
 
 
-class MusculationRecordFormsetView(UnfoldModelAdminViewMixin, FormView):
+class MusculationRecordFormsetView(PermissionRequiredMixin, FormView):
     """Vista para crear múltiples registros de musculación"""
 
-    title = "Registrar Entrenamiento de Musculación"
+    permission_required = ("gym.add_musculationrecord",)
     form_class = TrainingSessionForm
     success_url = reverse_lazy("admin:gym_musculationrecord_changelist")
-    permission_required = ("gym.add_musculationrecord",)
     template_name = "gym/musculation_record_formset.html"
 
     def get_form_kwargs(self):
@@ -89,13 +88,12 @@ class MusculationRecordFormsetView(UnfoldModelAdminViewMixin, FormView):
         return super().form_invalid(form)
 
 
-class RoutineJSONView(UnfoldModelAdminViewMixin, FormView):
+class RoutineJSONView(PermissionRequiredMixin, FormView):
     """Vista para generar rutina desde JSON"""
 
-    title = "Generar Rutina desde JSON"
+    permission_required = ("gym.add_routine",)
     form_class = RoutineJSONForm
     success_url = reverse_lazy("admin:gym_routine_changelist")
-    permission_required = ("gym.add_routine",)
     template_name = "gym/routine_json_form.html"
 
     def parse_date(self, date_str):

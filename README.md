@@ -3,7 +3,7 @@
 ![Django](https://img.shields.io/badge/Django-4.2.17-green.svg?style=plastic)
 ![Python](https://img.shields.io/badge/Python-3.12-blue.svg?style=plastic&logo=python&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=plastic&logo=docker&logoColor=white)
-![Unfold Admin](https://img.shields.io/badge/Unfold-Admin-orange.svg?style=plastic)
+![Jazzmin](https://img.shields.io/badge/Jazzmin-Admin-blue.svg?style=plastic)
 
 Sistema completo de gestión para seguimiento de entrenamientos, nutrición y medidas corporales con integración de IA para generación de rutinas y dietas personalizadas.
 
@@ -15,7 +15,7 @@ Sistema completo de gestión para seguimiento de entrenamientos, nutrición y me
 - **Gestión de Nutrición**: Productos alimentarios, dietas diarias y seguimiento de consumo
 - **Seguimiento Corporal**: Medidas corporales y composición corporal detallada
 - **Integración con IA**: Generación automática de rutinas y dietas mediante prompts
-- **Admin Personalizado**: Interfaz moderna con tema Unfold personalizado (naranja DuckDuckGo)
+- **Admin Personalizado**: Interfaz moderna con tema Jazzmin
 - **Formularios Avanzados**: Formsets para entrada de datos múltiples
 - **Importación de Datos**: Comandos para cargar datos desde archivos CSV
 
@@ -100,15 +100,7 @@ Todos los formularios requieren autenticación (`@login_required`). Si el usuari
 
 ## 🎨 Personalización del Admin
 
-El proyecto utiliza **Unfold Admin** con un tema personalizado inspirado en DuckDuckGo:
-
-- **Color primario**: Naranja DuckDuckGo (`#FF6600`)
-- **Fondos**: Grises oscuros (`#1a1a1a`, `#2d2d2d`)
-- **Resaltes**: Grises claros (`#3d3d3d`, `#4a4a4a`)
-
-La personalización se encuentra en:
-- `project/settings.py`: Configuración `UNFOLD`
-- `static/css/unfold_custom.css`: Estilos CSS personalizados
+El proyecto utiliza **Jazzmin** como tema del panel de administración de Django. La configuración se encuentra en `project/settings.py` en el diccionario `JAZZMIN_SETTINGS`.
 
 ---
 
@@ -339,7 +331,7 @@ Elimina todos los datos importados por el comando `import_data`.
 
 ### Formsets
 
-El proyecto utiliza Django Formsets con Crispy Forms y Unfold Admin:
+El proyecto utiliza Django Formsets con Crispy Forms y Bootstrap 5:
 
 **MusculationRecordFormset:**
 - Permite registrar múltiples ejercicios en una sesión de entrenamiento
@@ -376,19 +368,9 @@ El proyecto utiliza variables de entorno para configuración sensible:
 - `ADMIN_EMAIL`: Email del administrador
 - `ADMIN_GROUPS`: Grupos de usuarios (separados por comas)
 
-### Configuración de Unfold
+### Tema del Admin (Jazzmin)
 
-En `project/settings.py`:
-
-```python
-UNFOLD = {
-    "PRIMARY_COLOR": "#FF6600",  # Naranja DuckDuckGo
-    "SECONDARY_COLOR": "#3d3d3d",  # Gris claro
-    "STYLES": [
-        "/static/css/unfold_custom.css",
-    ],
-}
-```
+El tema del panel de administración se configura en `project/settings.py` mediante `JAZZMIN_SETTINGS` (título, cabecera, sidebar, etc.). Consulta la documentación de [django-jazzmin](https://django-jazzmin.readthedocs.io/) para personalizar.
 
 ### Archivos Estáticos
 
@@ -435,6 +417,64 @@ UNFOLD = {
 ```bash
 docker-compose up -d
 ```
+---
+## Funciones
+
+### Panel principal
+
+Panel de Administración y Registro con tarjetas de acceso a todos los formularios y al admin.
+
+![Panel principal con tarjetas de acceso](pictures/actions.png)
+
+### Dashboard del administrador
+
+Vista del dashboard de Django con Jazzmin: módulos por aplicación y enlaces a los formularios públicos desde el menú lateral.
+
+![Dashboard del admin](pictures/admin-dashboard.png)
+
+### Formularios de registro
+
+#### Registrar sesión de entrenamiento
+
+Formulario para registrar una sesión completa de entrenamiento (usuario, rutina, fecha, ubicación, duración, kcal, FC media).
+
+![Registrar sesión de entrenamiento](pictures/register-train.png)
+
+#### Registrar sesión de musculación
+
+Formulario para registrar ejercicios de musculación (usuario, ejercicio, series, repeticiones, peso, TBI, observación).
+
+![Registrar sesión de musculación](pictures/register-muscle.png)
+
+#### Registrar sesión de cardio
+
+Formulario para registrar una sesión de cardio (usuario, ejercicio, fechas, ubicación, duración, distancia, velocidad, calorías, elevación, FC).
+
+![Registrar sesión de cardio](pictures/register-cardio-session.png)
+
+#### Registrar medidas corporales
+
+Formulario para registrar medidas corporales (usuario, fecha, peso, brazo, pecho, cintura, pierna, etc.).
+
+![Registrar medidas corporales](pictures/register-measures.png)
+
+#### Registrar producto
+
+Formulario para registrar un producto alimentario con valores nutricionales (nombre, descripción, código de barras, mercado, calorías, proteínas, carbohidratos, grasas por 100 g).
+
+![Registrar producto](pictures/register-product.png)
+
+#### Registrar dieta del día
+
+Formulario para registrar la dieta del día: información de la dieta (usuario, fecha) y productos consumidos (producto, cantidad, unidad).
+
+![Registrar dieta del día](pictures/register-nutrition.png)
+
+
+
+
+
+
 
 ---
 
@@ -452,4 +492,4 @@ Este proyecto es de uso privado.
 
 ## 📞 Soporte
 
-Para más información, consultar la documentación de Django Unfold: https://unfoldadmin.com/
+Para más información sobre el tema del admin, consultar la documentación de Django Jazzmin: https://django-jazzmin.readthedocs.io/

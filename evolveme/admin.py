@@ -1,12 +1,11 @@
 from django.contrib import admin
-from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from evolveme.models import GymUserProfile, Measure
 from evolveme.forms import GymUserProfileAdminForm, MeasureAdminForm
 
 
 @admin.register(GymUserProfile)
-class GymUserProfileAdmin(UnfoldModelAdmin):
+class GymUserProfileAdmin(admin.ModelAdmin):
     form = GymUserProfileAdminForm
     list_display = (
         "user",
@@ -83,7 +82,7 @@ class GymUserProfileAdmin(UnfoldModelAdmin):
 
 
 @admin.register(Measure)
-class MeasureAdmin(UnfoldModelAdmin):
+class MeasureAdmin(admin.ModelAdmin):
     form = MeasureAdminForm
     list_display = (
         "user",

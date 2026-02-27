@@ -1,11 +1,10 @@
 from django.contrib import admin
-from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from ia.models import Promtps
 
 
 @admin.register(Promtps)
-class PromtpsAdmin(UnfoldModelAdmin):
+class PromtpsAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "created_at",

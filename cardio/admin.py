@@ -1,12 +1,11 @@
 from django.contrib import admin
-from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from cardio.models import CardioExercise, CardioSession
 from cardio.forms import CardioSessionAdminForm
 
 
 @admin.register(CardioExercise)
-class CardioExerciseAdmin(UnfoldModelAdmin):
+class CardioExerciseAdmin(admin.ModelAdmin):
     list_display = ("formatted_name",)
     search_fields = ("name", "description")
 
@@ -33,7 +32,7 @@ class CardioExerciseAdmin(UnfoldModelAdmin):
 
 
 @admin.register(CardioSession)
-class CardioSessionAdmin(UnfoldModelAdmin):
+class CardioSessionAdmin(admin.ModelAdmin):
     form = CardioSessionAdminForm
     list_display = (
         "user",

@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.urls import path
-from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from nutrition.models import DailyDiet, MealMetrics, Product, ProductQuantity
 from nutrition.views import DailyDietFormsetView, DietJSONView
@@ -8,7 +7,7 @@ from nutrition.forms_admin import DailyDietAdminForm
 
 
 @admin.register(Product)
-class ProductsAdmin(UnfoldModelAdmin):
+class ProductsAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "barcode",
@@ -122,7 +121,7 @@ class ProductsAdmin(UnfoldModelAdmin):
 
 
 @admin.register(ProductQuantity)
-class ProductQuantityAdmin(UnfoldModelAdmin):
+class ProductQuantityAdmin(admin.ModelAdmin):
     list_display = ("product", "quantity", "unit", "formatted_created_at")
 
     def formatted_created_at(self, obj):
@@ -148,7 +147,7 @@ class ProductQuantityAdmin(UnfoldModelAdmin):
 
 
 @admin.register(DailyDiet)
-class DailyDietAdmin(UnfoldModelAdmin):
+class DailyDietAdmin(admin.ModelAdmin):
     form = DailyDietAdminForm
     list_display = ("user", "formatted_date", "formatted_created_at")
 
@@ -213,7 +212,7 @@ class DailyDietAdmin(UnfoldModelAdmin):
 
 
 @admin.register(MealMetrics)
-class MealMetricsAdmin(UnfoldModelAdmin):
+class MealMetricsAdmin(admin.ModelAdmin):
     list_display = (
         "daily_diet",
         "calories",

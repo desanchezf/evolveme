@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit
+from crispy_forms.layout import Layout, Row, Column
 
 from cardio.models import CardioExercise, CardioSession
 
@@ -145,26 +145,31 @@ class CardioSessionForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
-                Column("user", css_class="w-1/2"), Column("exercise", css_class="w-1/2")
+                Column("user", css_class="col-md-6"),
+                Column("exercise", css_class="col-md-6"),
+                css_class="mb-3",
             ),
-            Row(Column("date", css_class="w-full")),
+            Row(Column("date", css_class="col-12"), css_class="mb-3"),
             Row(
-                Column("session_start", css_class="w-1/2"),
-                Column("session_end", css_class="w-1/2"),
+                Column("session_start", css_class="col-md-6"),
+                Column("session_end", css_class="col-md-6"),
+                css_class="mb-3",
             ),
-            Row(Column("location", css_class="w-full")),
+            Row(Column("location", css_class="col-12"), css_class="mb-3"),
             Row(
-                Column("workout_time", css_class="w-1/3"),
-                Column("distance", css_class="w-1/3"),
-                Column("avg_speed", css_class="w-1/3"),
-            ),
-            Row(
-                Column("active_calories", css_class="w-1/2"),
-                Column("total_calories", css_class="w-1/2"),
+                Column("workout_time", css_class="col-md-4"),
+                Column("distance", css_class="col-md-4"),
+                Column("avg_speed", css_class="col-md-4"),
+                css_class="mb-3",
             ),
             Row(
-                Column("elevation_gain", css_class="w-1/2"),
-                Column("average_heart_rate", css_class="w-1/2"),
+                Column("active_calories", css_class="col-md-6"),
+                Column("total_calories", css_class="col-md-6"),
+                css_class="mb-3",
             ),
-            Submit("submit", "Guardar Sesión", css_class="btn btn-primary"),
+            Row(
+                Column("elevation_gain", css_class="col-md-6"),
+                Column("average_heart_rate", css_class="col-md-6"),
+                css_class="mb-3",
+            ),
         )

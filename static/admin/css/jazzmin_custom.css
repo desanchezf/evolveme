@@ -1,0 +1,58 @@
+/* Fondo mosaico en la pantalla de login y logout del admin */
+body.login-page {
+    background-image: url("/static/background.png") !important;
+    background-repeat: repeat !important;
+    background-size: auto !important;
+    background-color: #2d2d2d !important;
+}
+
+/* Contenedor del login para posicionar el icono dentro del cajón */
+.login-box {
+    position: relative;
+}
+
+/* Esquinas redondeadas, sombra y espacio para el icono dentro del cajón del login */
+.login-box .card {
+    border-radius: 29px;
+    -webkit-border-radius: 29px;
+    -moz-border-radius: 29px;
+    overflow: hidden;
+    padding-top: 72px;
+    box-shadow: 0px 0px 400px 100px rgba(0, 0, 0, 0.75);
+    -webkit-box-shadow: 0px 0px 400px 100px rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 0px 0px 400px 100px rgba(0, 0, 0, 0.75);
+}
+
+/* Icono pesa rusa DENTRO del cajón blanco del login (arriba del formulario) */
+.login-box .login-logo {
+    position: absolute;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    margin: 0;
+}
+
+.login-box .login-logo img,
+.login-logo img {
+    max-width: 56px;
+    max-height: 56px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Icono pesa rusa dentro de los campos de texto (opcional, un poco más alto) */
+.login-card-body .form-control {
+    background-image: url("/static/ico_dark.png");
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    background-size: 22px 28px;
+    padding-left: 46px;
+}
+
+/* Etiquetas de campos en negrita en formularios de registro (todas las acciones) */
+.register-form .card-body label,
+.register-form label {
+    font-weight: bold;
+}

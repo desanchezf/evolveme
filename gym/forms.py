@@ -3,11 +3,7 @@ from django.contrib.auth.models import User
 from django.forms import modelformset_factory
 from django.utils.dateparse import parse_duration
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit
-from unfold.widgets import (
-    UnfoldAdminTextInputWidget,
-    UnfoldAdminSelectWidget,
-)
+from crispy_forms.layout import Layout, Row, Column
 
 from gym.models import (
     MusculationRecord,
@@ -25,10 +21,10 @@ class MusculationRecordForm(forms.ModelForm):
         model = MusculationRecord
         fields = ["exercise", "sets", "reps", "weight", "tbi", "observation"]
         widgets = {
-            "exercise": UnfoldAdminSelectWidget(),
-            "sets": UnfoldAdminTextInputWidget(),
-            "reps": UnfoldAdminTextInputWidget(),
-            "weight": UnfoldAdminTextInputWidget(),
+            "exercise": forms.Select(attrs={"class": "form-select"}),
+            "sets": forms.NumberInput(attrs={"class": "form-control"}),
+            "reps": forms.NumberInput(attrs={"class": "form-control"}),
+            "weight": forms.NumberInput(attrs={"class": "form-control"}),
             "tbi": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "observation": forms.Textarea(attrs={"rows": 2, "class": "form-control"}),
         }
@@ -91,7 +87,6 @@ class MusculationRecordFormsetHelper(FormHelper):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.template = "unfold_crispy/layout/table_inline_formset.html"
         self.form_id = "musculation-record-formset"
         self.form_add = True
         self.attrs = {
@@ -126,7 +121,7 @@ class TrainingSessionForm(forms.Form):
     user = forms.ModelChoiceField(
         queryset=None,
         required=True,
-        widget=UnfoldAdminSelectWidget(),
+        widget=forms.Select(attrs={"class": "form-select"}),
         label="Usuario",
     )
     record_date = forms.DateTimeField(
@@ -392,17 +387,19 @@ class TrainingSessionModelForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
-                Column("user", css_class="w-1/2"), Column("routine", css_class="w-1/2")
+                Column("user", css_class="col-md-6"),
+                Column("routine", css_class="col-md-6"),
+                css_class="mb-3",
             ),
-            Row(Column("session_date", css_class="w-full")),
-            Row(Column("location", css_class="w-full")),
-            Row(Column("workout_time", css_class="w-1/3")),
+            Row(Column("session_date", css_class="col-12"), css_class="mb-3"),
+            Row(Column("location", css_class="col-12"), css_class="mb-3"),
+            Row(Column("workout_time", css_class="col-12"), css_class="mb-3"),
             Row(
-                Column("active_kilocalories", css_class="w-1/3"),
-                Column("total_kilocalories", css_class="w-1/3"),
-                Column("avg_heart_rate", css_class="w-1/3"),
+                Column("active_kilocalories", css_class="col-md-4"),
+                Column("total_kilocalories", css_class="col-md-4"),
+                Column("avg_heart_rate", css_class="col-md-4"),
+                css_class="mb-3",
             ),
-            Submit("submit", "Guardar Sesión", css_class="btn btn-primary"),
         )
 
 
@@ -448,16 +445,17 @@ class MusculationRecordPublicForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
-                Column("user", css_class="w-1/2"),
-                Column("record_date", css_class="w-1/2"),
+                Column("user", css_class="col-md-6"),
+                Column("record_date", css_class="col-md-6"),
+                css_class="mb-3",
             ),
-            Row(Column("exercise", css_class="w-full")),
+            Row(Column("exercise", css_class="col-12"), css_class="mb-3"),
             Row(
-                Column("sets", css_class="w-1/3"),
-                Column("reps", css_class="w-1/3"),
-                Column("weight", css_class="w-1/3"),
+                Column("sets", css_class="col-md-4"),
+                Column("reps", css_class="col-md-4"),
+                Column("weight", css_class="col-md-4"),
+                css_class="mb-3",
             ),
-            Row(Column("tbi", css_class="w-full")),
-            Row(Column("observation", css_class="w-full")),
-            Submit("submit", "Guardar Registro", css_class="btn btn-primary"),
+            Row(Column("tbi", css_class="col-12"), css_class="mb-3"),
+            Row(Column("observation", css_class="col-12"), css_class="mb-3"),
         )

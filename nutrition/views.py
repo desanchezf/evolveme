@@ -3,11 +3,11 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import FormView
-from unfold.views import UnfoldModelAdminViewMixin
 
 from nutrition.forms import (
     DailyDietForm,
@@ -19,13 +19,12 @@ from nutrition.forms import (
 from nutrition.models import DailyDiet, Product, ProductQuantity
 
 
-class DailyDietFormsetView(UnfoldModelAdminViewMixin, FormView):
+class DailyDietFormsetView(PermissionRequiredMixin, FormView):
     """Vista para crear/editar dieta diaria con múltiples productos"""
 
-    title = "Registrar Dieta Diaria"
+    permission_required = ("nutrition.add_dailydiet",)
     form_class = DailyDietForm
     success_url = reverse_lazy("admin:nutrition_dailydiet_changelist")
-    permission_required = ("nutrition.add_dailydiet",)
     template_name = "nutrition/daily_diet_formset.html"
 
     def get_form_kwargs(self):
@@ -88,13 +87,12 @@ class DailyDietFormsetView(UnfoldModelAdminViewMixin, FormView):
         return super().form_invalid(form)
 
 
-class DietJSONView(UnfoldModelAdminViewMixin, FormView):
+class DietJSONView(PermissionRequiredMixin, FormView):
     """Vista para generar dieta semanal desde JSON"""
 
-    title = "Generar Dieta Semanal desde JSON"
+    permission_required = ("nutrition.add_dailydiet",)
     form_class = DietJSONForm
     success_url = reverse_lazy("admin:nutrition_dailydiet_changelist")
-    permission_required = ("nutrition.add_dailydiet",)
     template_name = "nutrition/diet_json_form.html"
 
     def parse_date(self, date_str):
