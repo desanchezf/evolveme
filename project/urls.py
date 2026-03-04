@@ -24,4 +24,5 @@ urlpatterns = [
     path("cardio/", include("cardio.urls")),
     path("gym/", include("gym.urls")),
     path("nutrition/", include("nutrition.urls")),
+    path("ia/", include("ia.urls")),
 ]

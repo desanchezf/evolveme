@@ -259,9 +259,15 @@ JAZZMIN_SETTINGS = {
     "welcome_sign": "Panel de Administración",
     "show_sidebar": True,
     "navigation_expanded": True,
-    # Enlace en el menú superior para ir al portal de la app
+    # Apartados en el menú superior (como Portal EvolveMe)
     "topmenu_links": [
-        {"name": "Portal EvolveMe", "url": "/", "icon": "fas fa-home"},
+        {"name": "Home", "url": "/admin/", "icon": "fas fa-home"},
+        {"name": "Dieta", "url": "/nutrition/daily-diet/", "icon": "fas fa-utensils"},
+        {"name": "Entrenamiento", "url": "/gym/training-session/", "icon": "fas fa-calendar-check"},
+        {"name": "Cardio", "url": "/cardio/cardio-session/", "icon": "fas fa-running"},
+        {"name": "Musculación", "url": "/gym/musculation-record/", "icon": "fas fa-dumbbell"},
+        {"name": "Producto", "url": "/nutrition/product/", "icon": "fas fa-shopping-basket"},
+        {"name": "IA", "url": "/ia/chat/", "icon": "fas fa-robot"},
     ],
     # Enlaces en el menú lateral a los formularios públicos
     "custom_links": {
@@ -321,6 +327,10 @@ JAZZMIN_SETTINGS = {
         "gym.routine": "fas fa-list-ol",
         "gym.trainingsession": "fas fa-calendar-check",
         # IA
+        "ia.chatmessage": "fas fa-comment-dots",
+        "ia.chatsession": "fas fa-comments",
+        "ia.ollamamodelconfig": "fas fa-cube",
+        "ia.ollamaserver": "fas fa-server",
         "ia.promtps": "fas fa-robot",
         # Nutrition
         "nutrition.product": "fas fa-shopping-basket",

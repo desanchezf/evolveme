@@ -25,13 +25,19 @@
     <div class="container-fluid py-4 register-form">
         <form method="post" novalidate>
             {% csrf_token %}
-            <h2 class="h5 mb-2">Información de la Dieta</h2>
+            <div class="div1">
+                <h1>Información de la dieta</h1>
+                <p class="text-muted">Indica la fecha y el usuario para registrar la dieta del día.</p>
+            </div>
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     {% crispy form "bootstrap5" %}
                 </div>
             </div>
-            <h2 class="h5 mb-2">Productos Consumidos</h2>
+            <div class="div1">
+                <h1>Productos consumidos</h1>
+                <p class="text-muted">Añade los productos y cantidades de tu dieta del día.</p>
+            </div>
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     {% crispy formset formset_helper "bootstrap5" %}
