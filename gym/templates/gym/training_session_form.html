@@ -23,12 +23,21 @@
 
 {% block content %}
     <div class="container-fluid py-4 register-form">
-        <form method="post" novalidate>
+        <form method="post" novalidate enctype="multipart/form-data">
             {% csrf_token %}
             <div class="div1">
                 <h1>Registro de sesión de entrenamiento</h1>
                 <p class="text-muted">Registra la fecha y la rutina de tu sesión de entrenamiento.</p>
             </div>
+            <p class="text-muted mb-2">Regístralo mediante imágenes</p>
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <label for="id_workout_images" class="form-label">Imagen o imágenes del entrenamiento</label>
+                    <input type="file" name="workout_images" id="id_workout_images" class="form-control" accept="image/*" multiple>
+                    <div class="form-text">Opcional. Una o varias imágenes (captura de reloj, app de fitness, etc.) para que la IA extraiga los datos. Se guardará la primera asociada a la sesión.</div>
+                </div>
+            </div>
+            <p class="text-muted mb-2">O regístralo manualmente</p>
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     {% crispy form "bootstrap5" %}

@@ -16,7 +16,7 @@ from nutrition.forms import (
     ProductQuantityFormSet,
     ProductQuantityFormsetHelper,
 )
-from nutrition.models import DailyDiet, Product, ProductQuantity
+from nutrition.models import DailyDiet, Product, ProductImage, ProductQuantity
 
 
 class DailyDietFormsetView(PermissionRequiredMixin, FormView):
@@ -224,11 +224,23 @@ class DietJSONView(PermissionRequiredMixin, FormView):
 
 @login_required
 def product_form_view(request):
-    """Vista para el formulario de productos"""
+    """Vista para el formulario de productos. Permite subir una o varias imágenes para extraer datos con IA."""
+    from nutrition.services import extract_product_data_from_images
+
     if request.method == "POST":
-        form = ProductForm(request.POST)
+        post_data = request.POST.copy()
+        image_files = request.FILES.getlist("product_images")
+        if image_files:
+            extracted = extract_product_data_from_images(image_files)
+            for key, value in extracted.items():
+                if key not in post_data or not str(post_data.get(key)).strip():
+                    post_data[key] = value
+
+        form = ProductForm(post_data, request.FILES)
         if form.is_valid():
-            form.save()
+            product = form.save()
+            for img_file in image_files:
+                ProductImage.objects.create(product=product, image=img_file)
             messages.success(request, "Producto guardado correctamente.")
             return redirect("nutrition:product_form")
     else:

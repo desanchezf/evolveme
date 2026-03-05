@@ -258,4 +258,10 @@ class TrainingSessionAdmin(admin.ModelAdmin):
                 "fields": ("avg_heart_rate",),
             },
         ),
+        (
+            "Imagen del entrenamiento",
+            {
+                "fields": ("workout_image",),
+            },
+        ),
     )

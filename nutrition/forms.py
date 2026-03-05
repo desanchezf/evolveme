@@ -111,7 +111,7 @@ class DietJSONForm(forms.Form):
 
 
 class ProductForm(forms.ModelForm):
-    """Formulario público para registrar productos"""
+    """Formulario público para registrar productos. Permite subir una o varias imágenes (campo en template) para extraer datos con IA."""
 
     class Meta:
         model = Product

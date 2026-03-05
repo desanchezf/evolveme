@@ -91,6 +91,13 @@ class CardioSession(models.Model):
         blank=True,
         verbose_name="Frecuencia cardíaca promedio (bpm)",
     )
+    workout_image = models.ImageField(
+        upload_to="cardio/%Y/%m/",
+        null=True,
+        blank=True,
+        verbose_name="Imagen del entrenamiento",
+        help_text="Opcional. Sube una captura o foto del entrenamiento para extraer datos con IA.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

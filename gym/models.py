@@ -147,6 +147,13 @@ class TrainingSession(models.Model):
     avg_heart_rate = models.IntegerField(
         null=True, blank=True, verbose_name="FC media (BPM)"
     )
+    workout_image = models.ImageField(
+        upload_to="gym/%Y/%m/",
+        null=True,
+        blank=True,
+        verbose_name="Imagen del entrenamiento",
+        help_text="Opcional. Sube una captura o foto del entrenamiento para extraer datos con IA.",
+    )
 
     class Meta:
         verbose_name = "Sesión de entrenamiento"

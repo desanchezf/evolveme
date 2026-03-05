@@ -2,12 +2,14 @@
 services:
   redis:
     image: redis:latest
+    container_name: evolveme-redis
     ports:
       - "6380:6379"
       # - "6379:6379"
 
   postgres:
-    image: postgres:13
+    image: postgres:16
+    container_name: evolveme-postgres
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
@@ -17,8 +19,15 @@ services:
     ports:
       - "5433:5432"
       # - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d django_db"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   backend:
+    container_name: evolveme-backend
     build:
       context: .
       dockerfile: Dockerfile
@@ -33,12 +42,19 @@ services:
       - SECRET_KEY=Local
       - DJANGO_SETTINGS_MODULE=project.settings
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/django_db
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=django_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
       - REDIS_URL=redis://redis:6379/0
     env_file:
       - .env
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   # celery:
   #   build:

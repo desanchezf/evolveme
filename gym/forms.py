@@ -344,7 +344,7 @@ class TrainingSessionAdminForm(forms.ModelForm):
 
 
 class TrainingSessionModelForm(forms.ModelForm):
-    """Formulario público para registrar sesiones de entrenamiento"""
+    """Formulario público para registrar sesiones de entrenamiento."""
 
     class Meta:
         model = TrainingSession
@@ -357,6 +357,7 @@ class TrainingSessionModelForm(forms.ModelForm):
             "active_kilocalories",
             "total_kilocalories",
             "avg_heart_rate",
+            "workout_image",
         ]
         widgets = {
             "user": forms.Select(attrs={"class": "form-control"}),
@@ -375,22 +376,35 @@ class TrainingSessionModelForm(forms.ModelForm):
             "active_kilocalories": forms.NumberInput(attrs={"class": "form-control"}),
             "total_kilocalories": forms.NumberInput(attrs={"class": "form-control"}),
             "avg_heart_rate": forms.NumberInput(attrs={"class": "form-control"}),
+            "workout_image": forms.FileInput(attrs={"class": "form-control", "accept": "image/*"}),
         }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
+        is_staff = kwargs.pop("is_staff", False)
         super().__init__(*args, **kwargs)
-        self.fields["user"].queryset = User.objects.all()
         self.fields["routine"].queryset = Routine.objects.all()
         if user:
             self.fields["user"].initial = user
-        self.helper = FormHelper()
-        self.helper.layout = Layout(
-            Row(
-                Column("user", css_class="col-md-6"),
-                Column("routine", css_class="col-md-6"),
-                css_class="mb-3",
-            ),
+        if is_staff:
+            self.fields["user"].queryset = User.objects.all()
+        else:
+            self.fields.pop("user", None)
+
+        layout_rows = []
+        if "user" in self.fields:
+            layout_rows.append(
+                Row(
+                    Column("user", css_class="col-md-6"),
+                    Column("routine", css_class="col-md-6"),
+                    css_class="mb-3",
+                )
+            )
+        else:
+            layout_rows.append(
+                Row(Column("routine", css_class="col-12"), css_class="mb-3")
+            )
+        layout_rows.extend([
             Row(Column("session_date", css_class="col-12"), css_class="mb-3"),
             Row(Column("location", css_class="col-12"), css_class="mb-3"),
             Row(Column("workout_time", css_class="col-12"), css_class="mb-3"),
@@ -400,7 +414,9 @@ class TrainingSessionModelForm(forms.ModelForm):
                 Column("avg_heart_rate", css_class="col-md-4"),
                 css_class="mb-3",
             ),
-        )
+        ])
+        self.helper = FormHelper()
+        self.helper.layout = Layout(*layout_rows)
 
 
 class MusculationRecordPublicForm(forms.ModelForm):

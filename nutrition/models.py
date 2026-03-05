@@ -136,6 +136,30 @@ class Product(models.Model):
         return self.name
 
 
+class ProductImage(models.Model):
+    """Imagen(es) del producto (etiquetado, envase, etc.) para extracción con IA o referencia."""
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="images",
+        verbose_name="Producto",
+    )
+    image = models.ImageField(
+        upload_to="nutrition/products/%Y/%m/",
+        verbose_name="Imagen",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Imagen de producto"
+        verbose_name_plural = "Imágenes de producto"
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Imagen de {self.product.name}"
+
+
 class ProductQuantity(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, verbose_name="Producto"

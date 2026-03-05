@@ -234,14 +234,46 @@ def musculation_record_form_view(request):
 
 @login_required
 def training_session_form_view(request):
-    """Vista para el formulario de sesiones de entrenamiento"""
+    """Vista para el formulario de sesiones de entrenamiento. Admin puede elegir usuario; usuario normal solo su cuenta."""
+    from gym.services import extract_training_session_data_from_image
+
+    is_staff = getattr(request.user, "is_staff", False)
+
     if request.method == "POST":
-        form = TrainingSessionModelForm(request.POST, user=request.user)
+        from django.utils.datastructures import MultiValueDict
+
+        post_data = request.POST.copy()
+        image_files = request.FILES.getlist("workout_images")
+        if image_files:
+            extracted = extract_training_session_data_from_image(image_files)
+            for key, value in extracted.items():
+                if key not in post_data or not str(post_data.get(key)).strip():
+                    if hasattr(value, "total_seconds"):
+                        s = int(value.total_seconds())
+                        post_data[key] = f"{s // 3600:02d}:{(s % 3600) // 60:02d}:{s % 60:02d}"
+                    else:
+                        post_data[key] = value
+
+        files_for_form = MultiValueDict()
+        for key in request.FILES:
+            files_for_form.setlist(key, request.FILES.getlist(key))
+        if image_files:
+            files_for_form.setlist("workout_image", [image_files[0]])
+
+        form = TrainingSessionModelForm(
+            post_data,
+            files_for_form,
+            user=request.user,
+            is_staff=is_staff,
+        )
         if form.is_valid():
-            form.save()
+            instance = form.save(commit=False)
+            if not is_staff:
+                instance.user = request.user
+            instance.save()
             messages.success(request, "Sesión de entrenamiento guardada correctamente.")
             return redirect("gym:training_session_form")
     else:
-        form = TrainingSessionModelForm(user=request.user)
+        form = TrainingSessionModelForm(user=request.user, is_staff=is_staff)
 
     return render(request, "gym/training_session_form.html", {"form": form})

@@ -1,13 +1,20 @@
 from django.contrib import admin
 from django.urls import path
 
-from nutrition.models import DailyDiet, MealMetrics, Product, ProductQuantity
+from nutrition.models import DailyDiet, MealMetrics, Product, ProductImage, ProductQuantity
 from nutrition.views import DailyDietFormsetView, DietJSONView
 from nutrition.forms_admin import DailyDietAdminForm
 
 
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 0
+    readonly_fields = ("created_at",)
+
+
 @admin.register(Product)
 class ProductsAdmin(admin.ModelAdmin):
+    inlines = [ProductImageInline]
     list_display = (
         "name",
         "barcode",
