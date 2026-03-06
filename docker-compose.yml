@@ -35,7 +35,7 @@ services:
     volumes:
       - .:/code
     ports:
-      - "8002:8000"
+      - "8001:8000"
       # - "8000:8000"
     environment:
       - DEBUG=1
