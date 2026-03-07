@@ -26,6 +26,14 @@ services:
       retries: 5
       start_period: 5s
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: evolveme-ollama
+    volumes:
+      - ollama_models:/root/.ollama
+    ports:
+      - "11434:11434"
+
   backend:
     container_name: evolveme-backend
     build:
@@ -54,6 +62,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_started
+      ollama:
         condition: service_started
 
   # celery:
@@ -92,3 +102,4 @@ services:
 
 volumes:
   postgres_data:
+  ollama_models:

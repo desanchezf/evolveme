@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
 
 from ia.models import ChatMessage, ChatSession
+from ia.services import chat_with_ollama
 
 
 @login_required
@@ -52,11 +53,13 @@ def chat_send_view(request):
     ChatMessage.objects.create(
         session=session, role=ChatMessage.ROLE_USER, content=content
     )
-    # Respuesta del asistente (placeholder hasta conectar Ollama)
-    assistant_content = (
-        "Respuesta en desarrollo. Conecta esta ventana a tu modelo Ollama "
-        "para respuestas automáticas."
-    )
+
+    assistant_content, err = chat_with_ollama(session, model_key)
+    if err:
+        assistant_content = f"No se pudo obtener respuesta del modelo: {err}"
+    if not assistant_content:
+        assistant_content = "El modelo no devolvió ninguna respuesta."
+
     ChatMessage.objects.create(
         session=session,
         role=ChatMessage.ROLE_ASSISTANT,

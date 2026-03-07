@@ -11,7 +11,8 @@ try:
 except ImportError:
     requests = None
 
-DEFAULT_VISION_MODEL = "llava"
+# Modelo solo para IMÁGENES (OCR/detección). El chat usa otro modelo (qwen3:8b) en ia/services.
+VISION_MODEL = "llama3.2-vision:11b"  # ollama pull llama3.2-vision:11b
 
 
 def _get_ollama_server():
@@ -75,7 +76,7 @@ def extract_training_session_data_from_image(image_files) -> dict:
 
     url = f"{server.base_url.rstrip('/')}/api/generate"
     payload = {
-        "model": DEFAULT_VISION_MODEL,
+        "model": VISION_MODEL,
         "prompt": prompt,
         "images": images_b64,
         "stream": False,
