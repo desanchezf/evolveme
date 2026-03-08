@@ -1,11 +1,10 @@
-
 services:
   redis:
-    image: redis:latest
+    image: redis:7
     container_name: evolveme-redis
+    restart: unless-stopped
     ports:
       - "6380:6379"
-      # - "6379:6379"
 
   postgres:
     image: postgres:16
@@ -14,11 +13,11 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "django_db"
+    restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
-      # - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d django_db"]
       interval: 3s
@@ -44,7 +43,6 @@ services:
       - .:/code
     ports:
       - "8001:8000"
-      # - "8000:8000"
     environment:
       - DEBUG=1
       - SECRET_KEY=Local
@@ -65,6 +63,44 @@ services:
         condition: service_started
       ollama:
         condition: service_started
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: evolveme-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    depends_on:
+      - backend
+      - redis
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: evolveme-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
 
   # celery:
   #   build:
@@ -103,3 +139,5 @@ services:
 volumes:
   postgres_data:
   ollama_models:
+  prometheus_data:
+  grafana_data:
