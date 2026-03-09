@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "jazzmin",
     "crispy_forms",
     "crispy_bootstrap5",
+    "import_export",
     # Django apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -142,6 +143,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Celery (broker desde REDIS_URL; tarea diaria en project/celery.py)
+CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 # Evolveme
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "")

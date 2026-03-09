@@ -1,11 +1,12 @@
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
 
 from cardio.models import CardioExercise, CardioSession
 from cardio.forms import CardioSessionAdminForm
 
 
 @admin.register(CardioExercise)
-class CardioExerciseAdmin(admin.ModelAdmin):
+class CardioExerciseAdmin(ImportExportModelAdmin):
     list_display = ("formatted_name",)
     search_fields = ("name", "description")
 
@@ -32,7 +33,7 @@ class CardioExerciseAdmin(admin.ModelAdmin):
 
 
 @admin.register(CardioSession)
-class CardioSessionAdmin(admin.ModelAdmin):
+class CardioSessionAdmin(ImportExportModelAdmin):
     form = CardioSessionAdminForm
     list_display = (
         "user",

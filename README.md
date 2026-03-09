@@ -75,6 +75,10 @@ Todos los formularios requieren autenticación (`@login_required`). Si el usuari
   - Modelo: `DailyDiet` + `ProductQuantity`
   - Requiere autenticación: ✅
 
+### Exportar datos desde el Admin
+
+El proyecto usa **django-import-export**. En cada listado de modelo del panel de administración aparece el botón **Export**, que permite descargar los datos (todos los del listado o solo los seleccionados) en **CSV**, **XLSX**, **JSON**, etc. Aplica a todos los modelos: Evolveme, Cardio, Gym, Nutrition, IA.
+
 ### URLs del Admin
 
 - **`/admin/`** - Panel de administración de Django
@@ -388,7 +392,7 @@ El tema del panel de administración se configura en `project/settings.py` media
 - [ ] Integración con Redis y Celery para tareas asíncronas
 - [ ] Notificaciones por correo y SMS
 - [ ] Dashboard con gráficos y estadísticas
-- [ ] Exportación de datos a PDF/Excel
+- [x] Exportación de datos desde el Admin (CSV, XLSX, JSON vía django-import-export)
 - [ ] Aplicación móvil
 
 ---

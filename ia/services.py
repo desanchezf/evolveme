@@ -64,3 +64,53 @@ def chat_with_ollama(session, model_key):
         return None, f"Error del servidor Ollama: {e.response.status_code if e.response else str(e)}"
     except Exception as e:
         return None, str(e)
+
+
+def fetch_ollama_tags(server):
+    """GET /api/tags del servidor. Devuelve (data, error)."""
+    if not requests:
+        return None, "Falta 'requests'."
+    url = f"{server.base_url.rstrip('/')}/api/tags"
+    headers = {}
+    if server.api_key:
+        headers["Authorization"] = f"Bearer {server.api_key}"
+    try:
+        resp = requests.get(url, headers=headers or None, timeout=15)
+        resp.raise_for_status()
+        return resp.json(), None
+    except Exception as e:
+        return None, str(e)
+
+
+def check_model_on_server(server, model_name):
+    """
+    Comprueba si el modelo está en el servidor y devuelve su digest.
+    Devuelve (downloaded: bool, digest: str).
+    """
+    data, err = fetch_ollama_tags(server)
+    if err:
+        return False, ""
+    models = data.get("models") or []
+    for m in models:
+        name = m.get("name") or m.get("model") or ""
+        if name == model_name or name.startswith(model_name + ":"):
+            return True, (m.get("digest") or "")[:64]
+    return False, ""
+
+
+def pull_model_on_server(server, model_name):
+    """Lanza la descarga del modelo en Ollama (POST /api/pull). Devuelve (ok, error)."""
+    if not requests:
+        return False, "Falta 'requests'."
+    url = f"{server.base_url.rstrip('/')}/api/pull"
+    headers = {}
+    if server.api_key:
+        headers["Authorization"] = f"Bearer {server.api_key}"
+    try:
+        resp = requests.post(
+            url, json={"name": model_name}, headers=headers or None, timeout=300
+        )
+        resp.raise_for_status()
+        return True, None
+    except Exception as e:
+        return False, str(e)

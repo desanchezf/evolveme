@@ -1,4 +1,8 @@
 from django.contrib import admin
+from django.urls import reverse
+from import_export.admin import ImportExportModelAdmin
+from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 
 from ia.models import (
     ChatMessage,
@@ -10,7 +14,7 @@ from ia.models import (
 
 
 @admin.register(Promtps)
-class PromtpsAdmin(admin.ModelAdmin):
+class PromtpsAdmin(ImportExportModelAdmin):
     list_display = (
         "name",
         "created_at",
@@ -45,7 +49,7 @@ class PromtpsAdmin(admin.ModelAdmin):
 
 
 @admin.register(OllamaServer)
-class OllamaServerAdmin(admin.ModelAdmin):
+class OllamaServerAdmin(ImportExportModelAdmin):
     list_display = ("name", "base_url", "enabled", "created_at")
     list_filter = ("enabled",)
     search_fields = ("name", "base_url")
@@ -64,16 +68,35 @@ class OllamaServerAdmin(admin.ModelAdmin):
 
 
 @admin.register(OllamaModelConfig)
-class OllamaModelConfigAdmin(admin.ModelAdmin):
-    list_display = ("alias", "server", "model_name", "is_default", "deprecated", "created_at")
-    list_filter = ("server", "is_default", "deprecated")
-    search_fields = ("alias", "model_name")
+class OllamaModelConfigAdmin(ImportExportModelAdmin):
+    list_display = (
+        "alias",
+        "server",
+        "model_name",
+        "proposito",
+        "is_default",
+        "deprecated",
+        "downloaded",
+        "update_available",
+        "pull_action",
+        "created_at",
+    )
+    list_filter = ("server", "is_default", "deprecated", "downloaded", "update_available")
+    search_fields = ("alias", "model_name", "proposito")
     ordering = ("server", "alias")
     raw_id_fields = ("server",)
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "downloaded",
+        "digest",
+        "last_checked_at",
+        "update_available",
+    )
     fieldsets = (
         (
             "Servidor y modelo",
-            {"fields": ("server", "model_name", "alias", "description")},
+            {"fields": ("server", "model_name", "alias", "proposito", "description")},
         ),
         (
             "Parámetros de inferencia",
@@ -84,11 +107,29 @@ class OllamaModelConfigAdmin(admin.ModelAdmin):
             {"fields": ("is_default", "deprecated", "deprecated_at")},
         ),
         (
+            _("Estado"),
+            {
+                "fields": ("downloaded", "digest", "last_checked_at", "update_available"),
+                "description": _("Actualizado por la tarea en segundo plano y al pulsar Actualizar."),
+            },
+        ),
+        (
             "Sistema",
             {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
         ),
     )
-    readonly_fields = ("created_at", "updated_at")
+
+    def pull_action(self, obj):
+        if not obj.update_available and obj.downloaded:
+            return "—"
+        url = reverse("ia:ollama_model_pull", args=[obj.pk])
+        return format_html(
+            '<a class="button" href="{}">{}</a>',
+            url,
+            _("Actualizar"),
+        )
+
+    pull_action.short_description = _("Acción")
 
 
 class ChatMessageInline(admin.TabularInline):
@@ -99,7 +140,7 @@ class ChatMessageInline(admin.TabularInline):
 
 
 @admin.register(ChatSession)
-class ChatSessionAdmin(admin.ModelAdmin):
+class ChatSessionAdmin(ImportExportModelAdmin):
     list_display = ("id", "user", "model_key", "created_at", "updated_at")
     list_filter = ("created_at", "updated_at")
     search_fields = ("user__username", "model_key")
@@ -109,7 +150,7 @@ class ChatSessionAdmin(admin.ModelAdmin):
 
 
 @admin.register(ChatMessage)
-class ChatMessageAdmin(admin.ModelAdmin):
+class ChatMessageAdmin(ImportExportModelAdmin):
     list_display = ("id", "session", "role", "content_preview", "created_at")
     list_filter = ("role",)
     search_fields = ("content",)

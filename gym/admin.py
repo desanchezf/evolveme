@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path
+from import_export.admin import ImportExportModelAdmin
 from django.utils.safestring import mark_safe
 
 from gym.models import (
@@ -17,7 +18,7 @@ from gym.forms import (
 
 
 @admin.register(MusculationExercise)
-class MusculationExerciseAdmin(admin.ModelAdmin):
+class MusculationExerciseAdmin(ImportExportModelAdmin):
     list_display = ("name", "body_part", "sets", "reps", "formatted_unit")
     list_filter = ("body_part", "unit")
     search_fields = ("name", "description")
@@ -52,7 +53,7 @@ class MusculationExerciseAdmin(admin.ModelAdmin):
 
 
 @admin.register(MusculationRecord)
-class MusculationRecordAdmin(admin.ModelAdmin):
+class MusculationRecordAdmin(ImportExportModelAdmin):
     form = MusculationRecordAdminForm
     list_display = (
         "user",
@@ -120,7 +121,7 @@ class MusculationRecordAdmin(admin.ModelAdmin):
 
 
 @admin.register(Routine)
-class RoutineAdmin(admin.ModelAdmin):
+class RoutineAdmin(ImportExportModelAdmin):
     form = RoutineAdminForm
     list_display = ("user", "formatted_exercise_types", "formatted_duration", "formatted_created_at")
 
@@ -203,7 +204,7 @@ class RoutineAdmin(admin.ModelAdmin):
 
 
 @admin.register(TrainingSession)
-class TrainingSessionAdmin(admin.ModelAdmin):
+class TrainingSessionAdmin(ImportExportModelAdmin):
     form = TrainingSessionAdminForm
     list_display = (
         "user",

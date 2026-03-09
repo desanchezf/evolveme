@@ -13,7 +13,7 @@ from cardio.models import CardioExercise, CardioSession
 from evolveme.models import GymUserProfile, Measure
 from nutrition.models import Product
 from gym.models import MusculationExercise, Routine, TrainingSession
-from ia.models import Promtps
+from ia.models import OllamaModelConfig, OllamaServer, Promtps
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +62,11 @@ class Command(BaseCommand):
             return
         else:
             print(" ✅ Prompts cargados correctamente 🤖")
+        if not self.ollama_models():
+            print(" ❌ Error al precargar modelos Ollama 🤖")
+            return
+        else:
+            print(" ✅ Modelos Ollama precargados correctamente 🤖")
 
     def get_csv_path(self, filename):
         """Obtiene la ruta del archivo CSV en la carpeta data/"""
@@ -577,5 +582,65 @@ class Command(BaseCommand):
         logger.info(
             f"Prompts cargados correctamente ✅ "
             f"({created_count} creados, {updated_count} actualizados)"
+        )
+        return True
+
+    def ollama_models(self):
+        """Precarga servidor Ollama por defecto y modelos llama3.2-vision:11b y qwen3:8b."""
+        logger.info("Precargando servidor y modelos Ollama 🤖 ...")
+
+        import os
+        default_ollama_url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+
+        server, server_created = OllamaServer.objects.get_or_create(
+            name="local",
+            defaults={
+                "base_url": default_ollama_url,
+                "enabled": True,
+                "api_key": "",
+            },
+        )
+        if server_created:
+            logger.info(f"Servidor Ollama 'local' creado ({default_ollama_url}) ✅")
+
+        models_to_load = [
+            {
+                "model_name": "llama3.2-vision:11b",
+                "alias": "llama3.2 vision 11b",
+                "proposito": "OCR",
+                "description": "Modelo de visión para extracción de datos desde imágenes (cardio, entrenamiento, producto).",
+            },
+            {
+                "model_name": "qwen3:8b",
+                "alias": "qwen3 8b",
+                "proposito": "Razonamiento del nutricionista",
+                "description": "Modelo de chat para conversación y razonamiento (nutrición, rutinas, medidas).",
+            },
+        ]
+
+        created_count = 0
+        for m in models_to_load:
+            obj, created = OllamaModelConfig.objects.get_or_create(
+                server=server,
+                model_name=m["model_name"],
+                defaults={
+                    "alias": m["alias"],
+                    "proposito": m["proposito"],
+                    "description": m.get("description", ""),
+                    "temperature": 0.7,
+                    "top_p": 0.9,
+                    "max_tokens": 512,
+                    "is_default": False,
+                    "deprecated": False,
+                    "downloaded": False,
+                    "update_available": True,
+                },
+            )
+            if created:
+                created_count += 1
+                logger.info(f"Modelo Ollama '{m['model_name']}' ({m['proposito']}) creado ✅")
+
+        logger.info(
+            f"Modelos Ollama precargados correctamente ✅ ({created_count} nuevos)"
         )
         return True

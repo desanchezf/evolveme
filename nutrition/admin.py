@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path
+from import_export.admin import ImportExportModelAdmin
 
 from nutrition.models import DailyDiet, MealMetrics, Product, ProductImage, ProductQuantity
 from nutrition.views import DailyDietFormsetView, DietJSONView
@@ -13,7 +14,7 @@ class ProductImageInline(admin.TabularInline):
 
 
 @admin.register(Product)
-class ProductsAdmin(admin.ModelAdmin):
+class ProductsAdmin(ImportExportModelAdmin):
     inlines = [ProductImageInline]
     list_display = (
         "name",
@@ -128,7 +129,7 @@ class ProductsAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProductQuantity)
-class ProductQuantityAdmin(admin.ModelAdmin):
+class ProductQuantityAdmin(ImportExportModelAdmin):
     list_display = ("product", "quantity", "unit", "formatted_created_at")
 
     def formatted_created_at(self, obj):
@@ -154,7 +155,7 @@ class ProductQuantityAdmin(admin.ModelAdmin):
 
 
 @admin.register(DailyDiet)
-class DailyDietAdmin(admin.ModelAdmin):
+class DailyDietAdmin(ImportExportModelAdmin):
     form = DailyDietAdminForm
     list_display = ("user", "formatted_date", "formatted_created_at")
 
@@ -219,7 +220,7 @@ class DailyDietAdmin(admin.ModelAdmin):
 
 
 @admin.register(MealMetrics)
-class MealMetricsAdmin(admin.ModelAdmin):
+class MealMetricsAdmin(ImportExportModelAdmin):
     list_display = (
         "daily_diet",
         "calories",

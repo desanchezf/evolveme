@@ -1,0 +1,16 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>{% trans "Actualizar modelo Ollama" %}</h1>
+<p>
+  {% blocktrans with model=config.model_name alias=config.alias %}
+  ¿Descargar o actualizar el modelo <strong>{{ model }}</strong> ({{ alias }}) en el servidor?
+  {% endblocktrans %}
+</p>
+<form method="post" action="">
+  {% csrf_token %}
+  <input type="submit" value="{% trans 'Sí, actualizar' %}" class="default">
+  <a href="{% url 'admin:ia_ollamamodelconfig_changelist' %}" class="button cancel-link">{% trans "Cancelar" %}</a>
+</form>
+{% endblock %}

@@ -137,6 +137,33 @@ class OllamaModelConfig(models.Model):
         blank=True,
         help_text="Fecha de deprecación (opcional).",
     )
+    proposito = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Propósito",
+        help_text="Uso del modelo (p. ej. 'OCR', 'Razonamiento del nutricionista', 'Chat').",
+    )
+    downloaded = models.BooleanField(
+        default=False,
+        verbose_name="Descargado",
+        help_text="Si el modelo está actualmente descargado en el servidor Ollama.",
+    )
+    digest = models.CharField(
+        max_length=64,
+        blank=True,
+        verbose_name="Digest",
+        help_text="Digest del modelo en Ollama (para detectar actualizaciones).",
+    )
+    last_checked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Última comprobación",
+    )
+    update_available = models.BooleanField(
+        default=False,
+        verbose_name="Actualización disponible",
+        help_text="Hay una versión nueva disponible o el modelo no está descargado.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

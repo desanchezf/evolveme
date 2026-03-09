@@ -1,11 +1,12 @@
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
 
 from evolveme.models import GymUserProfile, Measure
 from evolveme.forms import GymUserProfileAdminForm, MeasureAdminForm
 
 
 @admin.register(GymUserProfile)
-class GymUserProfileAdmin(admin.ModelAdmin):
+class GymUserProfileAdmin(ImportExportModelAdmin):
     form = GymUserProfileAdminForm
     list_display = (
         "user",
@@ -82,7 +83,7 @@ class GymUserProfileAdmin(admin.ModelAdmin):
 
 
 @admin.register(Measure)
-class MeasureAdmin(admin.ModelAdmin):
+class MeasureAdmin(ImportExportModelAdmin):
     form = MeasureAdminForm
     list_display = (
         "user",
