@@ -158,3 +158,16 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+
+# Claude dirs
+.claude/
+
+# macOS
+.DS_Store
+/cardio/.DS_Store
+/evolveme/.DS_Store
+/gym/.DS_Store
+/nutrition/.DS_Store
+/ia/.DS_Store
+/static/.DS_Store
