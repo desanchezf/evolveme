@@ -1,52 +1,45 @@
-{% extends "admin/base.html" %}
-{% load admin_urls crispy_forms_tags i18n static %}
+{% extends "evolveme/base_md3.html" %}
+{% load crispy_forms_tags %}
 
-{% block title %}Registrar Sesión de Entrenamiento - EvolveMe{% endblock %}
-
-{% block extrahead %}
-    {{ block.super }}
-    <script src="{% url 'admin:jsi18n' %}"></script>
-    {{ form.media }}
-    <script>
-        // Aplicar tema inmediatamente antes de que se renderice la página
-        (function() {
-            const theme = localStorage.getItem('theme') ||
-                         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', theme);
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                if (document.body) document.body.classList.add('dark');
-            }
-        })();
-    </script>
-{% endblock %}
+{% block title %}Sesión de Entrenamiento — EvolveMe{% endblock %}
+{% block nav_train_active %}active{% endblock %}
 
 {% block content %}
-    <div class="container-fluid py-4 register-form">
-        <form method="post" novalidate enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="div1">
-                <h1>Registro de sesión de entrenamiento</h1>
-                <p class="text-muted">Registra la fecha y la rutina de tu sesión de entrenamiento.</p>
-            </div>
-            <p class="text-muted mb-2">Regístralo mediante imágenes</p>
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <label for="id_workout_images" class="form-label">Imagen o imágenes del entrenamiento</label>
-                    <input type="file" name="workout_images" id="id_workout_images" class="form-control" accept="image/*" multiple>
-                    <div class="form-text">Opcional. Una o varias imágenes (captura de reloj, app de fitness, etc.) para que la IA extraiga los datos. Se guardará la primera asociada a la sesión.</div>
-                </div>
-            </div>
-            <p class="text-muted mb-2">O regístralo manualmente</p>
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    {% crispy form "bootstrap5" %}
-                </div>
-            </div>
-            <div class="d-flex justify-content-end gap-2">
-                <a href="{% url 'evolveme:index' %}" class="btn btn-secondary">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar Sesión</button>
-            </div>
-        </form>
-    </div>
+<h1 class="md3-page-title">Sesión de Entrenamiento</h1>
+<p class="md3-page-subtitle">Registra tu sesión completa. Puedes subir una captura de tu reloj o app de fitness.</p>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+
+  <!-- Upload zone -->
+  <div class="md3-card md3-card--outlined">
+    <p style="font-size:.75rem;font-weight:500;color:var(--md-sys-color-primary);text-transform:uppercase;letter-spacing:.08rem;margin-bottom:12px;">
+      Extracción automática con IA
+    </p>
+    <label class="md3-upload-zone" for="id_workout_images">
+      <span class="material-symbols-rounded">watch</span>
+      <span class="md3-upload-zone__label">Arrastra capturas de tu reloj o app de fitness o pulsa para seleccionar</span>
+      <span style="font-size:.75rem;margin-top:4px;color:var(--md-sys-color-on-surface-variant)">
+        Opcional · Una o varias imágenes · Se extraerán duración, calorías y FC automáticamente
+      </span>
+      <input type="file" name="workout_images" id="id_workout_images" accept="image/*" multiple>
+    </label>
+  </div>
+
+  <div class="md3-divider">o rellena manualmente</div>
+
+  <!-- Form fields -->
+  <div class="md3-card">
+    {% crispy form "bootstrap5" %}
+  </div>
+
+  <!-- Actions -->
+  <div class="md3-actions">
+    <a href="{% url 'evolveme:index' %}" class="md3-btn md3-btn--text">Cancelar</a>
+    <button type="submit" class="md3-btn md3-btn--filled">
+      <span class="material-symbols-rounded">save</span>
+      Guardar Sesión
+    </button>
+  </div>
+</form>
 {% endblock %}

@@ -1,52 +1,45 @@
-{% extends "admin/base.html" %}
-{% load admin_urls crispy_forms_tags i18n static %}
+{% extends "evolveme/base_md3.html" %}
+{% load crispy_forms_tags %}
 
-{% block title %}Registrar Producto - EvolveMe{% endblock %}
-
-{% block extrahead %}
-    {{ block.super }}
-    <script src="{% url 'admin:jsi18n' %}"></script>
-    {{ form.media }}
-    <script>
-        // Aplicar tema inmediatamente antes de que se renderice la página
-        (function() {
-            const theme = localStorage.getItem('theme') ||
-                         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', theme);
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                if (document.body) document.body.classList.add('dark');
-            }
-        })();
-    </script>
-{% endblock %}
+{% block title %}Registrar Producto — EvolveMe{% endblock %}
+{% block nav_product_active %}active{% endblock %}
 
 {% block content %}
-    <div class="container-fluid py-4 register-form">
-        <form method="post" novalidate enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="div1">
-                <h1>Registro de producto</h1>
-                <p class="text-muted">Añade un nuevo producto a tu base de datos para usarlo en tus dietas.</p>
-            </div>
-            <p class="text-muted mb-2">Regístralo mediante imágenes</p>
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <label for="id_product_images" class="form-label">Una o varias imágenes del producto (etiquetado, envase)</label>
-                    <input type="file" name="product_images" id="id_product_images" class="form-control" accept="image/*" multiple>
-                    <div class="form-text">Opcional. Puedes subir varias imágenes para que la IA extraiga los datos. Todas se guardarán asociadas al producto.</div>
-                </div>
-            </div>
-            <p class="text-muted mb-2">O regístralo manualmente</p>
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    {% crispy form "bootstrap5" %}
-                </div>
-            </div>
-            <div class="d-flex justify-content-end gap-2">
-                <a href="{% url 'evolveme:index' %}" class="btn btn-secondary">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar Producto</button>
-            </div>
-        </form>
-    </div>
+<h1 class="md3-page-title">Registrar Producto</h1>
+<p class="md3-page-subtitle">Añade un producto a tu base de datos. La IA puede extraer los valores nutricionales de la etiqueta.</p>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+
+  <!-- Upload zone -->
+  <div class="md3-card md3-card--outlined">
+    <p style="font-size:.75rem;font-weight:500;color:var(--md-sys-color-primary);text-transform:uppercase;letter-spacing:.08rem;margin-bottom:12px;">
+      Extracción automática con IA (OCR de etiquetado)
+    </p>
+    <label class="md3-upload-zone" for="id_product_images">
+      <span class="material-symbols-rounded">document_scanner</span>
+      <span class="md3-upload-zone__label">Arrastra fotos del envase/etiqueta o pulsa para seleccionar</span>
+      <span style="font-size:.75rem;margin-top:4px;color:var(--md-sys-color-on-surface-variant)">
+        Opcional · Puedes subir varias imágenes · Todas se guardarán asociadas al producto
+      </span>
+      <input type="file" name="product_images" id="id_product_images" accept="image/*" multiple>
+    </label>
+  </div>
+
+  <div class="md3-divider">o rellena manualmente</div>
+
+  <!-- Form fields -->
+  <div class="md3-card">
+    {% crispy form "bootstrap5" %}
+  </div>
+
+  <!-- Actions -->
+  <div class="md3-actions">
+    <a href="{% url 'evolveme:index' %}" class="md3-btn md3-btn--text">Cancelar</a>
+    <button type="submit" class="md3-btn md3-btn--filled">
+      <span class="material-symbols-rounded">save</span>
+      Guardar Producto
+    </button>
+  </div>
+</form>
 {% endblock %}

@@ -145,3 +145,26 @@ class Measure(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.date}"
+
+
+class MeasureImage(models.Model):
+    """Imagen de captura de báscula asociada a un registro de medidas."""
+
+    measure = models.ForeignKey(
+        Measure,
+        on_delete=models.CASCADE,
+        related_name="images",
+        verbose_name="Medida",
+    )
+    image = models.ImageField(
+        upload_to="evolveme/measures/%Y/%m/",
+        verbose_name="Imagen",
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Imagen de medida"
+        verbose_name_plural = "Imágenes de medida"
+
+    def __str__(self):
+        return f"Imagen {self.pk} — {self.measure}"

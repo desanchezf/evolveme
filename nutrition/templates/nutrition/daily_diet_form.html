@@ -1,52 +1,36 @@
-{% extends "admin/base.html" %}
-{% load admin_urls crispy_forms_tags i18n static %}
+{% extends "evolveme/base_md3.html" %}
+{% load crispy_forms_tags %}
 
-{% block title %}Registrar Dieta del Día - EvolveMe{% endblock %}
-
-{% block extrahead %}
-    {{ block.super }}
-    <script src="{% url 'admin:jsi18n' %}"></script>
-    {{ form.media }}
-    <script>
-        // Aplicar tema inmediatamente antes de que se renderice la página
-        (function() {
-            const theme = localStorage.getItem('theme') ||
-                         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', theme);
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                if (document.body) document.body.classList.add('dark');
-            }
-        })();
-    </script>
-{% endblock %}
+{% block title %}Dieta del Día — EvolveMe{% endblock %}
+{% block nav_diet_active %}active{% endblock %}
 
 {% block content %}
-    <div class="container-fluid py-4 register-form">
-        <form method="post" novalidate>
-            {% csrf_token %}
-            <div class="div1">
-                <h1>Información de la dieta</h1>
-                <p class="text-muted">Indica la fecha y el usuario para registrar la dieta del día.</p>
-            </div>
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    {% crispy form "bootstrap5" %}
-                </div>
-            </div>
-            <div class="div1">
-                <h1>Productos consumidos</h1>
-                <p class="text-muted">Añade los productos y cantidades de tu dieta del día.</p>
-            </div>
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    {% crispy formset formset_helper "bootstrap5" %}
-                </div>
-            </div>
-            <div class="d-flex justify-content-end gap-2">
-                <a href="{% url 'evolveme:index' %}" class="btn btn-secondary">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar Dieta</button>
-            </div>
-        </form>
-    </div>
+<h1 class="md3-page-title">Dieta del Día</h1>
+<p class="md3-page-subtitle">Añade los alimentos y cantidades consumidas durante el día.</p>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  <div class="md3-card">
+    <p style="font-size:.75rem;font-weight:500;color:var(--md-sys-color-on-surface-variant);text-transform:uppercase;letter-spacing:.08rem;margin-bottom:16px;">
+      Información general
+    </p>
+    {% crispy form "bootstrap5" %}
+  </div>
+
+  <div class="md3-card" style="margin-top:8px;">
+    <p style="font-size:.75rem;font-weight:500;color:var(--md-sys-color-on-surface-variant);text-transform:uppercase;letter-spacing:.08rem;margin-bottom:16px;">
+      Productos consumidos
+    </p>
+    {% crispy formset formset_helper "bootstrap5" %}
+  </div>
+
+  <div class="md3-actions">
+    <a href="{% url 'evolveme:index' %}" class="md3-btn md3-btn--text">Cancelar</a>
+    <button type="submit" class="md3-btn md3-btn--filled">
+      <span class="material-symbols-rounded">save</span>
+      Guardar Dieta
+    </button>
+  </div>
+</form>
 {% endblock %}

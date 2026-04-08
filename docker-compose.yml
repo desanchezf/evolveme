@@ -1,3 +1,5 @@
+# Puertos del host elegidos para no solaparse con otro stack (p. ej. redis 6379, postgres 5432,
+# ollama 11434, prometheus 9090, grafana 3000 en otro proyecto).
 services:
   redis:
     image: redis:7
@@ -31,7 +33,7 @@ services:
     volumes:
       - ollama_models:/root/.ollama
     ports:
-      - "11434:11434"
+      - "11435:11434"
 
   backend:
     container_name: evolveme-backend
@@ -69,7 +71,7 @@ services:
     container_name: evolveme-prometheus
     restart: unless-stopped
     ports:
-      - "9090:9090"
+      - "9091:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -89,7 +91,7 @@ services:
     container_name: evolveme-grafana
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     env_file:
       - .env
     environment:
@@ -102,39 +104,61 @@ services:
     depends_on:
       - prometheus
 
-  # celery:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   command: celery -A project worker -l info
-  #   volumes:
-  #     - .:/code
-  #   environment:
-  #     - DEBUG=1
-  #     - DJANGO_SETTINGS_MODULE=project.settings
-  #     - DATABASE_URL=postgres://postgres:postgres@postgres:5432/django_db
-  #     - CELERY_BROKER_URL=redis://redis:6379/0
-  #   depends_on:
-  #     - postgres
-  #     - redis
-  #     - backend
+  celery:
+    container_name: evolveme-celery
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A project worker -l info
+    volumes:
+      - .:/code
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=Local
+      - DJANGO_SETTINGS_MODULE=project.settings
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/django_db
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=django_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
-  # celery-beat:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   command: celery -A project beat -l info
-  #   volumes:
-  #     - .:/code
-  #   environment:
-  #     - DEBUG=1
-  #     - DJANGO_SETTINGS_MODULE=project.settings
-  #     - DATABASE_URL=postgres://postgres:postgres@postgres:5432/django_db
-  #     - CELERY_BROKER_URL=redis://redis:6379/0
-  #   depends_on:
-  #     - postgres
-  #     - redis
-  #     - backend
+  celery-beat:
+    container_name: evolveme-celery-beat
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A project beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/code
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=Local
+      - DJANGO_SETTINGS_MODULE=project.settings
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/django_db
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=django_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      celery:
+        condition: service_started
 
 volumes:
   postgres_data:

@@ -2,9 +2,14 @@
 FROM python:3.12-bookworm
 
 # Evita la generación de archivos de bytecode (.pyc)
-ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONDONTWRITEBYTECODE=1
 # Evita el almacenamiento en búfer de la salida y el error estándar
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONUNBUFFERED=1
+# Instala paquetes en el sistema sin entorno virtual (adecuado para Docker)
+ENV UV_SYSTEM_PYTHON=1
+
+# Copiar UV desde la imagen oficial
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Instalar dependencias del sistema y herramientas de compilación
 RUN apt-get update && apt-get install -y \
@@ -16,6 +21,5 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir /code
 WORKDIR /code
 COPY requirements.txt /code/
-RUN pip install --upgrade pip
-RUN python -m pip install -r requirements.txt
+RUN uv pip install -r requirements.txt
 COPY . /code/
