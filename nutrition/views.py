@@ -17,6 +17,7 @@ from nutrition.forms import (
     ProductQuantityFormsetHelper,
 )
 from nutrition.models import DailyDiet, Product, ProductImage, ProductQuantity
+from project.admin_context import with_admin_context
 
 
 class DailyDietFormsetView(PermissionRequiredMixin, FormView):
@@ -246,7 +247,7 @@ def product_form_view(request):
     else:
         form = ProductForm()
 
-    return render(request, "nutrition/product_form.html", {"form": form})
+    return render(request, "nutrition/product_form.html", with_admin_context(request, {"form": form}))
 
 
 @login_required
@@ -285,9 +286,9 @@ def daily_diet_form_view(request):
     return render(
         request,
         "nutrition/daily_diet_form.html",
-        {
+        with_admin_context(request, {
             "form": form,
             "formset": formset,
             "formset_helper": ProductQuantityFormsetHelper(),
-        },
+        }),
     )

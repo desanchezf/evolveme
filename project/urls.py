@@ -18,15 +18,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import RedirectView
 
 urlpatterns = [
     path("", include("evolveme.urls")),
     path("admin/", admin.site.urls),
+    path("accounts/", include("django.contrib.auth.urls")),
     path("cardio/", include("cardio.urls")),
     path("gym/", include("gym.urls")),
     path("nutrition/", include("nutrition.urls")),
     path("ia/", include("ia.urls")),
+    path("", include("django_prometheus.urls")),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

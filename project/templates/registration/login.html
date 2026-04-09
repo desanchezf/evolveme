@@ -1,0 +1,112 @@
+{% extends "evolveme/base_md3.html" %}
+
+{% block title %}Iniciar sesión — EvolveMe{% endblock %}
+
+{% block extra_head %}
+<style>
+  .login-wrap {
+    max-width: 400px;
+    margin: 48px auto 0;
+  }
+  .login-logo {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .login-logo .material-symbols-rounded {
+    font-size: 3rem;
+    color: var(--md-sys-color-primary);
+  }
+  .login-logo h1 {
+    font-size: 1.75rem;
+    font-weight: 400;
+    color: var(--md-sys-color-on-surface);
+    margin-top: 8px;
+  }
+  .login-logo p {
+    font-size: 0.875rem;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .login-field {
+    margin-bottom: 20px;
+  }
+  .login-field label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: .08rem;
+    margin-bottom: 4px;
+  }
+  .login-field input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--md-sys-color-outline);
+    padding: 10px 0 6px;
+    color: var(--md-sys-color-on-surface);
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .login-field input:focus {
+    border-bottom: 2px solid var(--md-sys-color-primary);
+  }
+  .login-error {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-surface);
+    border-radius: var(--md-sys-shape-corner-small);
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+  <div class="login-logo">
+    <span class="material-symbols-rounded">fitness_center</span>
+    <h1>EvolveMe</h1>
+    <p>Inicia sesión para continuar</p>
+  </div>
+
+  {% if form.errors %}
+  <div class="login-error">
+    <span class="material-symbols-rounded">error</span>
+    Usuario o contraseña incorrectos. Inténtalo de nuevo.
+  </div>
+  {% endif %}
+
+  <div class="md3-card">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <div class="login-field">
+        <label for="id_username">Usuario</label>
+        <input type="text" id="id_username" name="username"
+               autocomplete="username" autofocus
+               value="{{ form.username.value|default:'' }}">
+      </div>
+
+      <div class="login-field">
+        <label for="id_password">Contraseña</label>
+        <input type="password" id="id_password" name="password"
+               autocomplete="current-password">
+      </div>
+
+      <div class="md3-actions" style="margin-top:24px;">
+        <button type="submit" class="md3-btn md3-btn--filled" style="width:100%;justify-content:center;">
+          <span class="material-symbols-rounded">login</span>
+          Entrar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

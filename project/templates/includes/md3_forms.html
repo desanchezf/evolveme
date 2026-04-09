@@ -1,0 +1,267 @@
+{% comment %}
+  Estilos MD3 para componentes de formulario sobre la paleta de Jazzmin.
+  Incluir en {% block extrastyle %} de cada template público:
+    {% include "includes/md3_forms.html" %}
+{% endcomment %}
+<style>
+  /* ── Tokens que se alinean con la paleta de Jazzmin ────────────────── */
+  :root {
+    --md-primary:        var(--color-primary, #3b7ddd);
+    --md-on-primary:     #fff;
+    --md-surface:        var(--color-base-50, #fff);
+    --md-on-surface:     var(--color-base-900, #1c1b1f);
+    --md-outline:        var(--color-base-300, #cac4d0);
+    --md-error:          #b3261e;
+    --md-radius-full:    50px;
+    --md-radius-lg:      16px;
+    --md-radius-md:      12px;
+    --md-radius-sm:      8px;
+    --md-elev-1:         0 1px 2px rgba(0,0,0,.3), 0 1px 3px 1px rgba(0,0,0,.15);
+  }
+
+  /* ── Botones MD3 ────────────────────────────────────────────────────── */
+  .btn-primary,
+  .btn-md3-filled {
+    background: var(--md-primary) !important;
+    color: var(--md-on-primary) !important;
+    border: none !important;
+    border-radius: var(--md-radius-full) !important;
+    padding: 10px 24px !important;
+    font-weight: 500 !important;
+    letter-spacing: .04em !important;
+    transition: box-shadow .15s !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary:hover,
+  .btn-md3-filled:hover {
+    box-shadow: var(--md-elev-1) !important;
+    filter: brightness(1.08) !important;
+  }
+  .btn-secondary,
+  .btn-md3-tonal {
+    background: color-mix(in srgb, var(--md-primary) 15%, transparent) !important;
+    color: var(--md-primary) !important;
+    border: none !important;
+    border-radius: var(--md-radius-full) !important;
+    padding: 10px 24px !important;
+    font-weight: 500 !important;
+    transition: box-shadow .15s !important;
+  }
+  .btn-md3-outlined {
+    background: transparent !important;
+    color: var(--md-primary) !important;
+    border: 1px solid var(--md-outline) !important;
+    border-radius: var(--md-radius-full) !important;
+    padding: 10px 24px !important;
+    font-weight: 500 !important;
+  }
+
+  /* ── Inputs y Selects MD3 ───────────────────────────────────────────── */
+  .form-control,
+  .form-select,
+  select.select2-hidden-accessible + .select2-container .select2-selection {
+    border-radius: var(--md-radius-sm) !important;
+    border: 1px solid var(--md-outline) !important;
+    background: var(--md-surface) !important;
+    color: var(--md-on-surface) !important;
+    padding: 10px 12px !important;
+    transition: border-color .2s, box-shadow .2s !important;
+  }
+  .form-control:focus,
+  .form-select:focus {
+    border-color: var(--md-primary) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--md-primary) 20%, transparent) !important;
+    outline: none !important;
+  }
+  .form-control.is-invalid {
+    border-color: var(--md-error) !important;
+  }
+
+  /* ── Select2 (combos de ejercicios/productos) ───────────────────────── */
+  .select2-container--default .select2-selection--single {
+    border-radius: var(--md-radius-sm) !important;
+    border: 1px solid var(--md-outline) !important;
+    height: auto !important;
+    padding: 8px 12px !important;
+  }
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 1.5 !important;
+    padding: 0 !important;
+    color: var(--md-on-surface) !important;
+  }
+  .select2-container--default .select2-selection--single .select2-selection__arrow {
+    top: 8px !important;
+  }
+  .select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: var(--md-primary) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--md-primary) 20%, transparent) !important;
+  }
+  .select2-dropdown {
+    border-radius: var(--md-radius-md) !important;
+    border: 1px solid var(--md-outline) !important;
+    box-shadow: var(--md-elev-1) !important;
+    overflow: hidden;
+  }
+  .select2-container--default .select2-results__option--highlighted {
+    background-color: color-mix(in srgb, var(--md-primary) 15%, transparent) !important;
+    color: var(--md-on-surface) !important;
+  }
+
+  /* ── Checkboxes MD3 ─────────────────────────────────────────────────── */
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--md-outline);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    vertical-align: middle;
+    transition: border-color .15s, background .15s;
+    flex-shrink: 0;
+  }
+  input[type="checkbox"]:checked {
+    background: var(--md-primary);
+    border-color: var(--md-primary);
+  }
+  input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 0px;
+    width: 5px; height: 9px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+  input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-primary) 25%, transparent);
+  }
+
+  /* ── Radio MD3 ──────────────────────────────────────────────────────── */
+  input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border: 2px solid var(--md-outline);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    vertical-align: middle;
+    transition: border-color .15s;
+    flex-shrink: 0;
+  }
+  input[type="radio"]:checked {
+    border-color: var(--md-primary);
+  }
+  input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--md-primary);
+  }
+  input[type="radio"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-primary) 25%, transparent);
+  }
+
+  /* ── Upload zone ─────────────────────────────────────────────────────── */
+  .md3-upload-zone {
+    border: 2px dashed var(--md-outline);
+    border-radius: var(--md-radius-md);
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    display: block;
+    color: var(--color-base-600, #6c757d);
+  }
+  .md3-upload-zone:hover {
+    border-color: var(--md-primary);
+    background: color-mix(in srgb, var(--md-primary) 5%, transparent);
+  }
+  .md3-upload-zone i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 8px;
+    color: var(--md-primary);
+  }
+  .md3-upload-zone input[type="file"] {
+    display: none;
+  }
+  .md3-upload-zone__label {
+    font-size: .9rem;
+    font-weight: 500;
+  }
+  .md3-upload-zone__hint {
+    font-size: .75rem;
+    margin-top: 4px;
+    color: var(--color-base-500, #adb5bd);
+  }
+
+  /* ── Card de formulario ──────────────────────────────────────────────── */
+  .md3-card {
+    border-radius: var(--md-radius-lg);
+    border: 1px solid var(--color-base-200, #e9ecef);
+    background: var(--md-surface);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Divider con texto ───────────────────────────────────────────────── */
+  .md3-divider {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--color-base-500, #6c757d);
+    font-size: .875rem;
+    margin: 12px 0;
+  }
+  .md3-divider::before, .md3-divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: var(--color-base-200, #dee2e6);
+  }
+
+  /* ── Quitar borde y radius extra de crispy que choca ─────────────────── */
+  .card { border-radius: var(--md-radius-lg) !important; }
+  .card.shadow-sm { box-shadow: var(--md-elev-1) !important; }
+</style>
+
+<script>
+  /* Upload zone: click + drag & drop + label actualizable */
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.md3-upload-zone').forEach(function (zone) {
+      var input = zone.querySelector('input[type="file"]');
+      var labelEl = zone.querySelector('.md3-upload-zone__label');
+      if (!input) return;
+      zone.addEventListener('click', function () { input.click(); });
+      zone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        zone.style.borderColor = 'var(--md-primary)';
+      });
+      zone.addEventListener('dragleave', function () {
+        zone.style.borderColor = '';
+      });
+      zone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        zone.style.borderColor = '';
+        input.files = e.dataTransfer.files;
+        updateLabel(input, labelEl);
+      });
+      input.addEventListener('change', function () { updateLabel(input, labelEl); });
+    });
+    function updateLabel(input, labelEl) {
+      if (!labelEl) return;
+      var n = input.files.length;
+      labelEl.textContent = n > 0
+        ? n + ' imagen' + (n > 1 ? 'es' : '') + ' seleccionada' + (n > 1 ? 's' : '')
+        : 'Arrastra imágenes aquí o pulsa para seleccionar';
+    }
+  });
+</script>

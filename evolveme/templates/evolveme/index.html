@@ -1,123 +1,111 @@
-{% extends "evolveme/base_md3.html" %}
+{% extends "admin/base.html" %}
 {% load static %}
 
-{% block title %}EvolveMe — Panel Principal{% endblock %}
+{% block title %}EvolveMe - Panel Principal{% endblock %}
 
-{% block extra_head %}
-<style>
-  .home-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    margin-top: 8px;
-  }
-  .home-card {
-    background: var(--md-sys-color-surface);
-    border-radius: var(--md-sys-shape-corner-large);
-    box-shadow: var(--md-sys-elevation-1);
-    padding: 24px;
-    text-decoration: none;
-    color: var(--md-sys-color-on-surface);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    transition: box-shadow .2s, transform .2s;
-  }
-  .home-card:hover {
-    box-shadow: var(--md-sys-elevation-3);
-    transform: translateY(-2px);
-  }
-  .home-card__icon {
-    width: 52px; height: 52px;
-    border-radius: var(--md-sys-shape-corner-medium);
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    display: flex; align-items: center; justify-content: center;
-  }
-  .home-card__icon .material-symbols-rounded { font-size: 1.75rem; }
-  .home-card__title {
-    font-size: 1rem;
-    font-weight: 500;
-  }
-  .home-card__desc {
-    font-size: 0.875rem;
-    color: var(--md-sys-color-on-surface-variant);
-    line-height: 1.4;
-  }
-  .home-card--admin .home-card__icon {
-    background: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-surface);
-  }
-</style>
+{% block extrastyle %}
+  {{ block.super }}
+  {% include "includes/md3_forms.html" %}
+  <style>
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .home-card {
+      border-radius: var(--md-radius-lg) !important;
+      border: 1px solid var(--color-base-200, #e9ecef);
+      background: var(--color-base-50, #fff);
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: box-shadow .2s, transform .15s;
+    }
+    .home-card:hover {
+      box-shadow: var(--md-elev-1);
+      transform: translateY(-2px);
+      text-decoration: none;
+      color: inherit;
+    }
+    .home-card__icon {
+      font-size: 1.5rem;
+      color: var(--md-primary);
+    }
+    .home-card__title {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--color-base-900, #1c1b1f);
+    }
+    .home-card__desc {
+      font-size: .8rem;
+      color: var(--color-base-600, #6c757d);
+      line-height: 1.4;
+    }
+  </style>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+      if (t === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
 {% endblock %}
 
 {% block content %}
-<h1 class="md3-page-title">Bienvenido, {{ user.first_name|default:user.username }}</h1>
-<p class="md3-page-subtitle">Panel de registro y seguimiento</p>
+<div class="container-fluid py-4">
+  <h1 class="h4 mb-1">Panel de Administración y Registro</h1>
+  <p class="text-muted mb-4">Bienvenido, {{ user.first_name|default:user.username }}</p>
 
-<div class="home-grid">
-  <a class="home-card" href="{% url 'gym:training_session_form' %}">
-    <div class="home-card__icon">
-      <span class="material-symbols-rounded">fitness_center</span>
-    </div>
-    <div class="home-card__title">Registrar Sesión de Entrenamiento</div>
-    <div class="home-card__desc">Registra tu sesión con rutina, duración, calorías y frecuencia cardíaca</div>
-  </a>
-
-  <a class="home-card" href="{% url 'gym:musculation_record_form' %}">
-    <div class="home-card__icon">
-      <span class="material-symbols-rounded">exercise</span>
-    </div>
-    <div class="home-card__title">Registrar Sesión de Musculación</div>
-    <div class="home-card__desc">Anota ejercicios, series, repeticiones y peso levantado</div>
-  </a>
-
-  <a class="home-card" href="{% url 'cardio:cardio_session_form' %}">
-    <div class="home-card__icon">
-      <span class="material-symbols-rounded">directions_run</span>
-    </div>
-    <div class="home-card__title">Registrar Sesión de Cardio</div>
-    <div class="home-card__desc">Distancia, tiempo, calorías y frecuencia cardíaca de tu cardio</div>
-  </a>
-
-  <a class="home-card" href="{% url 'evolveme:measure_form' %}">
-    <div class="home-card__icon">
-      <span class="material-symbols-rounded">monitor_weight</span>
-    </div>
-    <div class="home-card__title">Registrar Medidas Corporales</div>
-    <div class="home-card__desc">Peso, perímetros y composición corporal. Sube una foto de tu báscula</div>
-  </a>
-
-  <a class="home-card" href="{% url 'nutrition:product_form' %}">
-    <div class="home-card__icon">
-      <span class="material-symbols-rounded">nutrition</span>
-    </div>
-    <div class="home-card__title">Registrar Producto</div>
-    <div class="home-card__desc">Añade un producto con sus valores nutricionales. La IA puede extraerlos de la etiqueta</div>
-  </a>
-
-  <a class="home-card" href="{% url 'nutrition:daily_diet_form' %}">
-    <div class="home-card__icon">
-      <span class="material-symbols-rounded">restaurant</span>
-    </div>
-    <div class="home-card__title">Registrar Dieta del Día</div>
-    <div class="home-card__desc">Registra los alimentos y cantidades consumidas durante el día</div>
-  </a>
-
-  <a class="home-card" href="{% url 'ia:chat' %}">
-    <div class="home-card__icon">
-      <span class="material-symbols-rounded">smart_toy</span>
-    </div>
-    <div class="home-card__title">Chat con IA</div>
-    <div class="home-card__desc">Consulta al asistente para rutinas, dietas y consejos personalizados</div>
-  </a>
-
-  <a class="home-card home-card--admin" href="{% url 'admin:index' %}">
-    <div class="home-card__icon">
-      <span class="material-symbols-rounded">admin_panel_settings</span>
-    </div>
-    <div class="home-card__title">Panel de Administración</div>
-    <div class="home-card__desc">Accede al panel completo de Django Admin</div>
-  </a>
+  <div class="cards-grid">
+    <a class="home-card" href="{% url 'gym:training_session_form' %}">
+      <div class="home-card__icon"><i class="fas fa-calendar-check"></i></div>
+      <div class="home-card__title">Registrar Sesión de Entrenamiento</div>
+      <div class="home-card__desc">Registra tu sesión con rutina, duración, calorías y frecuencia cardíaca</div>
+    </a>
+    <a class="home-card" href="{% url 'gym:musculation_record_form' %}">
+      <div class="home-card__icon"><i class="fas fa-dumbbell"></i></div>
+      <div class="home-card__title">Registrar Sesión de Musculación</div>
+      <div class="home-card__desc">Anota ejercicios, series, repeticiones y peso levantado</div>
+    </a>
+    <a class="home-card" href="{% url 'cardio:cardio_session_form' %}">
+      <div class="home-card__icon"><i class="fas fa-running"></i></div>
+      <div class="home-card__title">Registrar Sesión de Cardio</div>
+      <div class="home-card__desc">Distancia, tiempo, calorías y frecuencia cardíaca</div>
+    </a>
+    <a class="home-card" href="{% url 'evolveme:measure_form' %}">
+      <div class="home-card__icon"><i class="fas fa-weight"></i></div>
+      <div class="home-card__title">Registrar Medidas Corporales</div>
+      <div class="home-card__desc">Peso, perímetros y composición corporal. Sube una foto de tu báscula</div>
+    </a>
+    <a class="home-card" href="{% url 'nutrition:product_form' %}">
+      <div class="home-card__icon"><i class="fas fa-shopping-basket"></i></div>
+      <div class="home-card__title">Registrar Producto</div>
+      <div class="home-card__desc">Añade un producto con sus valores nutricionales vía IA o manualmente</div>
+    </a>
+    <a class="home-card" href="{% url 'nutrition:daily_diet_form' %}">
+      <div class="home-card__icon"><i class="fas fa-utensils"></i></div>
+      <div class="home-card__title">Registrar Dieta del Día</div>
+      <div class="home-card__desc">Registra los alimentos y cantidades consumidas durante el día</div>
+    </a>
+    <a class="home-card" href="{% url 'ia:chat' %}">
+      <div class="home-card__icon"><i class="fas fa-robot"></i></div>
+      <div class="home-card__title">Chat con IA</div>
+      <div class="home-card__desc">Consulta al asistente sobre rutinas, dietas y consejos personalizados</div>
+    </a>
+    <a class="home-card" href="{% url 'admin:index' %}">
+      <div class="home-card__icon"><i class="fas fa-cog"></i></div>
+      <div class="home-card__title">Panel de Administración</div>
+      <div class="home-card__desc">Accede al panel completo de Django Admin</div>
+    </a>
+  </div>
 </div>
 {% endblock %}

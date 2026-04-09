@@ -24,7 +24,7 @@ SECRET_KEY = "django-insecure-vz+du974h9+nba#ix&ggwst-sqs8cgsd%@1txg^sht#d_^fmlt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "backend"]
 
 
 # Application definition
@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "import_export",
+    "django_prometheus",
     # Django apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -59,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "project.urls"
@@ -130,6 +133,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+
+# Auth
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
@@ -272,10 +280,22 @@ JAZZMIN_SETTINGS = {
     "topmenu_links": [
         {"name": "Home", "url": "/admin/", "icon": "fas fa-home"},
         {"name": "Dieta", "url": "/nutrition/daily-diet/", "icon": "fas fa-utensils"},
-        {"name": "Entrenamiento", "url": "/gym/training-session/", "icon": "fas fa-calendar-check"},
+        {
+            "name": "Entrenamiento",
+            "url": "/gym/training-session/",
+            "icon": "fas fa-calendar-check",
+        },
         {"name": "Cardio", "url": "/cardio/cardio-session/", "icon": "fas fa-running"},
-        {"name": "Musculación", "url": "/gym/musculation-record/", "icon": "fas fa-dumbbell"},
-        {"name": "Producto", "url": "/nutrition/product/", "icon": "fas fa-shopping-basket"},
+        {
+            "name": "Musculación",
+            "url": "/gym/musculation-record/",
+            "icon": "fas fa-dumbbell",
+        },
+        {
+            "name": "Producto",
+            "url": "/nutrition/product/",
+            "icon": "fas fa-shopping-basket",
+        },
         {"name": "IA", "url": "/ia/chat/", "icon": "fas fa-robot"},
     ],
     # Enlaces en el menú lateral a los formularios públicos

@@ -5,6 +5,7 @@ from django.utils.datastructures import MultiValueDict
 
 from cardio.forms import CardioSessionForm
 from cardio.services import extract_cardio_data_from_image
+from project.admin_context import with_admin_context
 
 
 @login_required
@@ -47,4 +48,4 @@ def cardio_session_form_view(request):
     else:
         form = CardioSessionForm(user=request.user, is_staff=is_staff)
 
-    return render(request, "cardio/cardio_session_form.html", {"form": form})
+    return render(request, "cardio/cardio_session_form.html", with_admin_context(request, {"form": form}))

@@ -83,8 +83,7 @@
                     <label for="ia-chat-model">Modelo de chat:</label>
                     <select id="ia-chat-model" class="form-select form-select-sm" style="max-width: 280px;">
                         <option value="qwen3:8b" {% if chat_session.model_key == "qwen3:8b" %}selected{% endif %}>qwen3 8b</option>
-                        <option value="qwen2.5-coder:32b-q4_0" {% if chat_session.model_key == "qwen2.5-coder:32b-q4_0" %}selected{% endif %}>qwen2.5 coder 32b</option>
-                        <option value="llama3.1:8b-q4_K_M" {% if chat_session.model_key == "llama3.1:8b-q4_K_M" %}selected{% endif %}>llama3.1 8b</option>
+                        <option value="llama3.2-vision:11b" {% if chat_session.model_key == "llama3.2-vision:11b" %}selected{% endif %}>llama3.2 vision 11b</option>
                     </select>
                 </div>
                 <div id="ia-chat-messages" class="ia-chat-messages">

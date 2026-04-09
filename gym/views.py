@@ -20,6 +20,7 @@ from gym.forms import (
 )
 from gym.models import MusculationExercise, MusculationRecord, Routine
 from evolveme.models import GymUserProfile
+from project.admin_context import with_admin_context
 
 
 class MusculationRecordFormsetView(PermissionRequiredMixin, FormView):
@@ -229,7 +230,7 @@ def musculation_record_form_view(request):
     else:
         form = MusculationRecordPublicForm(user=request.user)
 
-    return render(request, "gym/musculation_record_form.html", {"form": form})
+    return render(request, "gym/musculation_record_form.html", with_admin_context(request, {"form": form}))
 
 
 @login_required
@@ -276,4 +277,4 @@ def training_session_form_view(request):
     else:
         form = TrainingSessionModelForm(user=request.user, is_staff=is_staff)
 
-    return render(request, "gym/training_session_form.html", {"form": form})
+    return render(request, "gym/training_session_form.html", with_admin_context(request, {"form": form}))

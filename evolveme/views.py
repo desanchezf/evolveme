@@ -7,12 +7,18 @@ from django.views.generic import TemplateView
 from evolveme.forms import MeasureForm
 from evolveme.models import MeasureImage
 from evolveme.services import extract_measure_data_from_image
+from project.admin_context import with_admin_context
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
     """Vista para la página principal con tarjetas de acceso"""
 
     template_name = "evolveme/index.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(with_admin_context(self.request))
+        return ctx
 
 
 @login_required
@@ -45,4 +51,4 @@ def measure_form_view(request):
     else:
         form = MeasureForm(user=request.user)
 
-    return render(request, "evolveme/measure_form.html", {"form": form})
+    return render(request, "evolveme/measure_form.html", with_admin_context(request, {"form": form}))
