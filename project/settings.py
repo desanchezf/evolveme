@@ -276,6 +276,8 @@ JAZZMIN_SETTINGS = {
     "welcome_sign": "Panel de Administración",
     "show_sidebar": True,
     "navigation_expanded": True,
+    # Clase CSS en el <img> del logo para limitar tamaño
+    "site_logo_classes": "admin-logo-constrained",
     # Apartados en el menú superior (como Portal EvolveMe)
     "topmenu_links": [
         {"name": "Home", "url": "/admin/", "icon": "fas fa-home"},
@@ -367,6 +369,25 @@ JAZZMIN_SETTINGS = {
         "nutrition.dailydiet": "fas fa-utensils",
         "nutrition.mealmetrics": "fas fa-chart-pie",
     },
-    # CSS personalizado (fondo mosaico en login). Debe ser string, no lista.
+    # CSS personalizado: paleta M3 compartida + estilos propios de EvolveMe
     "custom_css": "admin/css/jazzmin_custom.css",
+}
+
+JAZZMIN_UI_TWEAKS = {
+    # Sidebar oscura con acento primario (color sobreescrito via CSS)
+    "sidebar": "sidebar-dark-primary",
+    # Barra de navegación superior clara
+    "navbar": "navbar-white navbar-light",
+    # Sin borde inferior en la navbar
+    "no_navbar_border": True,
+    # Botones: mapeo de acciones → clases Bootstrap
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-outline-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
+    "actions_sticky_top": False,
 }

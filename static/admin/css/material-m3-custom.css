@@ -1,0 +1,195 @@
+/* Superficies y layout M3 junto a Jazzmin/Bootstrap */
+.m3-page {
+  font-family: Roboto, system-ui, sans-serif;
+}
+
+.md-m3-surface {
+  background: var(--md-sys-color-surface-container-lowest, #fff);
+  border-radius: 16px;
+  box-shadow: var(--md-sys-elevation-level1, 0 1px 3px rgba(0, 0, 0, 0.12));
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.md-m3-surface__header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.12));
+  background: var(--md-sys-color-surface-container, #f3f6fc);
+}
+
+.md-m3-surface__body {
+  padding: 1rem;
+}
+
+.md-m3-surface__body--flush {
+  padding: 0;
+}
+
+.md-m3-stat {
+  background: var(--md-sys-color-surface-container-lowest, #fff);
+  border-radius: 12px;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  box-shadow: var(--md-sys-elevation-level1, 0 1px 2px rgba(0, 0, 0, 0.08));
+}
+
+.md-m3-stat .md-m3-stat__label {
+  font-size: 0.75rem;
+  color: var(--md-sys-color-on-surface-variant, #5f6368);
+}
+
+.md-m3-stat .md-m3-stat__value {
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.m3-alert {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  border: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
+}
+
+.m3-alert--error {
+  background: var(--md-sys-color-error-container, #fce8e6);
+  color: var(--md-sys-color-on-error-container, #410002);
+  border-color: transparent;
+}
+
+.m3-alert--success {
+  background: var(--md-sys-color-secondary-container, #e8f5e9);
+  color: var(--md-sys-color-on-secondary-container, #1b5e20);
+  border-color: transparent;
+}
+
+.m3-alert--info {
+  background: var(--md-sys-color-primary-container, #e8f0fe);
+  color: var(--md-sys-color-on-primary-container, #041e49);
+  border-color: transparent;
+}
+
+.m3-alert--warning {
+  background: var(--md-sys-color-tertiary-container, #fff8e1);
+  color: var(--md-sys-color-on-tertiary-container, #5d4037);
+  border-color: transparent;
+}
+
+.m3-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.m3-form-row md-outlined-select,
+.m3-form-row md-filled-button {
+  flex: 0 1 auto;
+}
+
+.m3-btn-block {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+md-outlined-select,
+md-outlined-text-field,
+md-filled-text-field {
+  min-width: 8rem;
+  max-width: 100%;
+  --md-outlined-field-container-height: 40px;
+  --md-outlined-field-top-space: 8px;
+  --md-outlined-field-bottom-space: 8px;
+  font-size: 0.875rem;
+}
+
+.m3-field select,
+.m3-field input[type="text"],
+.m3-field input[type="number"],
+.m3-field input[type="date"],
+.m3-field textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid var(--md-sys-color-outline, #79747e);
+  padding: 0.5rem 0.75rem;
+  font-family: Roboto, system-ui, sans-serif;
+  background: var(--md-sys-color-surface, #fff);
+}
+
+.m3-field textarea {
+  min-height: 8rem;
+}
+
+.m3-field label,
+.m3-field .form-label {
+  color: var(--md-sys-color-on-surface-variant, #44474e);
+}
+
+.command-runner-page md-outlined-select,
+.command-runner-page md-outlined-text-field {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Tokens de color globales para todos los botones Material Web ────────── */
+md-filled-button {
+  --md-filled-button-container-color:         var(--proj-primary, #3d4252);
+  --md-filled-button-hover-container-color:   var(--proj-primary-hover, #50566a);
+  --md-filled-button-pressed-container-color: var(--proj-primary-active, #2e333f);
+  --md-filled-button-label-text-color:        #ffffff;
+  --md-filled-button-hover-label-text-color:  #ffffff;
+  --md-filled-button-icon-color:              #ffffff;
+  --md-filled-button-hover-icon-color:        #ffffff;
+}
+
+md-filled-tonal-button {
+  --md-filled-tonal-button-container-color:         var(--proj-primary, #3d4252);
+  --md-filled-tonal-button-hover-container-color:   var(--proj-primary-hover, #50566a);
+  --md-filled-tonal-button-pressed-container-color: var(--proj-primary-active, #2e333f);
+  --md-filled-tonal-button-label-text-color:        #ffffff;
+  --md-filled-tonal-button-hover-label-text-color:  #ffffff;
+  --md-filled-tonal-button-icon-color:              #ffffff;
+}
+
+md-outlined-button {
+  --md-outlined-button-label-text-color:       var(--proj-primary, #3d4252);
+  --md-outlined-button-hover-label-text-color: var(--proj-primary-hover, #50566a);
+  --md-outlined-button-outline-color:          var(--proj-primary, #3d4252);
+  --md-outlined-button-focus-outline-color:    var(--proj-primary, #3d4252);
+  --md-outlined-button-icon-color:             var(--proj-primary, #3d4252);
+}
+
+/* Layout botón Ejecutar (tools page) */
+.command-runner-page md-filled-button.command-submit {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Checkbox nativo estilizado con la paleta del proyecto */
+.m3-checkbox {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--md-sys-color-primary, #3d4252);
+  border-radius: 2px;
+}
+
+.command-runner-page md-linear-progress {
+  width: 100%;
+  margin-bottom: 0.25rem;
+}
+
+.m3-d-none {
+  display: none !important;
+}
+
+.md-m3-result-ok {
+  border-left: 4px solid var(--md-sys-color-primary, #3d4252);
+}
+
+.md-m3-result-fail {
+  border-left: 4px solid var(--md-sys-color-error, #b3261e);
+}

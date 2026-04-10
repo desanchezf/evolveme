@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{# Material Web (M3): web components + escala tipográfica #}
+{% block extrahead %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{
+  "imports": {
+    "@material/web/": "https://esm.run/@material/web/"
+  }
+}
+</script>
+<script type="module">
+  import '@material/web/all.js';
+  import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+  document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+</script>
+<link rel="stylesheet" href="{% static 'admin/css/material-m3-custom.css' %}">
+{% endblock %}
+
+{% block extrajs %}
+{{ block.super }}
+{# Logout por POST (Django 5+) #}
+<form id="jazzmin-logout-form" action="{% url 'admin:logout' %}" method="post" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.path|default:'/admin/' }}">
+</form>
+<script>
+(function() {
+  function submitLogout() {
+    var form = document.getElementById('jazzmin-logout-form');
+    if (form) form.submit();
+  }
+  document.addEventListener('click', function(e) {
+    var target = e.target;
+    var link = target.closest && target.closest('a');
+    if (link && link.getAttribute('href') && link.getAttribute('href').toLowerCase().indexOf('logout') !== -1) {
+      e.preventDefault();
+      e.stopPropagation();
+      submitLogout();
+      return;
+    }
+    var dropdownItem = target.closest && target.closest('.dropdown-item');
+    if (dropdownItem) {
+      var a = dropdownItem.querySelector && dropdownItem.querySelector('a[href*="logout"]');
+      if (!a) a = dropdownItem.tagName === 'A' && dropdownItem.getAttribute('href') && dropdownItem.getAttribute('href').toLowerCase().indexOf('logout') !== -1 ? dropdownItem : null;
+      if (a) {
+        e.preventDefault();
+        e.stopPropagation();
+        submitLogout();
+      }
+    }
+  }, true);
+})();
+</script>
+{% endblock %}

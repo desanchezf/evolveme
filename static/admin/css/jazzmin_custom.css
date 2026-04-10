@@ -1,3 +1,120 @@
+/* ─── Fondo general del admin ─────────────────────────────────────────────── */
+body {
+  background-color: #2c2c2c !important;
+}
+
+/* ─── Paleta de colores unificada (Material Design 3) ────────────────────── */
+:root {
+  --proj-primary:        #3d4252;
+  --proj-primary-hover:  #50566a;
+  --proj-primary-active: #2e333f;
+  --proj-primary-text:   #FFFFFF;
+
+  /* Material Web color tokens */
+  --md-sys-color-primary:              #3d4252;
+  --md-sys-color-on-primary:           #FFFFFF;
+  --md-sys-color-primary-container:    #d8dae3;
+  --md-sys-color-on-primary-container: #0d0f14;
+}
+
+/* Botones de acción Jazzmin/Bootstrap */
+.btn-success,
+.btn-primary,
+.btn-info {
+  background-color: var(--proj-primary) !important;
+  border-color:     var(--proj-primary-active) !important;
+  color:            var(--proj-primary-text) !important;
+}
+.btn-success:hover, .btn-success:focus,
+.btn-primary:hover, .btn-primary:focus,
+.btn-info:hover,    .btn-info:focus {
+  background-color: var(--proj-primary-hover) !important;
+  border-color:     var(--proj-primary) !important;
+  color:            var(--proj-primary-text) !important;
+}
+.btn-success:active, .btn-success:not(:disabled):not(.disabled):active,
+.btn-primary:active, .btn-primary:not(:disabled):not(.disabled):active,
+.btn-info:active,    .btn-info:not(:disabled):not(.disabled):active {
+  background-color: var(--proj-primary-active) !important;
+  border-color:     var(--proj-primary-active) !important;
+  color:            var(--proj-primary-text) !important;
+}
+
+/* Variantes outline */
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-info {
+  color:        var(--proj-primary) !important;
+  border-color: var(--proj-primary) !important;
+  background-color: transparent !important;
+}
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-info:hover {
+  background-color: var(--proj-primary) !important;
+  color:            var(--proj-primary-text) !important;
+}
+
+/* Sidebar AdminLTE: item activo y hover */
+.nav-sidebar .nav-link.active,
+.nav-sidebar > .nav-item > .nav-link.active {
+  background-color: var(--proj-primary) !important;
+  color:            var(--proj-primary-text) !important;
+}
+.nav-sidebar .nav-link:hover,
+.nav-sidebar > .nav-item > .nav-link:hover {
+  background-color: var(--proj-primary-hover) !important;
+  color:            var(--proj-primary-text) !important;
+}
+
+/* Barra de navegación superior: links activos */
+.navbar-white .navbar-nav .nav-link.active,
+.navbar-light .navbar-nav .nav-link.active,
+.navbar-white .navbar-nav .active > .nav-link,
+.navbar-light .navbar-nav .active > .nav-link {
+  color: var(--proj-primary) !important;
+}
+.navbar-white .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link:hover {
+  color: var(--proj-primary-hover) !important;
+}
+
+/* Logo en sidebar del admin */
+.main-sidebar .brand-link img,
+.sidebar .brand-link img,
+img.brand-image,
+img.admin-logo-constrained.brand-image {
+  max-height: 24px !important;
+  height: 24px !important;
+  width: auto !important;
+  object-fit: contain;
+}
+
+/* Título en el sidebar */
+.main-sidebar .brand-link .brand-text,
+.sidebar .brand-link .brand-text {
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+}
+
+/* Logo en login */
+.login-page img.admin-logo-constrained {
+  max-width: 72px !important;
+  max-height: 72px !important;
+  width: 72px !important;
+  height: auto !important;
+  object-fit: contain;
+}
+
+/* Botón Log in */
+body.login-page .btn-primary {
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em;
+}
+
+/* ─── Estilos propios de EvolveMe (login con imagen de fondo) ─────────────── */
+
 /* Fondo mosaico en la pantalla de login y logout del admin */
 body.login-page {
     background-image: url("/static/background.png") !important;
