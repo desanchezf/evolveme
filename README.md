@@ -5,405 +5,282 @@
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=plastic&logo=docker&logoColor=white)
 ![Jazzmin](https://img.shields.io/badge/Jazzmin-Admin-blue.svg?style=plastic)
 
-Sistema completo de gestión para seguimiento de entrenamientos, nutrición y medidas corporales con integración de IA para generación de rutinas y dietas personalizadas.
+Sistema completo de gestión para seguimiento de entrenamientos, nutrición y medidas corporales con integración de IA local (Ollama) para extracción automática de datos desde imágenes y chat con asistente.
 
 ---
 
-## 🚀 Características Principales
+## Características Principales
 
 - **Gestión de Entrenamientos**: Rutinas de musculación, sesiones de cardio y registros de ejercicios
 - **Gestión de Nutrición**: Productos alimentarios, dietas diarias y seguimiento de consumo
 - **Seguimiento Corporal**: Medidas corporales y composición corporal detallada
-- **Integración con IA**: Generación automática de rutinas y dietas mediante prompts
-- **Admin Personalizado**: Interfaz moderna con tema Jazzmin
+- **Integración con IA local (Ollama)**:
+  - Chat con asistente (`qwen3:8b`) sobre rutinas, nutrición y medidas
+  - Extracción automática de datos desde imágenes de smartwatch/app con modelo de visión (`llama3.2-vision:11b`)
+- **Admin Personalizado**: Interfaz moderna con tema Jazzmin/AdminLTE
 - **Formularios Avanzados**: Formsets para entrada de datos múltiples
 - **Importación de Datos**: Comandos para cargar datos desde archivos CSV
 
 ---
 
-## 🔗 URLs de Formularios Públicos
+## URLs de Formularios Públicos
 
-Todos los formularios requieren autenticación (`@login_required`). Si el usuario no está autenticado, será redirigido automáticamente a la página de login.
+Todos los formularios requieren autenticación (`@login_required`).
 
 ### Página Principal
 
-- **`/`** - Panel principal con tarjetas de acceso a todos los formularios
-  - Vista: `IndexView`
-  - Requiere autenticación: ✅
+- **`/`** — Panel principal con tarjetas de acceso a todos los formularios
 
-### Formularios de Evolveme
+### Evolveme
 
-- **`/measure/`** - Registrar medidas corporales
-  - Vista: `measure_form_view`
-  - Formulario: `MeasureForm`
-  - Modelo: `Measure`
-  - Requiere autenticación: ✅
+- **`/measure/`** — Registrar medidas corporales (`MeasureForm`)
 
-### Formularios de Cardio
+### Gym
 
-- **`/cardio/cardio-session/`** - Registrar sesión de cardio
-  - Vista: `cardio_session_form_view`
-  - Formulario: `CardioSessionForm`
-  - Modelo: `CardioSession`
-  - Requiere autenticación: ✅
+- **`/gym/cardio-session/`** — Registrar sesión de cardio (`CardioSessionForm`)
+  - Permite adjuntar capturas para extracción automática con IA (requiere `llama3.2-vision:11b`)
+- **`/gym/musculation-record/`** — Registrar ejercicio de musculación (`MusculationRecordPublicForm`)
+- **`/gym/training-session/`** — Registrar sesión de entrenamiento (`TrainingSessionModelForm`)
+  - Permite adjuntar capturas para extracción automática con IA (requiere `llama3.2-vision:11b`)
 
-### Formularios de Gym
+### Nutrition
 
-- **`/gym/musculation-record/`** - Registrar sesión de musculación
-  - Vista: `musculation_record_form_view`
-  - Formulario: `MusculationRecordPublicForm`
-  - Modelo: `MusculationRecord`
-  - Requiere autenticación: ✅
+- **`/nutrition/product/`** — Registrar producto alimentario (`ProductForm`)
+  - Permite adjuntar fotos del envase para extracción automática con IA (requiere `llama3.2-vision:11b`)
+- **`/nutrition/daily-diet/`** — Registrar dieta del día (`DailyDietForm` + `ProductQuantityFormSet`)
 
-- **`/gym/training-session/`** - Registrar sesión de entrenamiento
-  - Vista: `training_session_form_view`
-  - Formulario: `TrainingSessionModelForm`
-  - Modelo: `TrainingSession`
-  - Requiere autenticación: ✅
+### IA / Chat
 
-### Formularios de Nutrition
-
-- **`/nutrition/product/`** - Registrar producto alimentario
-  - Vista: `product_form_view`
-  - Formulario: `ProductForm`
-  - Modelo: `Product`
-  - Requiere autenticación: ✅
-
-- **`/nutrition/daily-diet/`** - Registrar dieta del día
-  - Vista: `daily_diet_form_view`
-  - Formulario: `DailyDietForm` + `ProductQuantityFormSet`
-  - Modelo: `DailyDiet` + `ProductQuantity`
-  - Requiere autenticación: ✅
-
-### Exportar datos desde el Admin
-
-El proyecto usa **django-import-export**. En cada listado de modelo del panel de administración aparece el botón **Export**, que permite descargar los datos (todos los del listado o solo los seleccionados) en **CSV**, **XLSX**, **JSON**, etc. Aplica a todos los modelos: Evolveme, Cardio, Gym, Nutrition, IA.
+- **`/ia/chat/`** — Chat con el asistente EvolveMe (requiere `qwen3:8b`)
 
 ### URLs del Admin
 
-- **`/admin/`** - Panel de administración de Django
-- **`/admin/gym/musculationrecord/add-formset/`** - Formset de registros de musculación (admin)
-- **`/admin/gym/routine/generate-from-json/`** - Generar rutina desde JSON (admin)
-- **`/admin/nutrition/dailydiet/add-formset/`** - Formset de dieta diaria (admin)
-- **`/admin/nutrition/dailydiet/generate-from-json/`** - Generar dieta semanal desde JSON (admin)
+- **`/admin/`** — Panel de administración de Django
+- **`/admin/gym/musculationrecord/add-formset/`** — Formset de registros de musculación
+- **`/admin/gym/routine/generate-from-json/`** — Generar rutina desde JSON
+- **`/admin/nutrition/dailydiet/add-formset/`** — Formset de dieta diaria
+- **`/admin/nutrition/dailydiet/generate-from-json/`** — Generar dieta semanal desde JSON
+- **`/admin/ia/ollamamodelconfig/<pk>/pull/`** — Descargar/actualizar un modelo Ollama
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ### Apps Instaladas
 
-- **evolveme**: App principal con perfiles de usuario y medidas corporales
-- **cardio**: Gestión de ejercicios y sesiones de cardio
-- **gym**: Gestión de ejercicios de musculación, rutinas y sesiones de entrenamiento
-- **nutrition**: Gestión de alimentos, productos y dietas diarias (renombrada desde "food")
-- **ia**: Gestión de prompts para integración con modelos de IA
+- **evolveme**: App principal — perfiles de usuario y medidas corporales
+- **gym**: Gestión de cardio, musculación, rutinas y sesiones de entrenamiento (absorbe la antigua app `cardio`)
+- **nutrition**: Gestión de alimentos, productos y dietas diarias
+- **ia**: Integración con Ollama — servidores, modelos, chat y prompts
 - **project_commands**: Comandos de gestión personalizados
 
 ---
 
-## 🎨 Personalización del Admin
-
-El proyecto utiliza **Jazzmin** como tema del panel de administración de Django. La configuración se encuentra en `project/settings.py` en el diccionario `JAZZMIN_SETTINGS`.
-
----
-
-## 📦 Apps y Modelos
+## Apps y Modelos
 
 ### Evolveme App
 
 **Modelos:**
-- **GymUserProfile**: Perfil del usuario del gimnasio
-  - Información personal (fecha de nacimiento, género, altura)
-  - Objetivos del usuario (perder peso, ganar músculo, etc.)
-- **Measure**: Seguimiento de medidas corporales
-  - Medidas básicas: peso, brazos, pecho, cintura, piernas
-  - Composición corporal: porcentaje de grasa, masa muscular, BMI
-  - Métricas avanzadas: agua corporal, masa ósea, proteína, grasa visceral, tasa metabólica basal, etc.
+- **GymUserProfile**: Perfil de usuario del gimnasio — información personal, objetivos, rutina activa, fechas de inicio/fin
+- **Measure**: Medidas corporales — peso, segmentos corporales, composición corporal (grasa, músculo, agua, BMI, TMB, etc.)
 
-**Enums:**
-- `GenderChoices`: Género (Masculino, Femenino, Otro)
-- `ObjectiveChoices`: Objetivos (Perder peso, Ganar músculo, Ganar peso, Mejorar salud, Mejorar rendimiento)
-
-**Estado:**
-- [x] Perfil del gimnasio (GymUserProfile)
-- [x] Seguimiento de medidas corporales (Measure) con métricas avanzadas
-- [x] Admin configurado con fieldsets organizados
-- [x] Grupos de usuarios y permisos configurados
-
----
-
-### Cardio App
-
-**Modelos:**
-- **CardioSession**: Sesiones de ejercicio cardiovascular
-  - Tipo de ejercicio (caminar, ciclismo, elíptica)
-  - Tiempo, distancia, calorías
-  - Frecuencia cardíaca promedio, velocidad promedio
-  - Elevación ganada
-  - Fechas de inicio y fin
-
-**Enums:**
-- `CardioExerciseChoices`: Tipos de ejercicios de cardio
-
-**Estado:**
-- [x] Modelo de sesiones de cardio
-- [x] Admin configurado con fieldsets
-- [x] Importación desde CSV
+**Enums:** `GenderChoices`, `ObjectiveChoices`
 
 ---
 
 ### Gym App
 
+Unifica los modelos de cardio y musculación en una sola app.
+
 **Modelos:**
-- **MusculationExercise**: Ejercicios de musculación
-  - Nombre, descripción, parte del cuerpo
-  - Series y repeticiones por defecto
-  - Imagen en base64
-- **MusculationRecord**: Registros de ejercicios realizados
-  - Usuario, ejercicio, fecha
-  - Series, repeticiones, peso
-  - Flag "To be improved" (TBI)
-  - Observaciones
-- **Routine**: Rutinas de entrenamiento
-  - Usuario, fechas de inicio y fin
-  - Tipos de ejercicios (push, pull, legs, core, etc.) - campo JSON
-  - Calentamiento (warmup)
-  - Ejercicios asociados (ManyToMany)
-- **TrainingSession**: Sesiones de entrenamiento
-  - Usuario, rutina asociada
-  - Fecha y hora, ubicación
-  - Tiempo de entrenamiento
-  - Calorías activas y totales
-  - Frecuencia cardíaca promedio
+- **CardioExercise**: Tipo de ejercicio cardiovascular (nombre, descripción)
+- **CardioSession**: Sesión de cardio — ejercicio, fechas, duración, distancia, velocidad, calorías, FC, elevación, imagen asociada
+- **MusculationExercise**: Ejercicio de musculación — nombre, descripción, parte del cuerpo, series/reps por defecto, imagen
+- **MusculationRecord**: Registro de ejercicio — usuario, ejercicio, fecha, series, repeticiones, peso, TBI, observaciones
+- **Routine**: Rutina de entrenamiento — usuario, fechas, tipos de ejercicio (JSON), calentamiento, ejercicios (ManyToMany)
+- **TrainingSession**: Sesión de entrenamiento — usuario, rutina, fecha, ubicación, duración, calorías, FC media, imagen asociada
 
 **Enums:**
-- `BodyPartChoices`: Partes del cuerpo (Pecho, Espalda, Piernas, Brazos, Hombros, Abdomen, Antebrazos, Zona media)
-- `ExerciseTypesChoices`: Tipos de ejercicios (Push, Pull, Legs, Core, Full Body, Lower Body, Upper Body, Abs, Forearms)
+- `CardioExerciseNameChoices`: Outdoor Walk, Indoor Walk, Outdoor Cycle, Indoor Cycle, Elliptical, Musculation
+- `BodyPartChoices`: Pecho, Espalda, Piernas, Brazos, Hombros, Abdomen, Antebrazos, Zona media
+- `ExerciseTypesChoices`: Push, Pull, Legs, Core, Full Body, Lower Body, Upper Body, Abs, Forearms
+- `UnitChoices`: Repeticiones, Segundos
 
-**Formularios:**
-- **MusculationRecordFormsetView**: Formulario con formset para registrar múltiples ejercicios en una sesión
-- **RoutineJSONView**: Formulario para generar rutinas desde JSON generado por IA
-
-**Templates:**
-- `gym/musculation_record_formset.html`: Formulario de registro de entrenamiento
-- `gym/routine_json_form.html`: Formulario para generar rutina desde JSON
-
-**Estado:**
-- [x] Ejercicios de musculación (MusculationExercise)
-- [x] Registros de ejercicios (MusculationRecord)
-- [x] Sesiones de entrenamiento (TrainingSession)
-- [x] Rutinas (Routine) con tipos de ejercicios y calentamiento
-- [x] Admin configurado
-- [x] Formularios con formsets
-- [x] Generación de rutinas desde JSON
+**Extracción con IA:**
+Los formularios de cardio y entrenamiento permiten adjuntar capturas de smartwatch/app. Si `llama3.2-vision:11b` está descargado en el servidor Ollama, los campos se rellenan automáticamente. Si no está disponible, la zona de subida se reemplaza por un aviso.
 
 ---
 
-### Nutrition App (anteriormente "food")
+### Nutrition App
 
 **Modelos:**
-- **Product**: Productos alimentarios
-  - Nombre, descripción, código de barras
-  - Información nutricional completa por 100g:
-    - Valor energético (kJ y kcal)
-    - Macronutrientes: proteínas, carbohidratos, grasas (saturadas, monoinsaturadas, poliinsaturadas)
-    - Azúcares, polialcoholes, fibra, sal
-    - Omega-3 (EPA+DHA)
-    - Micronutrientes: tiamina B1, fósforo, magnesio, hierro, zinc
-  - Mercado y stock
-- **ProductQuantity**: Cantidad de producto
-  - Producto, cantidad, unidad de medida
-- **DailyDiet**: Dieta diaria
-  - Usuario, fecha
-  - Productos y cantidades consumidas (ManyToMany con ProductQuantity)
+- **Product**: Producto alimentario — nombre, descripción, código de barras, información nutricional completa por 100 g (energía, macros, fibra, sal, omega-3, micronutrientes), mercado, stock
+- **ProductImage**: Imagen asociada a un producto
+- **ProductQuantity**: Cantidad de producto — producto, cantidad, unidad
+- **DailyDiet**: Dieta diaria — usuario, fecha, productos (ManyToMany con ProductQuantity)
 - **MealMetrics**: Métricas nutricionales de una dieta
-  - Calorías, proteínas, carbohidratos, grasas
 
-**Enums:**
-- `MarketChoices`: Mercados disponibles
-- `StockChoices`: Estado de stock (Sí, No, Comprar)
-
-**Formularios:**
-- **DailyDietFormsetView**: Formulario con formset para registrar dieta diaria con múltiples productos
-- **DietJSONView**: Formulario para generar dieta semanal desde JSON generado por IA
-
-**Templates:**
-- `nutrition/daily_diet_formset.html`: Formulario de registro de dieta diaria
-- `nutrition/diet_json_form.html`: Formulario para generar dieta semanal desde JSON
-
-**Estado:**
-- [x] Productos alimentarios (Product) con información nutricional completa
-- [x] Cantidades de productos (ProductQuantity)
-- [x] Dietas diarias (DailyDiet)
-- [x] Métricas de comida (MealMetrics)
-- [x] Admin configurado
-- [x] Formularios con formsets
-- [x] Generación de dietas semanales desde JSON
-- [x] Importación desde CSV
+**Extracción con IA:**
+El formulario de producto permite adjuntar fotos del envase o etiqueta. Si `llama3.2-vision:11b` está disponible, los valores nutricionales se extraen automáticamente (OCR). Si no, la zona de subida se reemplaza por un aviso.
 
 ---
 
 ### IA App
 
-**Modelos:**
-- **Promtps**: Prompts para modelos de IA
-  - Nombre del prompt
-  - Contenido del prompt (texto completo)
-  - Fechas de creación y actualización
+Gestiona la integración completa con Ollama.
 
-**Estado:**
-- [x] Modelo de prompts
-- [x] Admin configurado
-- [x] Importación automática desde archivos de texto
+**Modelos:**
+- **OllamaServer**: Servidor Ollama — URL base, API key opcional, habilitado/deshabilitado
+- **OllamaModelConfig**: Configuración de modelo — servidor, nombre del modelo, alias, propósito, parámetros de inferencia (temperatura, top_p, max_tokens), estado de descarga (`downloaded`, `digest`, `last_checked_at`, `update_available`)
+- **Promtps**: Prompts predefinidos — nombre y contenido
+- **ChatSession**: Sesión de chat — usuario, modelo usado, timestamps
+- **ChatMessage**: Mensaje de chat — sesión, rol (`user`/`assistant`), contenido, timestamp
+
+**Modelos Ollama configurados:**
+| Propósito | Modelo | Variable |
+|---|---|---|
+| Chat con asistente | `qwen3:8b` | `CHAT_MODEL` |
+| Extracción desde imagen | `llama3.2-vision:11b` | `VISION_MODEL` |
+
+**Administración de modelos:**
+- Por fila: botón "Descargar" (si no descargado) o "Actualizar" (si hay actualización disponible)
+- Acción masiva: "Descargar/actualizar modelos seleccionados"
+
+**Disponibilidad en tiempo real:**
+- Chat (`/ia/chat/`): input y botón deshabilitados con aviso si `qwen3:8b` no está descargado
+- Formularios de imagen: zona de subida reemplazada por aviso si `llama3.2-vision:11b` no está descargado
 
 ---
 
-## 🤖 Integración con IA
+## Integración con IA
 
-### Prompts Disponibles
+### Chat
 
-El proyecto incluye prompts predefinidos para generar rutinas y dietas:
+Accede a `/ia/chat/`. El historial completo de la sesión se envía a Ollama en cada mensaje. Las sesiones se guardan en base de datos por usuario.
 
-- **`prompts/gym.txt`**: Prompt para generar rutinas de ejercicios (Push-Pull-Legs)
-- **`prompts/nutrition.txt`**: Prompt para generar dietas semanales personalizadas
+### Extracción desde imagen
 
-### Estructuras JSON de Respuesta
+Los servicios `extract_cardio_data_from_image`, `extract_training_session_data_from_image` y `extract_product_data_from_images` (en `gym/services.py` y `nutrition/services.py`) envían las imágenes al modelo de visión configurado en Ollama y devuelven un diccionario con los campos extraídos.
 
-El sistema espera respuestas JSON estructuradas de los modelos de IA:
-
-- **`prompts/gym_response.txt`**: Estructura JSON para rutinas de ejercicios
-  - Usuario, fechas, tipos de ejercicios, calentamiento
-  - Días de la rutina con ejercicios (nombre, descripción, parte del cuerpo, series, repeticiones)
-
-- **`prompts/nutrition_response.txt`**: Estructura JSON para dietas semanales
-  - Usuario, fecha de inicio de semana
-  - Días de la semana (lunes a sábado) con comidas:
-    - Desayuno, media mañana, almuerzo, merienda, cena
-    - Productos con nombre, cantidad y unidad
-
-### Generación desde JSON
+### Generación desde JSON (rutinas y dietas)
 
 **Rutinas:**
 1. Acceder a `/admin/gym/routine/generate-from-json/`
-2. Pegar el JSON generado por la IA
-3. El sistema crea automáticamente:
-   - La rutina con fechas y tipos de ejercicios
-   - Los ejercicios si no existen
-   - Asocia los ejercicios a la rutina
+2. Pegar el JSON generado por la IA (ver `prompts/gym_response.txt`)
+3. El sistema crea la rutina, los ejercicios que no existan y los asocia
 
 **Dietas:**
 1. Acceder a `/admin/nutrition/dailydiet/generate-from-json/`
-2. Pegar el JSON generado por la IA
-3. El sistema crea automáticamente:
-   - Dietas diarias para cada día de la semana
-   - ProductQuantity para cada producto
-   - Busca productos por nombre (case-insensitive)
+2. Pegar el JSON generado por la IA (ver `prompts/nutrition_response.txt`)
+3. El sistema crea las dietas diarias y los productos por comida
+
+**Prompts disponibles:**
+- `prompts/gym.txt` — genera rutinas Push-Pull-Legs
+- `prompts/nutrition.txt` — genera dietas semanales personalizadas
 
 ---
 
-## 📊 Comandos de Gestión
-
-### Importación de Datos
+## Comandos de Gestión
 
 ```bash
+# Importar datos iniciales desde csv/
 python manage.py import_data
-```
 
-Este comando importa datos desde archivos CSV en la carpeta `data/`:
-
-- **Usuarios**: Crea usuario "david" si no existe
-- **Medidas**: Desde `measures.csv`
-- **Ejercicios de musculación**: Desde `musculation_exercises.csv`
-- **Sesiones de cardio**: Desde `cardio_session.csv`
-- **Productos alimentarios**: Desde `products.csv`
-- **Sesiones de entrenamiento**: Desde `trainning_session.csv`
-- **Rutinas**: Crea automáticamente una rutina por usuario (6 semanas de duración)
-- **Prompts**: Desde `prompts/gym.txt` y `prompts/nutrition.txt`
-
-### Eliminación de Datos
-
-```bash
+# Eliminar todos los datos importados
 python manage.py drop_data
+
+# Actualizar datos existentes
+python manage.py update_data
 ```
 
-Elimina todos los datos importados por el comando `import_data`.
+Los tres comandos leen desde la carpeta `csv/` del proyecto.
 
 ---
 
-## 🎯 Formularios Avanzados
+## Archivos de Datos CSV
+
+Ubicados en `csv/`:
+
+| Archivo | Contenido |
+|---|---|
+| `training_session.csv` | Sesiones de cardio y entrenamiento unificadas (columna `session_type`: `cardio` / `training`) |
+| `measures.csv` | Medidas corporales |
+| `musculation_exercises.csv` | Ejercicios de musculación |
+| `products.csv` | Productos alimentarios |
+
+### Esquema de `training_session.csv`
+
+```
+session_type, user, name, session_start, session_end, date, location,
+workout_time, distance, avg_speed, active_calories, total_calories,
+elevation_gain, average_heart_rate
+```
+
+- Filas `session_type=cardio`: datos completos de distancia, velocidad, elevación
+- Filas `session_type=training`: campos de cardio vacíos; `name=Musculation`
+
+---
+
+## Formularios Avanzados
 
 ### Formsets
 
-El proyecto utiliza Django Formsets con Crispy Forms y Bootstrap 5:
+**MusculationRecordFormset** (`/admin/gym/musculationrecord/add-formset/`):
+Registra múltiples ejercicios en una sesión — usuario, fecha, ejercicio, series, repeticiones, peso, TBI, observaciones.
 
-**MusculationRecordFormset:**
-- Permite registrar múltiples ejercicios en una sesión de entrenamiento
-- Accesible desde: `/admin/gym/musculationrecord/add-formset/`
-- Incluye: usuario, fecha, y múltiples ejercicios con series, repeticiones, peso, TBI y observaciones
-
-**ProductQuantityFormSet:**
-- Permite registrar múltiples productos en una dieta diaria
-- Accesible desde: `/admin/nutrition/dailydiet/add-formset/`
-- Incluye: usuario, fecha, y múltiples productos con cantidad y unidad
+**ProductQuantityFormSet** (`/admin/nutrition/dailydiet/add-formset/`):
+Registra múltiples productos en una dieta diaria — usuario, fecha, producto, cantidad, unidad.
 
 ---
 
-## 🗂️ Archivos de Datos
+## Exportación de Datos
 
-Los archivos CSV se encuentran en la carpeta `data/`:
-
-- `measures.csv`: Medidas corporales
-- `musculation_exercises.csv`: Ejercicios de musculación
-- `cardio_session.csv`: Sesiones de cardio
-- `products.csv`: Productos alimentarios
-- `trainning_session.csv`: Sesiones de entrenamiento
+El proyecto usa **django-import-export**. En cada listado del admin aparece el botón **Export** para descargar datos en CSV, XLSX, JSON, etc. Disponible en todos los modelos: Evolveme, Gym, Nutrition, IA.
 
 ---
 
-## 🛠️ Configuración
+## Configuración
 
 ### Variables de Entorno
 
-El proyecto utiliza variables de entorno para configuración sensible:
+| Variable | Descripción |
+|---|---|
+| `ADMIN_USERNAME` | Usuario administrador |
+| `ADMIN_PASSWORD` | Contraseña del administrador |
+| `ADMIN_EMAIL` | Email del administrador |
+| `ADMIN_GROUPS` | Grupos de usuarios (separados por comas) |
 
-- `ADMIN_USERNAME`: Usuario administrador
-- `ADMIN_PASSWORD`: Contraseña del administrador
-- `ADMIN_EMAIL`: Email del administrador
-- `ADMIN_GROUPS`: Grupos de usuarios (separados por comas)
+### Servidor Ollama
+
+Configurar en el admin en **IA → Servidores Ollama**:
+- URL base del servidor (p. ej. `http://localhost:11434`)
+- API key (opcional)
+- Marcar como habilitado
+
+Los modelos se configuran en **IA → Modelos Ollama** y se descargan directamente desde el admin.
 
 ### Tema del Admin (Jazzmin)
 
-El tema del panel de administración se configura en `project/settings.py` mediante `JAZZMIN_SETTINGS` (título, cabecera, sidebar, etc.). Consulta la documentación de [django-jazzmin](https://django-jazzmin.readthedocs.io/) para personalizar.
+Configurado en `project/settings.py` mediante `JAZZMIN_SETTINGS`. Consulta [django-jazzmin docs](https://django-jazzmin.readthedocs.io/).
 
 ### Archivos Estáticos
 
-- `STATIC_URL = "static/"`
-- `STATICFILES_DIRS = [BASE_DIR / "static"]`
-- `STATIC_ROOT = BASE_DIR / "staticfiles"`
+```python
+STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+```
 
 ---
 
-## 📝 Tareas Pendientes
-
-### Funcionalidades Futuras
-- [ ] API REST con Django REST Framework
-- [ ] Documentación Swagger/OpenAPI
-- [ ] Integración con Redis y Celery para tareas asíncronas
-- [ ] Notificaciones por correo y SMS
-- [ ] Dashboard con gráficos y estadísticas
-- [x] Exportación de datos desde el Admin (CSV, XLSX, JSON vía django-import-export)
-- [ ] Aplicación móvil
-
----
-
-## 🚀 Instalación y Uso
+## Instalación y Uso
 
 ### Requisitos
 
 - Python 3.12+
 - Django 4.2.17
 - PostgreSQL
+- Ollama (para funciones de IA)
 - Docker (opcional)
 
 ### Instalación
@@ -412,21 +289,24 @@ El tema del panel de administración se configura en `project/settings.py` media
 2. Instalar dependencias: `pip install -r requirements.txt`
 3. Configurar variables de entorno
 4. Ejecutar migraciones: `python manage.py migrate`
-5. Importar datos iniciales: `python manage.py import_data`
-6. Crear superusuario: `python manage.py createsuperuser`
-7. Ejecutar servidor: `python manage.py runserver`
+5. Crear superusuario: `python manage.py createsuperuser`
+6. Importar datos iniciales: `python manage.py import_data`
+7. Configurar servidor Ollama en el admin y descargar modelos
+8. Ejecutar servidor: `python manage.py runserver`
 
 ### Docker
 
 ```bash
 docker-compose up -d
 ```
+
 ---
-## Funciones
+
+## Capturas de pantalla
 
 ### Panel principal
 
-Panel de Administración y Registro con tarjetas de acceso a todos los formularios y al admin.
+Panel con tarjetas de acceso a todos los formularios y al admin.
 
 ![Panel principal con tarjetas de acceso](pictures/actions.png)
 
@@ -440,60 +320,36 @@ Vista del dashboard de Django con Jazzmin: módulos por aplicación y enlaces a 
 
 #### Registrar sesión de entrenamiento
 
-Formulario para registrar una sesión completa de entrenamiento (usuario, rutina, fecha, ubicación, duración, kcal, FC media).
-
 ![Registrar sesión de entrenamiento](pictures/register-train.png)
 
 #### Registrar sesión de musculación
-
-Formulario para registrar ejercicios de musculación (usuario, ejercicio, series, repeticiones, peso, TBI, observación).
 
 ![Registrar sesión de musculación](pictures/register-muscle.png)
 
 #### Registrar sesión de cardio
 
-Formulario para registrar una sesión de cardio (usuario, ejercicio, fechas, ubicación, duración, distancia, velocidad, calorías, elevación, FC).
-
 ![Registrar sesión de cardio](pictures/register-cardio-session.png)
 
 #### Registrar medidas corporales
-
-Formulario para registrar medidas corporales (usuario, fecha, peso, brazo, pecho, cintura, pierna, etc.).
 
 ![Registrar medidas corporales](pictures/register-measures.png)
 
 #### Registrar producto
 
-Formulario para registrar un producto alimentario con valores nutricionales (nombre, descripción, código de barras, mercado, calorías, proteínas, carbohidratos, grasas por 100 g).
-
 ![Registrar producto](pictures/register-product.png)
 
 #### Registrar dieta del día
 
-Formulario para registrar la dieta del día: información de la dieta (usuario, fecha) y productos consumidos (producto, cantidad, unidad).
-
 ![Registrar dieta del día](pictures/register-nutrition.png)
-
-
-
-
-
-
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto es de uso privado.
 
 ---
 
-## 👥 Contribuidores
+## Contribuidores
 
 - David Sánchez
-
----
-
-## 📞 Soporte
-
-Para más información sobre el tema del admin, consultar la documentación de Django Jazzmin: https://django-jazzmin.readthedocs.io/
