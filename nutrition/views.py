@@ -16,6 +16,7 @@ from nutrition.forms import (
     ProductQuantityFormSet,
     ProductQuantityFormsetHelper,
 )
+from ia.services import is_model_downloaded
 from nutrition.models import DailyDiet, Product, ProductImage, ProductQuantity
 from project.admin_context import with_admin_context
 
@@ -247,7 +248,10 @@ def product_form_view(request):
     else:
         form = ProductForm()
 
-    return render(request, "nutrition/product_form.html", with_admin_context(request, {"form": form}))
+    return render(request, "nutrition/product_form.html", with_admin_context(request, {
+        "form": form,
+        "vision_available": is_model_downloaded("llama3.2-vision:11b"),
+    }))
 
 
 @login_required

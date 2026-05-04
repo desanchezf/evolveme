@@ -8,7 +8,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
 from ia.models import ChatMessage, ChatSession, OllamaModelConfig
-from ia.services import chat_with_ollama, check_model_on_server, pull_model_on_server
+from ia.services import (
+    chat_with_ollama,
+    check_model_on_server,
+    is_model_downloaded,
+    pull_model_on_server,
+)
+from project.admin_context import with_admin_context
 
 
 @login_required
@@ -21,11 +27,15 @@ def chat_view(request):
     )
     if not session:
         session = ChatSession.objects.create(user=request.user)
-    messages = list(session.messages.all().order_by("created_at"))
+    chat_messages = list(session.messages.all().order_by("created_at"))
     return render(
         request,
         "ia/chat.html",
-        {"chat_session": session, "chat_messages": messages},
+        with_admin_context(request, {
+            "chat_session": session,
+            "chat_messages": chat_messages,
+            "chat_available": is_model_downloaded("qwen3:8b"),
+        }),
     )
 
 
@@ -39,7 +49,7 @@ def chat_send_view(request):
         return JsonResponse({"error": "JSON inválido"}, status=400)
     content = (data.get("content") or "").strip()
     session_id = data.get("session_id")
-    model_key = (data.get("model_key") or "").strip()
+    model_key = "qwen3:8b"
     if not content:
         return JsonResponse({"error": "Mensaje vacío"}, status=400)
     if session_id:

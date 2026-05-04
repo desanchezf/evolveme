@@ -119,15 +119,50 @@ class OllamaModelConfigAdmin(ImportExportModelAdmin):
         ),
     )
 
+    @admin.action(description=_("Descargar/actualizar modelos seleccionados"))
+    def download_models(self, request, queryset):
+        from django.utils import timezone
+        from ia.services import check_model_on_server, pull_model_on_server
+
+        ok_count = 0
+        fail_count = 0
+        for config in queryset:
+            ok, err = pull_model_on_server(config.server, config.model_name)
+            if ok:
+                downloaded, digest = check_model_on_server(config.server, config.model_name)
+                config.downloaded = downloaded
+                config.digest = digest
+                config.last_checked_at = timezone.now()
+                config.update_available = not downloaded
+                config.save(update_fields=[
+                    "downloaded", "digest", "last_checked_at",
+                    "update_available", "updated_at",
+                ])
+                ok_count += 1
+            else:
+                fail_count += 1
+                self.message_user(
+                    request,
+                    f"Error al descargar '{config.model_name}': {err}",
+                    level="error",
+                )
+        if ok_count:
+            self.message_user(
+                request,
+                f"{ok_count} modelo(s) descargado(s) o actualizados correctamente.",
+            )
+
+    actions = ["download_models"]
+
     def pull_action(self, obj):
-        if not obj.update_available and obj.downloaded:
-            return "—"
         url = reverse("ia:ollama_model_pull", args=[obj.pk])
-        return format_html(
-            '<a class="button" href="{}">{}</a>',
-            url,
-            _("Actualizar"),
-        )
+        if not obj.downloaded:
+            label = _("Descargar")
+        elif obj.update_available:
+            label = _("Actualizar")
+        else:
+            return "—"
+        return format_html('<a class="button" href="{}">{}</a>', url, label)
 
     pull_action.short_description = _("Acción")
 

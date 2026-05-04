@@ -61,6 +61,11 @@ def chat_with_ollama(session, model_key):
     except requests.exceptions.ConnectionError:
         return None, "No se pudo conectar con el servidor Ollama. Comprueba que esté en ejecución."
     except requests.exceptions.HTTPError as e:
+        if e.response is not None and e.response.status_code == 404:
+            return None, (
+                f"El modelo '{model}' no está descargado en el servidor Ollama. "
+                "Ejecuta: ollama pull " + model
+            )
         return None, f"Error del servidor Ollama: {e.response.status_code if e.response else str(e)}"
     except Exception as e:
         return None, str(e)
@@ -96,6 +101,16 @@ def check_model_on_server(server, model_name):
         if name == model_name or name.startswith(model_name + ":"):
             return True, (m.get("digest") or "")[:64]
     return False, ""
+
+
+def is_model_downloaded(model_name):
+    """Devuelve True si el modelo está marcado como descargado en algún servidor habilitado."""
+    from ia.models import OllamaModelConfig
+    return OllamaModelConfig.objects.filter(
+        model_name=model_name,
+        downloaded=True,
+        server__enabled=True,
+    ).exists()
 
 
 def pull_model_on_server(server, model_name):

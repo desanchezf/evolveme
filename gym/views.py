@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.datastructures import MultiValueDict
 from django.views.generic import FormView
 
+from ia.services import is_model_downloaded
 from gym.forms import (
     CardioSessionForm,
     MusculationRecordFormSet,
@@ -272,7 +273,10 @@ def cardio_session_form_view(request):
     else:
         form = CardioSessionForm(user=request.user, is_staff=is_staff)
 
-    return render(request, "gym/cardio_session_form.html", with_admin_context(request, {"form": form}))
+    return render(request, "gym/cardio_session_form.html", with_admin_context(request, {
+        "form": form,
+        "vision_available": is_model_downloaded("llama3.2-vision:11b"),
+    }))
 
 
 @login_required
@@ -319,4 +323,7 @@ def training_session_form_view(request):
     else:
         form = TrainingSessionModelForm(user=request.user, is_staff=is_staff)
 
-    return render(request, "gym/training_session_form.html", with_admin_context(request, {"form": form}))
+    return render(request, "gym/training_session_form.html", with_admin_context(request, {
+        "form": form,
+        "vision_available": is_model_downloaded("llama3.2-vision:11b"),
+    }))
