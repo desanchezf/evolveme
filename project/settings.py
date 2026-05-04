@@ -171,8 +171,8 @@ ROLE_PERMISSIONS = {
             "permissions": ["add", "view", "change", "delete"],
         },
         {
-            "app_label": "evolveme",
-            "model": "cardio",
+            "app_label": "gym",
+            "model": "cardiosession",
             "permissions": ["add", "view", "change", "delete"],
         },
         {
@@ -225,8 +225,8 @@ ROLE_PERMISSIONS = {
             "permissions": ["view"],
         },
         {
-            "app_label": "evolveme",
-            "model": "cardio",
+            "app_label": "gym",
+            "model": "cardiosession",
             "permissions": ["add", "view", "change", "delete"],
         },
         {
@@ -287,7 +287,7 @@ JAZZMIN_SETTINGS = {
             "url": "/gym/training-session/",
             "icon": "fas fa-calendar-check",
         },
-        {"name": "Cardio", "url": "/cardio/cardio-session/", "icon": "fas fa-running"},
+        {"name": "Cardio", "url": "/gym/cardio-session/", "icon": "fas fa-running"},
         {
             "name": "Musculación",
             "url": "/gym/musculation-record/",
@@ -320,11 +320,9 @@ JAZZMIN_SETTINGS = {
                 "url": "/gym/training-session/",
                 "icon": "fas fa-calendar-check",
             },
-        ],
-        "cardio": [
             {
                 "name": "Sesión de cardio",
-                "url": "/cardio/cardio-session/",
+                "url": "/gym/cardio-session/",
                 "icon": "fas fa-running",
             },
         ],
@@ -346,13 +344,12 @@ JAZZMIN_SETTINGS = {
         # Auth
         "auth.user": "fas fa-user",
         "auth.group": "fas fa-users",
-        # Cardio
-        "cardio.cardioexercise": "fas fa-heartbeat",
-        "cardio.cardiosession": "fas fa-running",
         # Evolveme
         "evolveme.gymuserprofile": "fas fa-id-card",
         "evolveme.measure": "fas fa-ruler-combined",
         # Gym
+        "gym.cardioexercise": "fas fa-heartbeat",
+        "gym.cardiosession": "fas fa-running",
         "gym.musculationexercise": "fas fa-dumbbell",
         "gym.musculationrecord": "fas fa-clipboard-list",
         "gym.routine": "fas fa-list-ol",

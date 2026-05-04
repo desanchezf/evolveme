@@ -2,10 +2,9 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from cardio.models import CardioExercise, CardioSession
 from evolveme.models import Measure
 from nutrition.models import Product
-from gym.models import MusculationExercise, Routine, TrainingSession
+from gym.models import CardioExercise, CardioSession, MusculationExercise, Routine, TrainingSession
 
 logger = logging.getLogger(__name__)
 

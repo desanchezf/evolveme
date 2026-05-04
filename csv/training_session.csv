@@ -1,0 +1,45 @@
+session_type,user,name,session_start,session_end,date,location,workout_time,distance,avg_speed,active_calories,total_calories,elevation_gain,average_heart_rate
+cardio,david,Outdoor Walk,2024-12-31 21:01:00,2024-12-31 21:44:00,2024-12-31,Córdoba,0:43:23,2.85,,265,377,9,126
+cardio,david,Indoor Cycle,2024-12-30 18:27:00,2024-12-30 18:37:00,2024-12-30,Córdoba,0:10:02,,,74,100,,126
+cardio,david,Outdoor Cycle,2024-08-20 21:29:00,2024-08-20 22:07:00,2024-08-20,Córdoba,0:37:58,8.80,13.9,222,312,15,116
+cardio,david,Indoor Cycle,2024-12-29 18:13:00,2024-12-29 18:24:00,2024-12-29,Córdoba,0:10:09,,,81,107,,125
+cardio,david,Indoor Cycle,2024-12-23 19:53:00,2024-12-23 20:03:00,2024-12-23,Córdoba,0:10:05,,,86,112,,128
+cardio,david,Outdoor Walk,2024-12-24 20:46:00,2024-12-24 21:18:00,2024-12-24,Córdoba,0:31:33,2.41,,217,299,,129
+cardio,david,Outdoor Walk,2024-12-24 18:53:00,2024-12-24 19:16:00,2024-12-24,Córdoba,0:22:32,1.05,,108,166,,119
+cardio,david,Outdoor Cycle,2024-08-17 21:15:00,2024-08-17 22:04:00,2024-08-17,Córdoba,0:49:43,13.32,16.0,372,493,31,127
+cardio,david,Outdoor Cycle,2024-08-14 21:20:00,2024-08-14 21:40:00,2024-08-14,Córdoba,0:20:04,2.89,8.6,46,87,,126
+cardio,david,Outdoor Cycle,2024-08-13 21:22:00,2024-08-13 22:40:00,2024-08-13,Córdoba,0:55:51,14.57,15.6,422,558,33,128
+cardio,david,Outdoor Cycle,2024-08-12 21:36:00,2024-08-12 22:38:00,2024-08-12,Córdoba,1:01:50,14.80,14.3,364,515,22,121
+cardio,david,Outdoor Cycle,2024-08-11 21:21:00,2024-08-11 22:23:00,2024-08-11,Córdoba,1:01:32,15.68,15.2,427,577,34,126
+cardio,david,Outdoor Cycle,2024-08-08 21:15:00,2024-08-08 22:11:00,2024-08-08,Córdoba,0:56:31,13.23,14.0,344,478,31,124
+cardio,david,Outdoor Cycle,2026-03-16 20:08:00,2026-03-16 20:56:00,2026-03-16,Córdoba,0:32:17,6.27,11.6,138,215,7,119
+cardio,david,Outdoor Cycle,2026-04-12 19:48:00,2026-04-12 20:51:00,2026-04-12,Córdoba,1:02:27,14.88,14.2,384,543,50,129
+cardio,david,Outdoor Cycle,2026-04-13 20:57:00,2026-04-13 21:57:00,2026-04-13,Córdoba,0:59:37,14.82,14.9,431,581,46,139
+cardio,david,Outdoor Cycle,2026-04-14 21:21:00,2026-04-14 22:16:00,2026-04-14,Córdoba,0:55:03,13.87,15.1,400,536,40,135
+cardio,david,Outdoor Cycle,2026-04-15 20:50:00,2026-04-15 21:53:00,2026-04-15,Córdoba,1:02:32,14.75,14.1,403,558,46,131
+cardio,david,Outdoor Cycle,2026-04-20 20:18:00,2026-04-20 21:10:00,2026-04-20,Córdoba,0:51:38,14.16,16.4,415,544,44,138
+cardio,david,Outdoor Cycle,2026-04-26 20:18:00,2026-04-26 21:15:00,2026-04-26,Córdoba,0:56:58,14.46,15.2,390,534,46,132
+cardio,david,Outdoor Cycle,2026-04-27 20:13:00,2026-04-27 21:10:00,2026-04-27,Córdoba,0:56:41,14.60,15.4,402,546,46,130
+training,david,Musculation,2024-12-23 20:06:00,,2024-12-23,Córdoba,0:35:54,,,219,314,,127
+training,david,Musculation,2024-12-29 18:29:00,,2024-12-29,Córdoba,0:42:45,,,294,405,,130
+training,david,Musculation,2026-01-02 17:54:00,,2026-01-02,Córdoba,0:32:36,,,188,273,,124
+training,david,Musculation,2026-01-12 20:16:00,,2026-01-12,Córdoba,0:47:32,,,337,464,,132
+training,david,Musculation,2026-01-13 18:14:00,,2026-01-13,Córdoba,0:33:58,,,209,300,,125
+training,david,Musculation,2026-01-14 18:13:00,,2026-01-14,Córdoba,0:35:37,,,198,292,,117
+training,david,Musculation,2026-01-16 17:09:00,,2026-01-16,Córdoba,0:43:08,,,249,362,,123
+training,david,Musculation,2026-01-21 20:10:00,,2026-01-21,Córdoba,0:45:32,,,279,400,,130
+training,david,Musculation,2026-01-22 18:59:00,,2026-01-22,Córdoba,0:41:20,,,229,338,,120
+training,david,Musculation,2026-01-23 20:23:00,,2026-01-23,Córdoba,0:37:12,,,208,306,,119
+training,david,Musculation,2026-01-26 19:15:00,,2026-01-26,Córdoba,0:29:41,,,175,253,,125
+training,david,Musculation,2026-01-27 18:54:00,,2026-01-27,Córdoba,0:14:29,,,85,123,,117
+training,david,Musculation,2026-02-03 18:48:00,,2026-02-03,Córdoba,0:39:47,,,210,314,,118
+training,david,Musculation,2026-02-04 19:24:00,,2026-02-04,Córdoba,0:39:18,,,230,333,,124
+training,david,Musculation,2026-02-10 20:33:00,,2026-02-10,Córdoba,0:35:10,,,203,295,,118
+training,david,Musculation,2026-03-23 20:21:00,,2026-03-23,Córdoba,0:39:49,,,275,380,,130
+training,david,Musculation,2026-03-24 20:13:00,,2026-03-24,Córdoba,0:39:30,,,239,343,,120
+training,david,Musculation,2026-03-25 20:24:00,,2026-03-25,Córdoba,0:35:13,,,231,324,,127
+training,david,Musculation,2026-03-30 20:03:00,,2026-03-30,Córdoba,0:41:16,,,252,361,,123
+training,david,Musculation,2026-03-31 20:39:00,,2026-03-31,Córdoba,0:33:29,,,185,274,,122
+training,david,Musculation,2026-04-13 20:05:00,,2026-04-13,Córdoba,0:32:54,,,200,287,,123
+training,david,Musculation,2026-04-20 19:27:00,,2026-04-20,Córdoba,0:31:55,,,205,289,,126
+training,david,Musculation,2026-04-21 19:21:00,,2026-04-21,Córdoba,0:36:32,,,206,303,,120

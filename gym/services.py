@@ -1,5 +1,6 @@
 """
-Servicio de extracción de datos de sesión de entrenamiento desde una imagen usando LLM con visión.
+Servicios de extracción de datos desde imágenes usando LLM con visión (Ollama).
+Cubre sesiones de entrenamiento (musculación) y sesiones de cardio.
 """
 import base64
 import json
@@ -11,24 +12,21 @@ try:
 except ImportError:
     requests = None
 
-# Modelo solo para IMÁGENES (OCR/detección). El chat usa otro modelo (qwen3:8b) en ia/services.
+# Modelo de visión para OCR/detección en imágenes.
 VISION_MODEL = "llama3.2-vision:11b"  # ollama pull llama3.2-vision:11b
 
 
 def _get_ollama_server():
-    """Devuelve el primer servidor Ollama habilitado, o None."""
     from ia.models import OllamaServer
     return OllamaServer.objects.filter(enabled=True).first()
 
 
 def _encode_image(file) -> str:
-    """Lee el archivo de imagen y devuelve base64."""
     file.seek(0)
     return base64.b64encode(file.read()).decode("utf-8")
 
 
 def _parse_llm_json(response_text: str) -> dict:
-    """Extrae un objeto JSON del texto de respuesta (puede venir en markdown)."""
     text = (response_text or "").strip()
     match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
     if match:
@@ -39,20 +37,19 @@ def _parse_llm_json(response_text: str) -> dict:
         return {}
 
 
-def extract_training_session_data_from_image(image_files) -> dict:
-    """
-    Envía una o varias imágenes al LLM con visión (Ollama) y devuelve un diccionario
-    con los campos que se puedan mapear al modelo TrainingSession.
-    image_files: archivo único o lista de archivos.
-    Si no hay servidor/configuración o falla la llamada, devuelve {}.
-    """
-    if not requests:
+def _call_ollama(server, prompt: str, images_b64: list) -> dict:
+    url = f"{server.base_url.rstrip('/')}/api/generate"
+    payload = {"model": VISION_MODEL, "prompt": prompt, "images": images_b64, "stream": False}
+    headers = {"Authorization": f"Bearer {server.api_key}"} if server.api_key else {}
+    try:
+        resp = requests.post(url, json=payload, headers=headers or None, timeout=60)
+        resp.raise_for_status()
+        return _parse_llm_json(resp.json().get("response") or "")
+    except Exception:
         return {}
 
-    server = _get_ollama_server()
-    if not server:
-        return {}
 
+def _encode_files(image_files) -> list:
     if not hasattr(image_files, "__iter__") or isinstance(image_files, (str, bytes)):
         image_files = [image_files]
     images_b64 = []
@@ -62,6 +59,72 @@ def extract_training_session_data_from_image(image_files) -> dict:
             f.seek(0)
         except Exception:
             pass
+    return images_b64
+
+
+def extract_cardio_data_from_image(image_files) -> dict:
+    """
+    Envía imágenes al LLM con visión y devuelve campos mapeados a CardioSession.
+    Devuelve {} si no hay servidor o falla la llamada.
+    """
+    if not requests:
+        return {}
+    server = _get_ollama_server()
+    if not server:
+        return {}
+    images_b64 = _encode_files(image_files)
+    if not images_b64:
+        return {}
+
+    prompt = (
+        "Analiza esta(s) imagen(es) de un entrenamiento de cardio (captura de reloj, app de fitness, etc.). "
+        "Devuelve ÚNICAMENTE un JSON válido, sin texto adicional ni markdown, con estas claves "
+        "(usa null para lo que no detectes): "
+        "date (YYYY-MM-DD), exercise (uno de: Outdoor Walk, Indoor Walk, Outdoor Cycle, Indoor Cycle, Elliptical), "
+        "workout_time_seconds (número entero), distance_km (número), avg_speed_kmh (número), "
+        "active_calories (número entero), total_calories (número entero), elevation_gain_m (número entero), "
+        "average_heart_rate (número entero), location (texto)."
+    )
+    raw = _call_ollama(server, prompt, images_b64)
+
+    result = {}
+    if raw.get("date"):
+        result["date"] = raw["date"]
+    if raw.get("exercise") in ("Outdoor Walk", "Indoor Walk", "Outdoor Cycle", "Indoor Cycle", "Elliptical"):
+        from gym.models import CardioExercise
+        ex = CardioExercise.objects.filter(name=raw["exercise"]).first()
+        if ex:
+            result["exercise"] = ex.pk
+    if raw.get("workout_time_seconds") is not None:
+        result["workout_time"] = timedelta(seconds=int(raw["workout_time_seconds"]))
+    if raw.get("distance_km") is not None:
+        result["distance"] = float(raw["distance_km"])
+    if raw.get("avg_speed_kmh") is not None:
+        result["avg_speed"] = float(raw["avg_speed_kmh"])
+    if raw.get("active_calories") is not None:
+        result["active_calories"] = int(raw["active_calories"])
+    if raw.get("total_calories") is not None:
+        result["total_calories"] = int(raw["total_calories"])
+    if raw.get("elevation_gain_m") is not None:
+        result["elevation_gain"] = int(raw["elevation_gain_m"])
+    if raw.get("average_heart_rate") is not None:
+        result["average_heart_rate"] = int(raw["average_heart_rate"])
+    if raw.get("location"):
+        result["location"] = str(raw["location"])[:255]
+    return result
+
+
+def extract_training_session_data_from_image(image_files) -> dict:
+    """
+    Envía imágenes al LLM con visión y devuelve campos mapeados a TrainingSession.
+    Devuelve {} si no hay servidor o falla la llamada.
+    """
+    if not requests:
+        return {}
+    server = _get_ollama_server()
+    if not server:
+        return {}
+    images_b64 = _encode_files(image_files)
     if not images_b64:
         return {}
 
@@ -73,26 +136,7 @@ def extract_training_session_data_from_image(image_files) -> dict:
         "workout_time_seconds (número entero), active_kilocalories (número entero), "
         "total_kilocalories (número entero), avg_heart_rate (número entero)."
     )
-
-    url = f"{server.base_url.rstrip('/')}/api/generate"
-    payload = {
-        "model": VISION_MODEL,
-        "prompt": prompt,
-        "images": images_b64,
-        "stream": False,
-    }
-    headers = {}
-    if server.api_key:
-        headers["Authorization"] = f"Bearer {server.api_key}"
-
-    try:
-        resp = requests.post(url, json=payload, headers=headers or None, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
-        response_text = data.get("response") or ""
-        raw = _parse_llm_json(response_text)
-    except Exception:
-        return {}
+    raw = _call_ollama(server, prompt, images_b64)
 
     result = {}
     if raw.get("session_date"):
@@ -107,5 +151,4 @@ def extract_training_session_data_from_image(image_files) -> dict:
         result["total_kilocalories"] = int(raw["total_kilocalories"])
     if raw.get("avg_heart_rate") is not None:
         result["avg_heart_rate"] = int(raw["avg_heart_rate"])
-
     return result

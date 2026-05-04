@@ -9,10 +9,9 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_duration
 
-from cardio.models import CardioExercise, CardioSession
 from evolveme.models import GymUserProfile, Measure
 from nutrition.models import Product
-from gym.models import MusculationExercise, Routine, TrainingSession
+from gym.models import CardioExercise, CardioSession, MusculationExercise, Routine, TrainingSession
 from ia.models import OllamaModelConfig, OllamaServer, Promtps
 
 logger = logging.getLogger(__name__)
@@ -69,7 +68,7 @@ class Command(BaseCommand):
             print(" ✅ Modelos Ollama precargados correctamente 🤖")
 
     def get_csv_path(self, filename):
-        """Obtiene la ruta del archivo CSV en la carpeta data/"""
+        """Obtiene la ruta del archivo CSV en la carpeta csv/"""
         try:
             project_root = settings.BASE_DIR
         except AttributeError:
@@ -78,7 +77,7 @@ class Command(BaseCommand):
                     os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
                 )
             )
-        return os.path.join(project_root, "data", filename)
+        return os.path.join(project_root, "csv", filename)
 
     def get_prompt_path(self, filename):
         """Obtiene la ruta del archivo de prompt en la carpeta prompts/"""
@@ -234,20 +233,21 @@ class Command(BaseCommand):
         return True
 
     def cardio_exercises(self):
-        """Carga los ejercicios de cardio desde cardio_session.csv"""
+        """Carga los ejercicios de cardio desde training_session.csv (filas session_type=cardio)"""
         logger.info("Cargando ejercicios de cardio 🏃 ...")
 
-        csv_path = self.get_csv_path("cardio_session.csv")
+        csv_path = self.get_csv_path("training_session.csv")
         if not os.path.exists(csv_path):
             logger.warning(
                 f"El archivo {csv_path} no existe, saltando carga de ejercicios de cardio"
             )
-            return True  # No es crítico si no existe el archivo
+            return True
 
         created_count = 0
         with open(csv_path, newline="", encoding="utf-8") as csvfile:
-            exercises_reader = csv.DictReader(csvfile)
-            for row in exercises_reader:
+            for row in csv.DictReader(csvfile):
+                if row.get("session_type") != "cardio":
+                    continue
                 exercise_name = row.get("name", "").strip()
                 if exercise_name and not CardioExercise.objects.filter(name=exercise_name).exists():
                     exercise = CardioExercise.objects.create(
@@ -266,35 +266,32 @@ class Command(BaseCommand):
         return True
 
     def cardio_training_session(self):
-        """Carga las sesiones de cardio desde cardio_session.csv"""
+        """Carga las sesiones de cardio desde training_session.csv (filas session_type=cardio)"""
         logger.info("Cargando sesiones de cardio 🚴 ...")
 
-        csv_path = self.get_csv_path("cardio_session.csv")
+        csv_path = self.get_csv_path("training_session.csv")
         if not os.path.exists(csv_path):
             logger.error(f"El archivo {csv_path} no existe")
             return False
 
         created_count = 0
         with open(csv_path, newline="", encoding="utf-8") as csvfile:
-            cardio_reader = csv.DictReader(csvfile)
-            for row in cardio_reader:
+            for row in csv.DictReader(csvfile):
+                if row.get("session_type") != "cardio":
+                    continue
                 username = row.get("user", "david")
                 user = User.objects.filter(username=username).first()
                 if not user:
                     logger.warning(f"Usuario {username} no encontrado, saltando sesión")
                     continue
 
-                # Parsear fechas y duraciones
                 session_start = self.parse_datetime_safe(row.get("session_start"))
                 session_end = self.parse_datetime_safe(row.get("session_end"))
                 date_obj = datetime.strptime(row["date"], "%Y-%m-%d").date()
                 workout_time = (
-                    parse_duration(row["workout_time"])
-                    if row.get("workout_time")
-                    else None
+                    parse_duration(row["workout_time"]) if row.get("workout_time") else None
                 )
 
-                # Buscar o crear el ejercicio de cardio
                 exercise_name = row.get("name", "").strip()
                 if not exercise_name:
                     logger.warning("Nombre de ejercicio vacío, saltando sesión")
@@ -302,16 +299,13 @@ class Command(BaseCommand):
 
                 exercise, created = CardioExercise.objects.get_or_create(
                     name=exercise_name,
-                    defaults={
-                        "description": "",
-                    },
+                    defaults={"description": ""},
                 )
                 if created:
                     logger.info(
                         f"Ejercicio de cardio creado: {exercise.get_name_display() or exercise.name} ✅"
                     )
 
-                # Verificar si ya existe
                 if not CardioSession.objects.filter(
                     user=user, exercise=exercise, date=date_obj
                 ).exists():
@@ -323,24 +317,12 @@ class Command(BaseCommand):
                         date=date_obj,
                         location=row.get("location") or None,
                         workout_time=workout_time,
-                        distance=(
-                            float(row["distance"]) if row.get("distance") else None
-                        ),
-                        avg_speed=(
-                            float(row["avg_speed"]) if row.get("avg_speed") else None
-                        ),
-                        active_calories=int(row["active_calories"])
-                        if row.get("active_calories")
-                        else None,
-                        total_calories=int(row["total_calories"])
-                        if row.get("total_calories")
-                        else None,
-                        elevation_gain=int(row["elevation_gain"])
-                        if row.get("elevation_gain")
-                        else None,
-                        average_heart_rate=int(row["average_heart_rate"])
-                        if row.get("average_heart_rate")
-                        else None,
+                        distance=float(row["distance"]) if row.get("distance") else None,
+                        avg_speed=float(row["avg_speed"]) if row.get("avg_speed") else None,
+                        active_calories=int(row["active_calories"]) if row.get("active_calories") else None,
+                        total_calories=int(row["total_calories"]) if row.get("total_calories") else None,
+                        elevation_gain=int(row["elevation_gain"]) if row.get("elevation_gain") else None,
+                        average_heart_rate=int(row["average_heart_rate"]) if row.get("average_heart_rate") else None,
                     )
                     created_count += 1
 
@@ -437,10 +419,10 @@ class Command(BaseCommand):
         return True
 
     def training_sessions(self):
-        """Carga las sesiones de entrenamiento desde trainning_session.csv"""
+        """Carga las sesiones de entrenamiento desde training_session.csv (filas session_type=training)"""
         logger.info("Cargando sesiones de entrenamiento 💪 ...")
 
-        csv_path = self.get_csv_path("trainning_session.csv")
+        csv_path = self.get_csv_path("training_session.csv")
         if not os.path.exists(csv_path):
             logger.error(f"El archivo {csv_path} no existe")
             return False
@@ -449,19 +431,16 @@ class Command(BaseCommand):
         # y actualizar el perfil del usuario con las fechas de inicio y fin
         routines_by_user = {}
         with open(csv_path, newline="", encoding="utf-8") as csvfile:
-            sessions_reader = csv.DictReader(csvfile)
-            for row in sessions_reader:
+            for row in csv.DictReader(csvfile):
+                if row.get("session_type") != "training":
+                    continue
                 username = row.get("user", "david")
                 if username not in routines_by_user:
                     user = User.objects.filter(username=username).first()
                     if user:
-                        # Buscar o crear una rutina para este usuario
                         routine = Routine.objects.filter(user=user).first()
                         if not routine:
                             routine = Routine.objects.create(user=user)
-
-                        # Actualizar el perfil del usuario con las fechas de inicio y fin
-                        # (6 semanas después de la fecha de inicio)
                         profile, _ = GymUserProfile.objects.get_or_create(user=user)
                         if not profile.start_date:
                             profile.start_date = timezone.now().date()
@@ -472,30 +451,25 @@ class Command(BaseCommand):
                         if not profile.active_routine:
                             profile.active_routine = routine
                         profile.save()
-
                         routines_by_user[username] = routine
 
         created_count = 0
         with open(csv_path, newline="", encoding="utf-8") as csvfile:
-            sessions_reader = csv.DictReader(csvfile)
-            for row in sessions_reader:
+            for row in csv.DictReader(csvfile):
+                if row.get("session_type") != "training":
+                    continue
                 username = row.get("user", "david")
                 user = User.objects.filter(username=username).first()
                 if not user:
                     logger.warning(f"Usuario {username} no encontrado, saltando sesión")
                     continue
 
-                # Usar la rutina creada para este usuario
                 routine = routines_by_user.get(username)
-
-                session_date = self.parse_datetime_safe(row.get("session_date"))
+                session_date = self.parse_datetime_safe(row.get("session_start"))
                 workout_time = (
-                    parse_duration(row["workout_time"])
-                    if row.get("workout_time")
-                    else None
+                    parse_duration(row["workout_time"]) if row.get("workout_time") else None
                 )
 
-                # Verificar si ya existe
                 if not TrainingSession.objects.filter(
                     user=user, session_date=session_date
                 ).exists():
@@ -505,15 +479,9 @@ class Command(BaseCommand):
                         session_date=session_date,
                         location=row.get("location") or None,
                         workout_time=workout_time,
-                        active_kilocalories=int(row["active_kilocalories"])
-                        if row.get("active_kilocalories")
-                        else None,
-                        total_kilocalories=int(row["total_kilocalories"])
-                        if row.get("total_kilocalories")
-                        else None,
-                        avg_heart_rate=int(row["avg_heart_rate"])
-                        if row.get("avg_heart_rate")
-                        else None,
+                        active_kilocalories=int(row["active_calories"]) if row.get("active_calories") else None,
+                        total_kilocalories=int(row["total_calories"]) if row.get("total_calories") else None,
+                        avg_heart_rate=int(row["average_heart_rate"]) if row.get("average_heart_rate") else None,
                     )
                     created_count += 1
 
