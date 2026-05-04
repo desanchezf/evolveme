@@ -57,16 +57,20 @@ def chat_with_ollama(session, model_key):
             return message["content"].strip(), None
         return None, "La respuesta de Ollama no incluyó contenido."
     except requests.exceptions.Timeout:
-        return None, "El servidor Ollama tardó demasiado en responder."
+        return None, "timeout"
     except requests.exceptions.ConnectionError:
-        return None, "No se pudo conectar con el servidor Ollama. Comprueba que esté en ejecución."
+        return None, "connection"
     except requests.exceptions.HTTPError as e:
-        if e.response is not None and e.response.status_code == 404:
-            return None, (
-                f"El modelo '{model}' no está descargado en el servidor Ollama. "
-                "Ejecuta: ollama pull " + model
-            )
-        return None, f"Error del servidor Ollama: {e.response.status_code if e.response else str(e)}"
+        code = getattr(e.response, "status_code", None)
+        if code is None:
+            raw = str(e)
+            if "404" in raw:
+                code = 404
+            elif "500" in raw:
+                code = 500
+        if code == 404:
+            return None, f"model_not_found:{model}"
+        return None, f"http_error:{code or str(e)}"
     except Exception as e:
         return None, str(e)
 
@@ -113,8 +117,14 @@ def is_model_downloaded(model_name):
     ).exists()
 
 
-def pull_model_on_server(server, model_name):
-    """Lanza la descarga del modelo en Ollama (POST /api/pull). Devuelve (ok, error)."""
+def pull_model_on_server(server, model_name, progress_callback=None):
+    """
+    Descarga el modelo en Ollama (POST /api/pull) con streaming de progreso.
+    progress_callback(pct: int) se llama con 0-100 durante la descarga.
+    Devuelve (ok, error).
+    """
+    import json as _json
+
     if not requests:
         return False, "Falta 'requests'."
     url = f"{server.base_url.rstrip('/')}/api/pull"
@@ -123,9 +133,41 @@ def pull_model_on_server(server, model_name):
         headers["Authorization"] = f"Bearer {server.api_key}"
     try:
         resp = requests.post(
-            url, json={"name": model_name}, headers=headers or None, timeout=300
+            url,
+            json={"name": model_name, "stream": True},
+            headers=headers or None,
+            stream=True,
+            timeout=600,
         )
         resp.raise_for_status()
+
+        status_pct = {
+            "pulling manifest": 2,
+            "verifying sha256 digest": 92,
+            "writing manifest": 96,
+            "removing any unused layers": 98,
+            "success": 100,
+        }
+
+        for raw_line in resp.iter_lines():
+            if not raw_line:
+                continue
+            try:
+                data = _json.loads(raw_line)
+            except ValueError:
+                continue
+            status = data.get("status", "")
+            total = data.get("total")
+            completed = data.get("completed")
+            if total and completed:
+                pct = max(5, min(90, int(completed / total * 85) + 5))
+            elif status in status_pct:
+                pct = status_pct[status]
+            else:
+                continue
+            if progress_callback:
+                progress_callback(pct)
+
         return True, None
     except Exception as e:
         return False, str(e)

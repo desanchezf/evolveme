@@ -1,4 +1,5 @@
 import json
+import threading
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
@@ -67,17 +68,37 @@ def chat_send_view(request):
     )
 
     assistant_content, err = chat_with_ollama(session, model_key)
+    is_error = bool(err)
+
     if err:
-        assistant_content = f"No se pudo obtener respuesta del modelo: {err}"
+        if err == "timeout":
+            assistant_content = "El servidor Ollama tardó demasiado en responder. Inténtalo de nuevo."
+        elif err == "connection":
+            assistant_content = "No se pudo conectar con el servidor Ollama. Comprueba que esté en ejecución."
+        elif err.startswith("model_not_found:"):
+            model_name = err.split(":", 1)[1]
+            assistant_content = (
+                f"El modelo «{model_name}» no está descargado en el servidor Ollama. "
+                "Descárgalo desde el panel de Modelos Ollama."
+            )
+            OllamaModelConfig.objects.filter(model_name=model_name).update(downloaded=False)
+        else:
+            assistant_content = "El servidor Ollama devolvió un error inesperado. Inténtalo de nuevo."
+
     if not assistant_content:
         assistant_content = "El modelo no devolvió ninguna respuesta."
+        is_error = True
 
     ChatMessage.objects.create(
         session=session,
         role=ChatMessage.ROLE_ASSISTANT,
         content=assistant_content,
     )
-    return JsonResponse({"content": assistant_content, "session_id": session.pk})
+    return JsonResponse({
+        "content": assistant_content,
+        "session_id": session.pk,
+        "is_error": is_error,
+    })
 
 
 @staff_member_required
@@ -112,3 +133,57 @@ def ollama_model_pull_view(request, pk):
     else:
         messages.error(request, f"Error al actualizar el modelo: {err}")
     return redirect("admin:ia_ollamamodelconfig_changelist")
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def ollama_model_pull_start_view(request, pk):
+    """Inicia la descarga en segundo plano y devuelve JSON inmediatamente."""
+    from django.utils import timezone
+    from django.db import connection
+
+    config = get_object_or_404(OllamaModelConfig, pk=pk)
+
+    if config.pull_progress is not None:
+        return JsonResponse({"started": False, "reason": "already_running"})
+
+    OllamaModelConfig.objects.filter(pk=pk).update(pull_progress=0)
+
+    server_id = config.server_id
+    model_name = config.model_name
+
+    def do_pull():
+        connection.close()
+        from ia.models import OllamaModelConfig as M
+        from ia.services import check_model_on_server, pull_model_on_server
+
+        server_obj = M.objects.select_related("server").get(pk=pk).server
+
+        def on_progress(pct):
+            M.objects.filter(pk=pk).update(pull_progress=pct)
+
+        ok, _err = pull_model_on_server(server_obj, model_name, progress_callback=on_progress)
+        if ok:
+            downloaded, digest = check_model_on_server(server_obj, model_name)
+            M.objects.filter(pk=pk).update(
+                downloaded=downloaded,
+                digest=digest,
+                last_checked_at=timezone.now(),
+                update_available=not downloaded,
+                pull_progress=None,
+            )
+        else:
+            M.objects.filter(pk=pk).update(pull_progress=None)
+
+    threading.Thread(target=do_pull, daemon=True).start()
+    return JsonResponse({"started": True})
+
+
+@staff_member_required
+def ollama_model_pull_progress_view(request, pk):
+    """Devuelve JSON con el progreso actual de descarga de un modelo."""
+    config = get_object_or_404(OllamaModelConfig, pk=pk)
+    return JsonResponse({
+        "progress": config.pull_progress,
+        "downloaded": config.downloaded,
+    })

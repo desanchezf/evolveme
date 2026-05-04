@@ -46,6 +46,14 @@
             background: var(--bs-light);
             border: 1px solid var(--bs-border-color);
         }
+        .ia-chat-message.assistant.ia-error {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #664d03;
+        }
+        .ia-chat-message.assistant.ia-error .small {
+            color: #856404;
+        }
         .ia-chat-message .small {
             opacity: 0.85;
             font-size: 0.75rem;
@@ -91,7 +99,15 @@
                         </div>
                     {% else %}
                         {% for msg in chat_messages %}
-                            <div class="ia-chat-message {{ msg.role }}">
+                            {% if msg.role == 'assistant' %}
+                                {% if "no está descargado" in msg.content or "Error del servidor" in msg.content or "No se pudo obtener" in msg.content or "No se pudo conectar" in msg.content or "tardó demasiado" in msg.content or "devolvió un error" in msg.content %}
+                                <div class="ia-chat-message assistant ia-error">
+                                {% else %}
+                                <div class="ia-chat-message assistant">
+                                {% endif %}
+                            {% else %}
+                            <div class="ia-chat-message user">
+                            {% endif %}
                                 <div class="small mb-1">{% if msg.role == 'user' %}Tú{% else %}EvolveMe IA{% endif %}</div>
                                 <div>{{ msg.content }}</div>
                             </div>
@@ -133,10 +149,11 @@
                 return div.innerHTML;
             }
 
-            function appendMessage(role, content, label) {
+            function appendMessage(role, content, label, isError) {
                 var div = document.createElement('div');
-                div.className = 'ia-chat-message ' + role;
-                div.innerHTML = '<div class="small mb-1">' + escapeHtml(label) + '</div><div>' + escapeHtml(content) + '</div>';
+                div.className = 'ia-chat-message ' + role + (isError ? ' ia-error' : '');
+                var icon = isError ? '<i class="fas fa-exclamation-triangle me-1"></i>' : '';
+                div.innerHTML = '<div class="small mb-1">' + escapeHtml(label) + '</div><div>' + icon + escapeHtml(content) + '</div>';
                 messagesEl.appendChild(div);
                 messagesEl.scrollTop = messagesEl.scrollHeight;
             }
@@ -167,14 +184,14 @@
                     return r.json();
                 })
                 .then(function(data) {
-                    appendMessage('assistant', data.content, 'EvolveMe IA');
+                    appendMessage('assistant', data.content, 'EvolveMe IA', data.is_error);
                     if (!sessionId && data.session_id) {
                         container.setAttribute('data-session-id', data.session_id);
                         sessionId = data.session_id;
                     }
                 })
                 .catch(function() {
-                    appendMessage('assistant', 'No se pudo guardar el mensaje. Intenta de nuevo.', 'EvolveMe IA');
+                    appendMessage('assistant', 'No se pudo enviar el mensaje. Comprueba tu conexión e inténtalo de nuevo.', 'EvolveMe IA', true);
                 })
                 .finally(function() {
                     sendBtn.disabled = false;

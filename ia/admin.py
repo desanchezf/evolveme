@@ -76,7 +76,7 @@ class OllamaModelConfigAdmin(ImportExportModelAdmin):
         "proposito",
         "is_default",
         "deprecated",
-        "downloaded",
+        "downloaded_display",
         "update_available",
         "pull_action",
         "created_at",
@@ -92,6 +92,7 @@ class OllamaModelConfigAdmin(ImportExportModelAdmin):
         "digest",
         "last_checked_at",
         "update_available",
+        "pull_progress",
     )
     fieldsets = (
         (
@@ -109,8 +110,11 @@ class OllamaModelConfigAdmin(ImportExportModelAdmin):
         (
             _("Estado"),
             {
-                "fields": ("downloaded", "digest", "last_checked_at", "update_available"),
-                "description": _("Actualizado por la tarea en segundo plano y al pulsar Actualizar."),
+                "fields": (
+                    "downloaded", "digest", "last_checked_at",
+                    "update_available", "pull_progress",
+                ),
+                "description": _("Actualizado automáticamente al descargar o actualizar."),
             },
         ),
         (
@@ -119,50 +123,92 @@ class OllamaModelConfigAdmin(ImportExportModelAdmin):
         ),
     )
 
-    @admin.action(description=_("Descargar/actualizar modelos seleccionados"))
+    @admin.action(description=_("Descargar/actualizar modelos seleccionados en segundo plano"))
     def download_models(self, request, queryset):
+        import threading
         from django.utils import timezone
-        from ia.services import check_model_on_server, pull_model_on_server
+        from django.db import connection
 
-        ok_count = 0
-        fail_count = 0
-        for config in queryset:
-            ok, err = pull_model_on_server(config.server, config.model_name)
-            if ok:
-                downloaded, digest = check_model_on_server(config.server, config.model_name)
-                config.downloaded = downloaded
-                config.digest = digest
-                config.last_checked_at = timezone.now()
-                config.update_available = not downloaded
-                config.save(update_fields=[
-                    "downloaded", "digest", "last_checked_at",
-                    "update_available", "updated_at",
-                ])
-                ok_count += 1
-            else:
-                fail_count += 1
-                self.message_user(
-                    request,
-                    f"Error al descargar '{config.model_name}': {err}",
-                    level="error",
-                )
-        if ok_count:
+        started = []
+        for config in queryset.filter(pull_progress__isnull=True):
+            config.__class__.objects.filter(pk=config.pk).update(pull_progress=0)
+            pk = config.pk
+            server = config.server
+            model_name = config.model_name
+
+            def do_pull(pk=pk, server=server, model_name=model_name):
+                connection.close()
+                from ia.models import OllamaModelConfig as M
+                from ia.services import check_model_on_server, pull_model_on_server
+
+                def on_progress(pct):
+                    M.objects.filter(pk=pk).update(pull_progress=pct)
+
+                ok, _err = pull_model_on_server(server, model_name, progress_callback=on_progress)
+                if ok:
+                    downloaded, digest = check_model_on_server(server, model_name)
+                    M.objects.filter(pk=pk).update(
+                        downloaded=downloaded,
+                        digest=digest,
+                        last_checked_at=timezone.now(),
+                        update_available=not downloaded,
+                        pull_progress=None,
+                    )
+                else:
+                    M.objects.filter(pk=pk).update(pull_progress=None)
+
+            threading.Thread(target=do_pull, daemon=True).start()
+            started.append(model_name)
+
+        if started:
             self.message_user(
                 request,
-                f"{ok_count} modelo(s) descargado(s) o actualizados correctamente.",
+                f"Descarga iniciada en segundo plano para: {', '.join(started)}. "
+                "La página se actualizará automáticamente.",
             )
+        else:
+            self.message_user(request, "No hay modelos nuevos para descargar.", level="warning")
 
     actions = ["download_models"]
 
+    class Media:
+        css = {"all": ("ia/admin_pull_progress.css",)}
+        js = ("ia/admin_pull_progress.js",)
+
+    def downloaded_display(self, obj):
+        if obj.pull_progress is not None:
+            progress_url = reverse("ia:ollama_model_pull_progress", args=[obj.pk])
+            return format_html(
+                '<div data-pull-pk="{pk}" data-progress-url="{url}" class="pull-bar-container">'
+                '<div class="pull-bar-track"><div class="pull-bar-fill" style="width:{pct}%"></div></div>'
+                '<span class="pull-bar-label">{pct}%</span>'
+                "</div>",
+                pk=obj.pk,
+                url=progress_url,
+                pct=obj.pull_progress,
+            )
+        if obj.downloaded:
+            return format_html('<span style="color:#28a745;font-weight:600">&#10003; Sí</span>')
+        return format_html('<span style="color:#dc3545">&#10007; No</span>')
+
+    downloaded_display.short_description = _("Descargado")
+    downloaded_display.allow_tags = True
+
     def pull_action(self, obj):
-        url = reverse("ia:ollama_model_pull", args=[obj.pk])
+        if obj.pull_progress is not None:
+            return format_html('<span class="text-muted">Descargando…</span>')
+        start_url = reverse("ia:ollama_model_pull_start", args=[obj.pk])
+        progress_url = reverse("ia:ollama_model_pull_progress", args=[obj.pk])
         if not obj.downloaded:
             label = _("Descargar")
         elif obj.update_available:
             label = _("Actualizar")
         else:
             return "—"
-        return format_html('<a class="button" href="{}">{}</a>', url, label)
+        return format_html(
+            '<button class="button pull-btn" data-start-url="{}" data-progress-url="{}" data-pk="{}">{}</button>',
+            start_url, progress_url, obj.pk, label,
+        )
 
     pull_action.short_description = _("Acción")
 

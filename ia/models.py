@@ -164,6 +164,12 @@ class OllamaModelConfig(models.Model):
         verbose_name="Actualización disponible",
         help_text="Hay una versión nueva disponible o el modelo no está descargado.",
     )
+    pull_progress = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Progreso descarga",
+        help_text="0-100 mientras se descarga; None si no hay descarga en curso.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

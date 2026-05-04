@@ -12,4 +12,14 @@ urlpatterns = [
         views.ollama_model_pull_view,
         name="ollama_model_pull",
     ),
+    path(
+        "admin/ollama-model/<int:pk>/pull/start/",
+        views.ollama_model_pull_start_view,
+        name="ollama_model_pull_start",
+    ),
+    path(
+        "admin/ollama-model/<int:pk>/pull/progress/",
+        views.ollama_model_pull_progress_view,
+        name="ollama_model_pull_progress",
+    ),
 ]
