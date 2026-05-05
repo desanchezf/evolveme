@@ -173,3 +173,14 @@ body.login-page {
 .register-form label {
     font-weight: bold;
 }
+
+/* Rutinas (admin): evitar "caja dentro de caja" en el formulario */
+body.app-gym.model-routine.change-form #content-main > .card {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+body.app-gym.model-routine.change-form #content-main > .card > .card-body {
+    padding: 0 !important;
+}

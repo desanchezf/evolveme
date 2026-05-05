@@ -13,6 +13,11 @@ urlpatterns = [
         name="ollama_model_pull",
     ),
     path(
+        "admin/ollama-model/<int:pk>/delete/",
+        views.ollama_model_delete_view,
+        name="ollama_model_delete",
+    ),
+    path(
         "admin/ollama-model/<int:pk>/pull/start/",
         views.ollama_model_pull_start_view,
         name="ollama_model_pull_start",

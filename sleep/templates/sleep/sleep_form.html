@@ -1,0 +1,240 @@
+{% extends "admin/base.html" %}
+{% load admin_urls crispy_forms_tags i18n static %}
+
+{% block title %}Registrar Sueño - EvolveMe{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  {% include "includes/md3_forms.html" %}
+  <style>
+    .ocr-zone { border: 2px dashed #adb5bd; border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; }
+    .ocr-zone:hover, .ocr-zone.drag-over { border-color: var(--primary, #3d4252); background: rgba(61,66,82,.05); }
+    .ocr-zone input[type=file] { display: none; }
+    .ocr-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: .75rem; }
+    .ocr-previews img { height: 64px; width: 64px; object-fit: cover; border-radius: 4px; border: 1px solid #dee2e6; }
+    .field-filled { background: #f0fdf4 !important; transition: background .4s; }
+    .section-header { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6c757d; margin-bottom: .5rem; }
+    .stage-icon { font-size: 1rem; margin-right: .4rem; }
+  </style>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% url 'admin:jsi18n' %}"></script>
+  {{ form.media }}
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+      if (t === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 register-form">
+
+  <div class="mb-3">
+    <h1 class="h4 mb-1">Registro de sueño</h1>
+    <p class="text-muted">Introduce los datos de tu sesión de sueño. Puedes registrar el tiempo total y el desglose por fases.</p>
+  </div>
+
+  {% if vision_available %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <p class="text-muted small mb-2"><i class="fas fa-camera me-1"></i> Extracción automática con IA</p>
+      <div class="ocr-zone" id="ocr-zone" onclick="document.getElementById('id_sleep_images').click()">
+        <i class="fas fa-moon fa-2x mb-2 text-muted"></i>
+        <div class="fw-semibold">Arrastra capturas de Apple Health, Garmin, Fitbit u otra app</div>
+        <div class="text-muted small mt-1">o pulsa para seleccionar · La IA extraerá fases, duración y horarios</div>
+        <input type="file" name="sleep_images" id="id_sleep_images" accept="image/*" multiple>
+      </div>
+      <div class="ocr-previews" id="ocr-previews"></div>
+      <div class="mt-3 d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-primary" id="btn-analyze" disabled>
+          <i class="fas fa-magic me-1"></i> Analizar con IA
+        </button>
+        <span class="text-muted small" id="ocr-hint">Selecciona imágenes para activar el análisis</span>
+        <div class="spinner-border spinner-border-sm text-primary d-none" id="ocr-spinner" role="status"></div>
+      </div>
+      <div class="alert alert-danger mt-2 d-none" id="ocr-error"></div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-warning mb-3">
+    <i class="fas fa-exclamation-triangle me-1"></i>
+    El modelo de visión (<strong>llama3.2-vision:11b</strong>) no está disponible.
+    La extracción automática desde imagen está desactivada.
+  </div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {# ── Información básica ───────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Información básica</div>
+        <div class="row mb-3">
+          {% if form.user %}<div class="col-md-4">{{ form.user|as_crispy_field }}</div>{% endif %}
+          <div class="col-md-4">{{ form.date|as_crispy_field }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-6">{{ form.sleep_start|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.sleep_end|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Tiempo total ─────────────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Tiempo total dormido</div>
+        <div class="row mb-2">
+          <div class="col-md-4">{{ form.total_sleep_time|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Fases del sueño ──────────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Fases del sueño</div>
+        <p class="text-muted small mb-3">Introduce la duración de cada fase en formato <code>HH:MM:SS</code> (ej: <code>00:32:00</code> para 32 min).</p>
+        <div class="row mb-3">
+          <div class="col-md-3">
+            <span class="stage-icon" style="color:#ef4444;">●</span>
+            {{ form.awake_time|as_crispy_field }}
+          </div>
+          <div class="col-md-3">
+            <span class="stage-icon" style="color:#38bdf8;">●</span>
+            {{ form.rem_time|as_crispy_field }}
+          </div>
+          <div class="col-md-3">
+            <span class="stage-icon" style="color:#60a5fa;">●</span>
+            {{ form.core_time|as_crispy_field }}
+          </div>
+          <div class="col-md-3">
+            <span class="stage-icon" style="color:#818cf8;">●</span>
+            {{ form.deep_time|as_crispy_field }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Notas ────────────────────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Notas</div>
+        <div class="row mb-2">
+          <div class="col-12">{{ form.notes|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+      <a href="{% url 'evolveme:index' %}" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save me-1"></i> Guardar Sueño
+      </button>
+    </div>
+  </form>
+</div>
+
+{% if vision_available %}
+<script>
+(function () {
+  var analyzeUrl = "{% url 'sleep:sleep_analyze' %}";
+  var csrfToken = "{{ csrf_token }}";
+
+  var zone     = document.getElementById('ocr-zone');
+  var input    = document.getElementById('id_sleep_images');
+  var previews = document.getElementById('ocr-previews');
+  var btn      = document.getElementById('btn-analyze');
+  var hint     = document.getElementById('ocr-hint');
+  var spinner  = document.getElementById('ocr-spinner');
+  var errBox   = document.getElementById('ocr-error');
+
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault(); zone.classList.remove('drag-over'); setFiles(e.dataTransfer.files);
+  });
+  input.addEventListener('change', function() { setFiles(this.files); });
+
+  function setFiles(files) {
+    if (!files || !files.length) return;
+    try {
+      var dt = new DataTransfer();
+      for (var i = 0; i < files.length; i++) dt.items.add(files[i]);
+      input.files = dt.files;
+    } catch(e) {}
+    previews.innerHTML = '';
+    for (var i = 0; i < files.length; i++) {
+      var img = document.createElement('img');
+      img.src = URL.createObjectURL(files[i]);
+      previews.appendChild(img);
+    }
+    btn.disabled = false;
+    hint.textContent = files.length + ' imagen(es) seleccionada(s). Pulsa "Analizar con IA".';
+  }
+
+  btn.addEventListener('click', function () {
+    if (!input.files || !input.files.length) return;
+    errBox.classList.add('d-none');
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    hint.textContent = 'Analizando con IA…';
+
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', csrfToken);
+    for (var i = 0; i < input.files.length; i++) fd.append('sleep_images', input.files[i]);
+
+    fetch(analyzeUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function(r) { return r.json(); })
+      .then(function(resp) {
+        spinner.classList.add('d-none');
+        btn.disabled = false;
+        if (resp.error) {
+          errBox.textContent = resp.error;
+          errBox.classList.remove('d-none');
+          hint.textContent = 'Error al analizar. Inténtalo de nuevo.';
+          return;
+        }
+        fillForm(resp.data);
+        hint.textContent = 'Datos extraídos. Revisa los campos antes de guardar.';
+      })
+      .catch(function() {
+        spinner.classList.add('d-none');
+        btn.disabled = false;
+        errBox.textContent = 'Error de conexión al analizar la imagen.';
+        errBox.classList.remove('d-none');
+        hint.textContent = 'Error de conexión.';
+      });
+  });
+
+  function fillForm(data) {
+    var map = {
+      date:             'id_date',
+      sleep_start:      'id_sleep_start',
+      sleep_end:        'id_sleep_end',
+      total_sleep_time: 'id_total_sleep_time',
+      awake_time:       'id_awake_time',
+      rem_time:         'id_rem_time',
+      core_time:        'id_core_time',
+      deep_time:        'id_deep_time',
+    };
+    Object.keys(map).forEach(function(k) {
+      var v = data[k];
+      if (v === null || v === undefined) return;
+      var el = document.getElementById(map[k]);
+      if (!el) return;
+      el.value = v;
+      el.classList.add('field-filled');
+      setTimeout(function() { el.classList.remove('field-filled'); }, 2500);
+    });
+  }
+})();
+</script>
+{% endif %}
+{% endblock %}

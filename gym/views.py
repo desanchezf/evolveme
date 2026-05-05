@@ -8,20 +8,19 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.utils.datastructures import MultiValueDict
 from django.views.generic import FormView
 
 from ia.services import is_model_downloaded
 from gym.forms import (
-    CardioSessionForm,
     MusculationRecordFormSet,
     MusculationRecordFormsetHelper,
     MusculationRecordPublicForm,
     RoutineJSONForm,
+    RoutinePublicForm,
+    SessionModelForm,
     TrainingSessionForm,
-    TrainingSessionModelForm,
 )
-from gym.models import MusculationExercise, MusculationRecord, Routine
+from gym.models import MusculationExercise, MusculationRecord, Routine, RoutineDay, RoutineDayExercise
 from evolveme.models import GymUserProfile
 from project.admin_context import with_admin_context
 
@@ -153,6 +152,9 @@ class RoutineJSONView(PermissionRequiredMixin, FormView):
             duration=duration,
             warmup=data.get("warmup", ""),
             exercise_types=data.get("exercise_types", []),
+            weekly_structure=data.get("weekly_structure") or None,
+            training_focus=data.get("training_focus") or None,
+            intensity_techniques=data.get("intensity_techniques", []),
         )
 
         # Actualizar perfil del usuario con start_date y end_date si están presentes
@@ -177,26 +179,52 @@ class RoutineJSONView(PermissionRequiredMixin, FormView):
 
         profile.save()
 
-        # Procesar ejercicios por día
+        # Procesar días y ejercicios
         routine_data = data.get("routine", {})
-        exercises_created = 0
+        days_created = 0
         exercises_added = 0
 
-        for day_key, exercises_list in routine_data.items():
-            if not isinstance(exercises_list, list):
+        for i, (day_key, day_data) in enumerate(routine_data.items(), start=1):
+            # Soporte formato nuevo {"name": ..., "exercises": [...]}
+            # y formato legacy (lista directa de ejercicios)
+            if isinstance(day_data, dict):
+                day_name = day_data.get("name", day_key)
+                is_rest = bool(day_data.get("is_rest", False))
+                exercises_list = day_data.get("exercises", [])
+            elif isinstance(day_data, list):
+                day_name = day_key.replace("_", " ").capitalize()
+                is_rest = False
+                exercises_list = day_data
+            else:
                 continue
 
-            for exercise_data in exercises_list:
+            # Extraer número de día del key (day_1 → 1) o usar índice
+            try:
+                day_number = int(day_key.split("_")[-1])
+            except (ValueError, IndexError):
+                day_number = i
+
+            routine_day = RoutineDay.objects.create(
+                routine=routine,
+                day_number=day_number,
+                name=day_name,
+                is_rest=is_rest,
+            )
+            days_created += 1
+
+            if is_rest or not isinstance(exercises_list, list):
+                continue
+
+            for order, exercise_data in enumerate(exercises_list):
                 if not isinstance(exercise_data, dict):
                     continue
-
-                # Obtener o crear ejercicio
-                exercise_name = exercise_data.get("name", "").strip()
-                if not exercise_name:
+                ex_name = exercise_data.get("name", "").strip()
+                if not ex_name:
                     continue
 
-                exercise, created = MusculationExercise.objects.get_or_create(
-                    name=exercise_name,
+                # Intentar vincular con la biblioteca
+                library_ex, _ = MusculationExercise.objects.get_or_create(
+                    name=ex_name,
                     defaults={
                         "description": exercise_data.get("description", ""),
                         "body_part": exercise_data.get("body_part") or None,
@@ -204,21 +232,47 @@ class RoutineJSONView(PermissionRequiredMixin, FormView):
                         "reps": exercise_data.get("reps", 0),
                     },
                 )
+                routine.exercises.add(library_ex)
 
-                if created:
-                    exercises_created += 1
-
-                # Añadir ejercicio a la rutina
-                routine.exercises.add(exercise)
+                RoutineDayExercise.objects.create(
+                    day=routine_day,
+                    exercise=library_ex,
+                    exercise_name=ex_name,
+                    sets_reps=exercise_data.get("sets_reps", ""),
+                    notes=exercise_data.get("notes") or None,
+                    order=order,
+                )
                 exercises_added += 1
 
         messages.success(
             self.request,
             f"Rutina creada correctamente. "
-            f"{exercises_created} ejercicio(s) nuevo(s) creado(s), "
-            f"{exercises_added} ejercicio(s) añadido(s) a la rutina.",
+            f"{days_created} día(s) creado(s), "
+            f"{exercises_added} ejercicio(s) añadido(s).",
         )
         return super().form_valid(form)
+
+
+@login_required
+def routine_form_view(request):
+    """Vista pública para crear una rutina de entrenamiento."""
+    is_staff = getattr(request.user, "is_staff", False)
+
+    if request.method == "POST":
+        form = RoutinePublicForm(request.POST, user=request.user, is_staff=is_staff)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            if not is_staff:
+                instance.user = request.user
+            instance.save()
+            messages.success(request, "Rutina creada correctamente.")
+            return redirect("gym:routine_form")
+    else:
+        form = RoutinePublicForm(user=request.user, is_staff=is_staff)
+
+    return render(request, "gym/routine_form.html", with_admin_context(request, {
+        "form": form,
+    }))
 
 
 @login_required
@@ -238,92 +292,121 @@ def musculation_record_form_view(request):
 
 @login_required
 def cardio_session_form_view(request):
-    """Vista para el formulario de sesiones de cardio. Admin puede elegir usuario; usuario normal solo su cuenta."""
+    """Redirección al formulario unificado de sesión."""
+    return redirect("gym:session_form")
+
+
+@login_required
+def cardio_analyze_view(request):
+    """AJAX: analiza imágenes de cardio y devuelve campos extraídos."""
+    from django.http import JsonResponse
     from gym.services import extract_cardio_data_from_image
 
-    is_staff = getattr(request.user, "is_staff", False)
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido."}, status=405)
+    image_files = request.FILES.getlist("workout_images")
+    if not image_files:
+        return JsonResponse({"error": "No se recibieron imágenes."}, status=400)
 
-    if request.method == "POST":
-        post_data = request.POST.copy()
-        image_files = request.FILES.getlist("workout_images")
-        if image_files:
-            extracted = extract_cardio_data_from_image(image_files)
-            for key, value in extracted.items():
-                if key not in post_data or not str(post_data.get(key)).strip():
-                    if hasattr(value, "total_seconds"):
-                        s = int(value.total_seconds())
-                        post_data[key] = f"{s // 3600:02d}:{(s % 3600) // 60:02d}:{s % 60:02d}"
-                    else:
-                        post_data[key] = value
+    extracted = extract_cardio_data_from_image(image_files)
+    if not extracted:
+        return JsonResponse({"error": "No se pudieron extraer datos."}, status=422)
 
-        files_for_form = MultiValueDict()
-        for key in request.FILES:
-            files_for_form.setlist(key, request.FILES.getlist(key))
-        if image_files:
-            files_for_form.setlist("workout_image", [image_files[0]])
-
-        form = CardioSessionForm(post_data, files_for_form, user=request.user, is_staff=is_staff)
-        if form.is_valid():
-            instance = form.save(commit=False)
-            if not is_staff:
-                instance.user = request.user
-            instance.save()
-            messages.success(request, "Sesión de cardio guardada correctamente.")
-            return redirect("gym:cardio_session_form")
-    else:
-        form = CardioSessionForm(user=request.user, is_staff=is_staff)
-
-    return render(request, "gym/cardio_session_form.html", with_admin_context(request, {
-        "form": form,
-        "vision_available": is_model_downloaded("llama3.2-vision:11b"),
-    }))
+    result = {}
+    for k, v in extracted.items():
+        if hasattr(v, "total_seconds"):
+            s = int(v.total_seconds())
+            result[k] = f"{s // 3600:02d}:{(s % 3600) // 60:02d}:{s % 60:02d}"
+        elif not isinstance(v, (str, int, float, bool, type(None))):
+            result[k] = str(v)
+        else:
+            result[k] = v
+    return JsonResponse({"data": result})
 
 
 @login_required
 def training_session_form_view(request):
-    """Vista para el formulario de sesiones de entrenamiento. Admin puede elegir usuario; usuario normal solo su cuenta."""
-    from gym.services import extract_training_session_data_from_image
+    """Redirección al formulario unificado de sesión."""
+    return redirect("gym:session_form")
 
+
+@login_required
+def session_form_view(request):
+    """Vista unificada para registrar sesiones de entrenamiento o cardio."""
     is_staff = getattr(request.user, "is_staff", False)
 
     if request.method == "POST":
-        post_data = request.POST.copy()
-        image_files = request.FILES.getlist("workout_images")
-        if image_files:
-            extracted = extract_training_session_data_from_image(image_files)
-            for key, value in extracted.items():
-                if key not in post_data or not str(post_data.get(key)).strip():
-                    if hasattr(value, "total_seconds"):
-                        s = int(value.total_seconds())
-                        post_data[key] = (
-                            f"{s // 3600:02d}:{(s % 3600) // 60:02d}:{s % 60:02d}"
-                        )
-                    else:
-                        post_data[key] = value
-
-        files_for_form = MultiValueDict()
-        for key in request.FILES:
-            files_for_form.setlist(key, request.FILES.getlist(key))
-        if image_files:
-            files_for_form.setlist("workout_image", [image_files[0]])
-
-        form = TrainingSessionModelForm(
-            post_data,
-            files_for_form,
-            user=request.user,
-            is_staff=is_staff,
+        form = SessionModelForm(
+            request.POST, request.FILES,
+            user=request.user, is_staff=is_staff,
         )
         if form.is_valid():
             instance = form.save(commit=False)
             if not is_staff:
                 instance.user = request.user
             instance.save()
-            messages.success(request, "Sesión de entrenamiento guardada correctamente.")
-            return redirect("gym:training_session_form")
+            messages.success(request, "Sesión guardada correctamente.")
+            return redirect("gym:session_form")
     else:
-        form = TrainingSessionModelForm(user=request.user, is_staff=is_staff)
+        form = SessionModelForm(user=request.user, is_staff=is_staff)
 
-    return render(request, "gym/training_session_form.html", with_admin_context(request, {
+    return render(request, "gym/session_form.html", with_admin_context(request, {
         "form": form,
         "vision_available": is_model_downloaded("llama3.2-vision:11b"),
     }))
+
+
+@login_required
+def session_analyze_view(request):
+    """AJAX: analiza imágenes de sesión y devuelve campos extraídos."""
+    from django.http import JsonResponse
+    from gym.services import extract_session_data_from_image
+
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido."}, status=405)
+    image_files = request.FILES.getlist("workout_images")
+    if not image_files:
+        return JsonResponse({"error": "No se recibieron imágenes."}, status=400)
+
+    extracted = extract_session_data_from_image(image_files)
+    if not extracted:
+        return JsonResponse({"error": "No se pudieron extraer datos."}, status=422)
+
+    result = {}
+    for k, v in extracted.items():
+        if hasattr(v, "total_seconds"):
+            s = int(v.total_seconds())
+            result[k] = f"{s // 3600:02d}:{(s % 3600) // 60:02d}:{s % 60:02d}"
+        elif not isinstance(v, (str, int, float, bool, type(None))):
+            result[k] = str(v)
+        else:
+            result[k] = v
+    return JsonResponse({"data": result})
+
+
+@login_required
+def training_analyze_view(request):
+    """AJAX: analiza imágenes de entrenamiento y devuelve campos extraídos."""
+    from django.http import JsonResponse
+    from gym.services import extract_training_session_data_from_image
+
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido."}, status=405)
+    image_files = request.FILES.getlist("workout_images")
+    if not image_files:
+        return JsonResponse({"error": "No se recibieron imágenes."}, status=400)
+
+    extracted = extract_training_session_data_from_image(image_files)
+    if not extracted:
+        return JsonResponse({"error": "No se pudieron extraer datos."}, status=422)
+
+    result = {}
+    for k, v in extracted.items():
+        if hasattr(v, "total_seconds"):
+            s = int(v.total_seconds())
+            result[k] = f"{s // 3600:02d}:{(s % 3600) // 60:02d}:{s % 60:02d}"
+        elif not isinstance(v, (str, int, float, bool, type(None))):
+            result[k] = str(v)
+        else:
+            result[k] = v
+    return JsonResponse({"data": result})

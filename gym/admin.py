@@ -9,6 +9,9 @@ from gym.models import (
     MusculationExercise,
     MusculationRecord,
     Routine,
+    RoutineDay,
+    RoutineDayExercise,
+    Session,
     TrainingSession,
 )
 from gym.views import MusculationRecordFormsetView, RoutineJSONView
@@ -202,10 +205,41 @@ class MusculationRecordAdmin(ImportExportModelAdmin):
         return super().changelist_view(request, extra_context=extra_context)
 
 
+class RoutineDayExerciseInline(admin.TabularInline):
+    model = RoutineDayExercise
+    extra = 1
+    fields = ("order", "exercise_name", "sets_reps", "notes", "exercise")
+    ordering = ("order",)
+
+
+class RoutineDayInline(admin.TabularInline):
+    model = RoutineDay
+    extra = 0
+    fields = ("day_number", "name", "is_rest")
+    ordering = ("day_number",)
+    show_change_link = True
+
+
+@admin.register(RoutineDay)
+class RoutineDayAdmin(admin.ModelAdmin):
+    list_display = ("routine", "day_number", "name", "is_rest")
+    list_filter = ("routine", "is_rest")
+    ordering = ("routine", "day_number")
+    inlines = [RoutineDayExerciseInline]
+
+
 @admin.register(Routine)
 class RoutineAdmin(ImportExportModelAdmin):
     form = RoutineAdminForm
-    list_display = ("user", "formatted_exercise_types", "formatted_duration", "formatted_created_at")
+    inlines = [RoutineDayInline]
+    list_display = (
+        "user",
+        "formatted_weekly_structure",
+        "formatted_training_focus",
+        "formatted_exercise_types",
+        "formatted_duration",
+        "formatted_created_at",
+    )
 
     def formatted_exercise_types(self, obj):
         """Formatea los tipos de ejercicios como lista con viñetas"""
@@ -217,6 +251,18 @@ class RoutineAdmin(ImportExportModelAdmin):
 
     formatted_exercise_types.short_description = "Tipos de ejercicios"
     formatted_exercise_types.admin_order_field = "exercise_types"
+
+    def formatted_weekly_structure(self, obj):
+        return obj.get_weekly_structure_display() if obj.weekly_structure else "-"
+
+    formatted_weekly_structure.short_description = "Estructura temporal"
+    formatted_weekly_structure.admin_order_field = "weekly_structure"
+
+    def formatted_training_focus(self, obj):
+        return obj.get_training_focus_display() if obj.training_focus else "-"
+
+    formatted_training_focus.short_description = "Enfoque"
+    formatted_training_focus.admin_order_field = "training_focus"
 
     def formatted_duration(self, obj):
         """Formatea la duración en semanas"""
@@ -235,7 +281,7 @@ class RoutineAdmin(ImportExportModelAdmin):
 
     formatted_created_at.short_description = "Fecha de creación"
     formatted_created_at.admin_order_field = "created_at"
-    list_filter = ("created_at", "user")
+    list_filter = ("created_at", "user", "weekly_structure", "training_focus")
     search_fields = ("user__username", "user__email")
     date_hierarchy = "created_at"
     ordering = ("-created_at",)
@@ -245,6 +291,13 @@ class RoutineAdmin(ImportExportModelAdmin):
             "Información básica",
             {
                 "fields": ("user", "duration"),
+            },
+        ),
+        (
+            "Clasificación",
+            {
+                "fields": ("weekly_structure", "training_focus", "intensity_techniques"),
+                "description": "Define estructura semanal, enfoque y técnicas de intensidad.",
             },
         ),
         (
@@ -347,4 +400,39 @@ class TrainingSessionAdmin(ImportExportModelAdmin):
                 "fields": ("workout_image",),
             },
         ),
+    )
+
+
+@admin.register(Session)
+class SessionAdmin(ImportExportModelAdmin):
+    list_display = (
+        "user",
+        "name",
+        "date",
+        "formatted_session_start",
+        "location",
+        "workout_time",
+        "active_calories",
+        "total_calories",
+        "average_heart_rate",
+    )
+
+    def formatted_session_start(self, obj):
+        return obj.session_start.strftime("%d/%m/%Y %H:%M") if obj.session_start else "-"
+
+    formatted_session_start.short_description = "Inicio"
+    formatted_session_start.admin_order_field = "session_start"
+
+    list_filter = ("name", "date", "user")
+    search_fields = ("user__username", "user__email", "location")
+    date_hierarchy = "date"
+    ordering = ("-date", "-session_start")
+    fieldsets = (
+        ("Información básica", {"fields": ("user", "name", "routine", "date")}),
+        ("Fecha y hora", {"fields": ("session_start", "session_end")}),
+        ("Ubicación", {"fields": ("location",)}),
+        ("Datos", {"fields": ("workout_time", "distance", "avg_speed", "elevation_gain")}),
+        ("Calorías", {"fields": ("active_calories", "total_calories")}),
+        ("Frecuencia cardíaca", {"fields": ("average_heart_rate",)}),
+        ("Imagen", {"fields": ("workout_image",)}),
     )

@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 {% load admin_urls crispy_forms_tags i18n static %}
 
-{% block title %}Registrar Medidas Corporales - EvolveMe{% endblock %}
+{% block title %}Registrar Sesión - EvolveMe{% endblock %}
 
 {% block extrastyle %}
   {{ block.super }}
@@ -32,20 +32,21 @@
 
 {% block content %}
 <div class="container-fluid py-4 register-form">
+
   <div class="mb-3">
-    <h1 class="h4 mb-1">Registro de medidas corporales</h1>
-    <p class="text-muted">Actualiza tu peso y composición corporal.</p>
+    <h1 class="h4 mb-1">Registro de sesión</h1>
+    <p class="text-muted">Selecciona la categoría y rellena los datos de tu sesión.</p>
   </div>
 
   {% if vision_available %}
   <div class="card shadow-sm mb-3">
     <div class="card-body">
       <p class="text-muted small mb-2"><i class="fas fa-camera me-1"></i> Extracción automática con IA</p>
-      <div class="ocr-zone" id="ocr-zone" onclick="document.getElementById('id_measure_images').click()">
-        <i class="fas fa-weight fa-2x mb-2 text-muted"></i>
-        <div class="fw-semibold">Arrastra fotos de tu báscula inteligente</div>
-        <div class="text-muted small mt-1">o pulsa para seleccionar · La IA extraerá peso, % grasa, IMC y más</div>
-        <input type="file" name="measure_images" id="id_measure_images" accept="image/*" multiple>
+      <div class="ocr-zone" id="ocr-zone" onclick="document.getElementById('id_workout_images').click()">
+        <i class="fas fa-dumbbell fa-2x mb-2 text-muted"></i>
+        <div class="fw-semibold">Arrastra capturas de tu reloj o app de fitness</div>
+        <div class="text-muted small mt-1">o pulsa para seleccionar · La IA extraerá categoría, tiempo, calorías y FC</div>
+        <input type="file" name="workout_images" id="id_workout_images" accept="image/*" multiple>
       </div>
       <div class="ocr-previews" id="ocr-previews"></div>
       <div class="mt-3 d-flex align-items-center gap-2">
@@ -73,48 +74,34 @@
       <div class="card-body">
         <div class="section-header">General</div>
         <div class="row mb-3">
-          <div class="col-md-6">{{ form.user|as_crispy_field }}</div>
-          <div class="col-md-6">{{ form.date|as_crispy_field }}</div>
+          {% if form.user %}<div class="col-md-4">{{ form.user|as_crispy_field }}</div>{% endif %}
+          <div class="col-md-4">{{ form.name|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.date|as_crispy_field }}</div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">{{ form.session_start|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.session_end|as_crispy_field }}</div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">{{ form.location|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.routine|as_crispy_field }}</div>
         </div>
       </div>
     </div>
 
     <div class="card shadow-sm mb-3">
       <div class="card-body">
-        <div class="section-header">Báscula inteligente</div>
-        <div class="row mb-2">
-          <div class="col-md-2">{{ form.weight|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.fat_perc|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.muscle_mass|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.bmi|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.basal_metabolic_rate|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.body_age|as_crispy_field }}</div>
+        <div class="section-header">Datos del entrenamiento</div>
+        <div class="row mb-3">
+          <div class="col-md-3">{{ form.workout_time|as_crispy_field }}</div>
+          <div class="col-md-3">{{ form.distance|as_crispy_field }}</div>
+          <div class="col-md-3">{{ form.avg_speed|as_crispy_field }}</div>
+          <div class="col-md-3">{{ form.elevation_gain|as_crispy_field }}</div>
         </div>
-        <div class="row mb-2">
-          <div class="col-md-2">{{ form.fat_mass|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.muscle_percentage|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.skeletal_muscle_mass|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.visceral_fat_rating|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.body_water_mass|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.body_water_percentage|as_crispy_field }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-md-2">{{ form.bone_mineral_content|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.protein_mass|as_crispy_field }}</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card shadow-sm mb-3">
-      <div class="card-body">
-        <div class="section-header">Perímetros (cm)</div>
-        <div class="row mb-2">
-          <div class="col-md-2">{{ form.waist|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.chest|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.arm|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.arm_relaxed|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.leg|as_crispy_field }}</div>
-          <div class="col-md-2">{{ form.leg_relaxed|as_crispy_field }}</div>
+        <div class="row mb-3">
+          <div class="col-md-4">{{ form.active_calories|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.total_calories|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.average_heart_rate|as_crispy_field }}</div>
         </div>
       </div>
     </div>
@@ -122,7 +109,7 @@
     <div class="d-flex justify-content-end gap-2 mb-4">
       <a href="{% url 'evolveme:index' %}" class="btn btn-secondary">Cancelar</a>
       <button type="submit" class="btn btn-primary">
-        <i class="fas fa-save me-1"></i> Guardar Medidas
+        <i class="fas fa-save me-1"></i> Guardar Sesión
       </button>
     </div>
   </form>
@@ -131,10 +118,10 @@
 {% if vision_available %}
 <script>
 (function () {
-  var analyzeUrl = "{% url 'evolveme:measure_analyze' %}";
+  var analyzeUrl = "{% url 'gym:session_analyze' %}";
   var csrfToken = "{{ csrf_token }}";
   var zone = document.getElementById('ocr-zone');
-  var input = document.getElementById('id_measure_images');
+  var input = document.getElementById('id_workout_images');
   var previews = document.getElementById('ocr-previews');
   var btn = document.getElementById('btn-analyze');
   var hint = document.getElementById('ocr-hint');
@@ -161,7 +148,7 @@
     btn.disabled = true; spinner.classList.remove('d-none'); hint.textContent = 'Analizando…';
     var fd = new FormData();
     fd.append('csrfmiddlewaretoken', csrfToken);
-    for (var i = 0; i < input.files.length; i++) fd.append('measure_images', input.files[i]);
+    for (var i = 0; i < input.files.length; i++) fd.append('workout_images', input.files[i]);
     fetch(analyzeUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
       .then(function(r) { return r.json(); })
       .then(function(resp) {
@@ -175,21 +162,18 @@
 
   function fillForm(data) {
     var map = {
+      name: 'id_name',
       date: 'id_date',
-      weight: 'id_weight',
-      fat_perc: 'id_fat_perc',
-      muscle_mass: 'id_muscle_mass',
-      bmi: 'id_bmi',
-      body_water_mass: 'id_body_water_mass',
-      body_water_percentage: 'id_body_water_percentage',
-      fat_mass: 'id_fat_mass',
-      bone_mineral_content: 'id_bone_mineral_content',
-      protein_mass: 'id_protein_mass',
-      muscle_percentage: 'id_muscle_percentage',
-      skeletal_muscle_mass: 'id_skeletal_muscle_mass',
-      visceral_fat_rating: 'id_visceral_fat_rating',
-      basal_metabolic_rate: 'id_basal_metabolic_rate',
-      body_age: 'id_body_age',
+      session_start: 'id_session_start',
+      session_end: 'id_session_end',
+      location: 'id_location',
+      workout_time: 'id_workout_time',
+      distance: 'id_distance',
+      avg_speed: 'id_avg_speed',
+      active_calories: 'id_active_calories',
+      total_calories: 'id_total_calories',
+      elevation_gain: 'id_elevation_gain',
+      average_heart_rate: 'id_average_heart_rate',
     };
     Object.keys(map).forEach(function(k) {
       var v = data[k]; if (v === null || v === undefined) return;

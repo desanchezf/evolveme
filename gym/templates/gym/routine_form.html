@@ -1,0 +1,97 @@
+{% extends "admin/base.html" %}
+{% load admin_urls crispy_forms_tags i18n static %}
+
+{% block title %}Crear Rutina - EvolveMe{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  {% include "includes/md3_forms.html" %}
+  <style>
+    .section-header { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6c757d; margin-bottom: .75rem; }
+    .check-grid { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; }
+    .check-grid .form-check { min-width: 160px; }
+  </style>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% url 'admin:jsi18n' %}"></script>
+  {{ form.media }}
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+      if (t === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 register-form">
+
+  <div class="mb-3">
+    <h1 class="h4 mb-1">Crear rutina de entrenamiento</h1>
+    <p class="text-muted">Define la estructura, enfoque y ejercicios de tu nueva rutina.</p>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {# ── Información básica ───────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Información básica</div>
+        <div class="row">
+          {% if form.user %}<div class="col-md-6 mb-3">{{ form.user|as_crispy_field }}</div>{% endif %}
+          <div class="col-md-6 mb-3">{{ form.duration|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Clasificación ────────────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Clasificación <small class="text-muted fw-normal text-lowercase">– define estructura semanal, enfoque y técnicas de intensidad</small></div>
+        <div class="row mb-3">
+          <div class="col-md-6">{{ form.weekly_structure|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.training_focus|as_crispy_field }}</div>
+        </div>
+        <div class="mb-1 small text-muted">Técnicas de intensidad</div>
+        <div class="check-grid">{{ form.intensity_techniques }}</div>
+        {% if form.intensity_techniques.errors %}
+          <div class="text-danger small mt-1">{{ form.intensity_techniques.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Tipos de ejercicios ───────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Tipos de ejercicios <small class="text-muted fw-normal text-lowercase">– selecciona los patrones de movimiento de la rutina</small></div>
+        <div class="check-grid">{{ form.exercise_types }}</div>
+        {% if form.exercise_types.errors %}
+          <div class="text-danger small mt-1">{{ form.exercise_types.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Calentamiento ────────────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Calentamiento</div>
+        <div class="row">
+          <div class="col-md-6 mb-3">{{ form.warmup|as_crispy_field }}</div>
+          <div class="col-md-6 mb-3">{{ form.warmup_duration|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+      <a href="{% url 'evolveme:index' %}" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save me-1"></i> Crear Rutina
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

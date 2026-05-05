@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "import_export",
     "django_prometheus",
+    "django_celery_beat",
     # Django apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     "nutrition",
     "gym",
     "ia.apps.IaConfig",
+    "sleep",
     # Project commands
     "project_commands",
 ]
@@ -281,28 +283,25 @@ JAZZMIN_SETTINGS = {
     # Apartados en el menú superior (como Portal EvolveMe)
     "topmenu_links": [
         {"name": "Home", "url": "/admin/", "icon": "fas fa-home"},
+        {"name": "Hitos", "url": "/hitos/", "icon": "fas fa-trophy"},
+        {"name": "Perfil", "url": "/profile/", "icon": "fas fa-user-edit"},
         {"name": "Dieta", "url": "/nutrition/daily-diet/", "icon": "fas fa-utensils"},
-        {
-            "name": "Entrenamiento",
-            "url": "/gym/training-session/",
-            "icon": "fas fa-calendar-check",
-        },
-        {"name": "Cardio", "url": "/gym/cardio-session/", "icon": "fas fa-running"},
-        {
-            "name": "Musculación",
-            "url": "/gym/musculation-record/",
-            "icon": "fas fa-dumbbell",
-        },
-        {
-            "name": "Producto",
-            "url": "/nutrition/product/",
-            "icon": "fas fa-shopping-basket",
-        },
+        {"name": "Entrenamiento", "url": "/gym/session/", "icon": "fas fa-calendar-check"},
+        {"name": "Rutina", "url": "/gym/routine/", "icon": "fas fa-list-ol"},
+        {"name": "Musculación", "url": "/gym/musculation-record/", "icon": "fas fa-dumbbell"},
+        {"name": "Producto", "url": "/nutrition/product/", "icon": "fas fa-shopping-basket"},
+        {"name": "Medidas", "url": "/measure/", "icon": "fas fa-ruler-combined"},
+        {"name": "Sueño", "url": "/sleep/sleep/", "icon": "fas fa-moon"},
         {"name": "IA", "url": "/ia/chat/", "icon": "fas fa-robot"},
     ],
     # Enlaces en el menú lateral a los formularios públicos
     "custom_links": {
         "evolveme": [
+            {
+                "name": "Editar perfil",
+                "url": "/profile/",
+                "icon": "fas fa-user-edit",
+            },
             {
                 "name": "Registrar medidas",
                 "url": "/measure/",
@@ -311,19 +310,19 @@ JAZZMIN_SETTINGS = {
         ],
         "gym": [
             {
-                "name": "Registro de musculación",
-                "url": "/gym/musculation-record/",
-                "icon": "fas fa-dumbbell",
-            },
-            {
-                "name": "Sesión de entrenamiento",
-                "url": "/gym/training-session/",
+                "name": "Registrar sesión",
+                "url": "/gym/session/",
                 "icon": "fas fa-calendar-check",
             },
             {
-                "name": "Sesión de cardio",
-                "url": "/gym/cardio-session/",
-                "icon": "fas fa-running",
+                "name": "Crear rutina",
+                "url": "/gym/routine/",
+                "icon": "fas fa-list-ol",
+            },
+            {
+                "name": "Registro de musculación",
+                "url": "/gym/musculation-record/",
+                "icon": "fas fa-dumbbell",
             },
         ],
         "nutrition": [
@@ -338,6 +337,13 @@ JAZZMIN_SETTINGS = {
                 "icon": "fas fa-utensils",
             },
         ],
+        "sleep": [
+            {
+                "name": "Registrar sueño",
+                "url": "/sleep/sleep/",
+                "icon": "fas fa-moon",
+            },
+        ],
     },
     # Iconos por app y modelo (Font Awesome)
     "icons": {
@@ -345,7 +351,7 @@ JAZZMIN_SETTINGS = {
         "auth.user": "fas fa-user",
         "auth.group": "fas fa-users",
         # Evolveme
-        "evolveme.gymuserprofile": "fas fa-id-card",
+        "evolveme.gymuserprofile": "fas fa-user-edit",
         "evolveme.measure": "fas fa-ruler-combined",
         # Gym
         "gym.cardioexercise": "fas fa-heartbeat",
@@ -353,6 +359,8 @@ JAZZMIN_SETTINGS = {
         "gym.musculationexercise": "fas fa-dumbbell",
         "gym.musculationrecord": "fas fa-clipboard-list",
         "gym.routine": "fas fa-list-ol",
+        "gym.routine": "fas fa-list-ol",
+        "gym.session": "fas fa-calendar-check",
         "gym.trainingsession": "fas fa-calendar-check",
         # IA
         "ia.chatmessage": "fas fa-comment-dots",
@@ -365,9 +373,16 @@ JAZZMIN_SETTINGS = {
         "nutrition.productquantity": "fas fa-weight-hanging",
         "nutrition.dailydiet": "fas fa-utensils",
         "nutrition.mealmetrics": "fas fa-chart-pie",
+        # Sleep
+        "sleep.sleeprecord": "fas fa-moon",
     },
     # CSS personalizado: paleta M3 compartida + estilos propios de EvolveMe
     "custom_css": "admin/css/jazzmin_custom.css",
+    # Mostrar todos los fieldsets del cambio/alta en una sola página
+    "changeform_format": "single",
+    "changeform_format_overrides": {
+        "gym.routine": "single",
+    },
 }
 
 JAZZMIN_UI_TWEAKS = {

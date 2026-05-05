@@ -114,6 +114,66 @@ def extract_cardio_data_from_image(image_files) -> dict:
     return result
 
 
+def extract_session_data_from_image(image_files) -> dict:
+    """
+    Envía imágenes al LLM con visión y devuelve campos mapeados a Session.
+    Devuelve {} si no hay servidor o falla la llamada.
+    """
+    if not requests:
+        return {}
+    server = _get_ollama_server()
+    if not server:
+        return {}
+    images_b64 = _encode_files(image_files)
+    if not images_b64:
+        return {}
+
+    prompt = (
+        "Analiza esta(s) imagen(es) de una sesión de entrenamiento o cardio "
+        "(captura de reloj, app de fitness, etc.). "
+        "Devuelve ÚNICAMENTE un JSON válido, sin texto adicional ni markdown, con estas claves "
+        "(usa null para lo que no detectes): "
+        "date (YYYY-MM-DD), session_start (ISO 8601), session_end (ISO 8601), "
+        "name (uno de: Outdoor Walk, Indoor Walk, Outdoor Cycle, Indoor Cycle, Elliptical, Musculation), "
+        "location (texto), workout_time_seconds (número entero), "
+        "distance_km (número), avg_speed_kmh (número), "
+        "active_calories (número entero), total_calories (número entero), "
+        "elevation_gain_m (número entero), average_heart_rate (número entero)."
+    )
+    raw = _call_ollama(server, prompt, images_b64)
+
+    valid_names = {
+        "Outdoor Walk", "Indoor Walk", "Outdoor Cycle",
+        "Indoor Cycle", "Elliptical", "Musculation",
+    }
+    result = {}
+    if raw.get("date"):
+        result["date"] = raw["date"]
+    if raw.get("session_start"):
+        result["session_start"] = raw["session_start"]
+    if raw.get("session_end"):
+        result["session_end"] = raw["session_end"]
+    if raw.get("name") in valid_names:
+        result["name"] = raw["name"]
+    if raw.get("location"):
+        result["location"] = str(raw["location"])[:255]
+    if raw.get("workout_time_seconds") is not None:
+        result["workout_time"] = timedelta(seconds=int(raw["workout_time_seconds"]))
+    if raw.get("distance_km") is not None:
+        result["distance"] = float(raw["distance_km"])
+    if raw.get("avg_speed_kmh") is not None:
+        result["avg_speed"] = float(raw["avg_speed_kmh"])
+    if raw.get("active_calories") is not None:
+        result["active_calories"] = int(raw["active_calories"])
+    if raw.get("total_calories") is not None:
+        result["total_calories"] = int(raw["total_calories"])
+    if raw.get("elevation_gain_m") is not None:
+        result["elevation_gain"] = int(raw["elevation_gain_m"])
+    if raw.get("average_heart_rate") is not None:
+        result["average_heart_rate"] = int(raw["average_heart_rate"])
+    return result
+
+
 def extract_training_session_data_from_image(image_files) -> dict:
     """
     Envía imágenes al LLM con visión y devuelve campos mapeados a TrainingSession.

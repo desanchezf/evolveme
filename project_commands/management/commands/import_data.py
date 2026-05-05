@@ -11,7 +11,10 @@ from django.utils.dateparse import parse_datetime, parse_duration
 
 from evolveme.models import GymUserProfile, Measure
 from nutrition.models import Product
-from gym.models import CardioExercise, CardioSession, MusculationExercise, Routine, TrainingSession
+from gym.models import (
+    CardioExercise, MusculationExercise, Routine,
+    RoutineDay, RoutineDayExercise, Session,
+)
 from ia.models import OllamaModelConfig, OllamaServer, Promtps
 
 logger = logging.getLogger(__name__)
@@ -41,21 +44,21 @@ class Command(BaseCommand):
             return
         else:
             print(" ✅ Ejercicios de cardio cargados correctamente 🏃")
-        if not self.cardio_training_session():
-            print(" ❌ Error al cargar las sesiones de cardio 🚴")
+        if not self.sessions():
+            print(" ❌ Error al cargar las sesiones 🏋️")
             return
         else:
-            print(" ✅ Sesiones de cardio cargadas correctamente 🚴")
+            print(" ✅ Sesiones cargadas correctamente 🏋️")
         if not self.food_products():
             print(" ❌ Error al cargar los productos alimentarios 🍎")
             return
         else:
             print(" ✅ Productos alimentarios cargados correctamente 🍎")
-        if not self.training_sessions():
-            print(" ❌ Error al cargar las sesiones de entrenamiento 💪")
+        if not self.default_routines():
+            print(" ❌ Error al cargar las rutinas por defecto 📋")
             return
         else:
-            print(" ✅ Sesiones de entrenamiento cargadas correctamente 💪")
+            print(" ✅ Rutinas por defecto cargadas correctamente 📋")
         if not self.prompts_data():
             print(" ❌ Error al cargar los prompts 🤖")
             return
@@ -265,53 +268,69 @@ class Command(BaseCommand):
         )
         return True
 
-    def cardio_training_session(self):
-        """Carga las sesiones de cardio desde training_session.csv (filas session_type=cardio)"""
-        logger.info("Cargando sesiones de cardio 🚴 ...")
+    def sessions(self):
+        """Carga todas las sesiones desde training_session.csv al modelo Session unificado."""
+        logger.info("Cargando sesiones 🏋️ ...")
 
         csv_path = self.get_csv_path("training_session.csv")
         if not os.path.exists(csv_path):
             logger.error(f"El archivo {csv_path} no existe")
             return False
 
+        routines_by_user = {}
         created_count = 0
+
         with open(csv_path, newline="", encoding="utf-8") as csvfile:
             for row in csv.DictReader(csvfile):
-                if row.get("session_type") != "cardio":
-                    continue
                 username = row.get("user", "david")
                 user = User.objects.filter(username=username).first()
                 if not user:
                     logger.warning(f"Usuario {username} no encontrado, saltando sesión")
                     continue
 
+                name = row.get("name", "").strip()
+                if not name:
+                    continue
+
                 session_start = self.parse_datetime_safe(row.get("session_start"))
                 session_end = self.parse_datetime_safe(row.get("session_end"))
-                date_obj = datetime.strptime(row["date"], "%Y-%m-%d").date()
+                date_str = row.get("date", "")
+                try:
+                    date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+                except (ValueError, TypeError):
+                    date_obj = session_start.date() if session_start else None
+                if not date_obj:
+                    continue
+
                 workout_time = (
                     parse_duration(row["workout_time"]) if row.get("workout_time") else None
                 )
 
-                exercise_name = row.get("name", "").strip()
-                if not exercise_name:
-                    logger.warning("Nombre de ejercicio vacío, saltando sesión")
-                    continue
+                # Rutina para sesiones de musculación
+                routine = None
+                if name == "Musculation":
+                    if username not in routines_by_user:
+                        r = Routine.objects.filter(user=user).first()
+                        if not r:
+                            r = Routine.objects.create(user=user)
+                        routines_by_user[username] = r
+                        profile, _ = GymUserProfile.objects.get_or_create(user=user)
+                        if not profile.start_date:
+                            profile.start_date = timezone.now().date()
+                        if not profile.end_date:
+                            profile.end_date = (
+                                timezone.now() + timedelta(weeks=6)
+                            ).date()
+                        if not profile.active_routine:
+                            profile.active_routine = r
+                        profile.save()
+                    routine = routines_by_user.get(username)
 
-                exercise, created = CardioExercise.objects.get_or_create(
-                    name=exercise_name,
-                    defaults={"description": ""},
-                )
-                if created:
-                    logger.info(
-                        f"Ejercicio de cardio creado: {exercise.get_name_display() or exercise.name} ✅"
-                    )
-
-                if not CardioSession.objects.filter(
-                    user=user, exercise=exercise, date=date_obj
-                ).exists():
-                    CardioSession.objects.create(
+                if not Session.objects.filter(user=user, name=name, date=date_obj).exists():
+                    Session.objects.create(
                         user=user,
-                        exercise=exercise,
+                        name=name,
+                        routine=routine,
                         session_start=session_start,
                         session_end=session_end,
                         date=date_obj,
@@ -326,9 +345,7 @@ class Command(BaseCommand):
                     )
                     created_count += 1
 
-        logger.info(
-            f"Sesiones de cardio cargadas correctamente ✅ ({created_count} creadas)"
-        )
+        logger.info(f"Sesiones cargadas correctamente ✅ ({created_count} creadas)")
         return True
 
     def food_products(self):
@@ -418,77 +435,172 @@ class Command(BaseCommand):
         )
         return True
 
-    def training_sessions(self):
-        """Carga las sesiones de entrenamiento desde training_session.csv (filas session_type=training)"""
-        logger.info("Cargando sesiones de entrenamiento 💪 ...")
+    def default_routines(self):
+        """Crea las rutinas por defecto si no existen ya (sin usuario asignado)."""
+        logger.info("Cargando rutinas por defecto 📋 ...")
 
-        csv_path = self.get_csv_path("training_session.csv")
-        if not os.path.exists(csv_path):
-            logger.error(f"El archivo {csv_path} no existe")
-            return False
+        ROUTINES = [
+            {
+                "name": "Rutina mixta fuerza-calistenia",
+                "duration": 6,
+                "weekly_structure": "weider",
+                "training_focus": "funcional_hibrido",
+                "exercise_types": ["push", "pull", "legs", "core", "forearms"],
+                "days": [
+                    {
+                        "day_number": 1, "name": "Push + calistenia de empuje", "is_rest": False,
+                        "exercises": [
+                            {"name": "Press banca o press inclinado", "sets_reps": "4x6-8", "notes": "Controla la bajada"},
+                            {"name": "Press hombros con mancuernas", "sets_reps": "3x8-10", "notes": "Sin arquear la espalda"},
+                            {"name": "Fondos en paralelas", "sets_reps": "4x6-10", "notes": "Añade peso si puedes"},
+                            {"name": "Flexiones declinadas o pseudo planche push-ups", "sets_reps": "3x8-12", "notes": "Mantén el core fuerte"},
+                            {"name": "Extensión de tríceps en polea", "sets_reps": "3x10-12", "notes": "Codos fijos"},
+                            {"name": "Plancha con toque de hombros", "sets_reps": "3x30-40s", "notes": "Control total"},
+                        ],
+                    },
+                    {
+                        "day_number": 2, "name": "Pull + tirón en calistenia", "is_rest": False,
+                        "exercises": [
+                            {"name": "Dominadas lastradas o estrictas", "sets_reps": "4x5-8", "notes": "Pecho hacia la barra"},
+                            {"name": "Remo con barra o mancuerna", "sets_reps": "3x8-10", "notes": "Tira con la espalda"},
+                            {"name": "Chin-ups o dominadas supinas", "sets_reps": "3x6-10", "notes": "Recorrido completo"},
+                            {"name": "Face pull", "sets_reps": "3x12-15", "notes": "Para salud de hombro"},
+                            {"name": "Curl de bíceps con barra", "sets_reps": "3x8-12", "notes": "Sin balanceo"},
+                            {"name": "Dead hang en barra", "sets_reps": "3x20-30s", "notes": "Si puedes, con toalla"},
+                        ],
+                    },
+                    {
+                        "day_number": 3, "name": "Piernas + core", "is_rest": False,
+                        "exercises": [
+                            {"name": "Sentadilla o prensa", "sets_reps": "4x6-8", "notes": "Profundidad controlada"},
+                            {"name": "Peso muerto rumano", "sets_reps": "3x8-10", "notes": "Espalda neutra"},
+                            {"name": "Zancadas caminando", "sets_reps": "3x10", "notes": "Paso controlado"},
+                            {"name": "Sentadilla búlgara", "sets_reps": "3x8-10", "notes": "Muy buena para calistenia"},
+                            {"name": "Elevaciones de gemelos", "sets_reps": "4x12-20", "notes": "Pausa arriba"},
+                            {"name": "Elevaciones de piernas colgado", "sets_reps": "3x10-15", "notes": "Sin balanceo"},
+                        ],
+                    },
+                    {
+                        "day_number": 4, "name": "Calistenia torso + habilidades", "is_rest": False,
+                        "exercises": [
+                            {"name": "Dominadas pronas", "sets_reps": "4xAMRAP", "notes": "Deja 1-2 reps en reserva"},
+                            {"name": "Fondos en paralelas", "sets_reps": "4xAMRAP", "notes": "Controla la bajada"},
+                            {"name": "Flexiones archer o diamante", "sets_reps": "3x8-12", "notes": "Buena técnica"},
+                            {"name": "Remo invertido en barra/TRX", "sets_reps": "3x10-15", "notes": "Cuerpo recto"},
+                            {"name": "Pike push-ups", "sets_reps": "3x6-12", "notes": "Progresión a handstand"},
+                            {"name": "Hollow body hold", "sets_reps": "3x20-40s", "notes": "Core muy importante"},
+                        ],
+                    },
+                    {
+                        "day_number": 5, "name": "Calistenia piernas + core + agarre", "is_rest": False,
+                        "exercises": [
+                            {"name": "Sentadilla pistol asistida o a caja", "sets_reps": "3x6-8", "notes": "Control y equilibrio"},
+                            {"name": "Step-ups o búlgaras con peso corporal", "sets_reps": "3x10", "notes": "Sin impulso"},
+                            {"name": "Nordic curl asistido o curl femoral deslizante", "sets_reps": "3x6-10", "notes": "Muy útil para isquios"},
+                            {"name": "Elevaciones de rodillas colgado", "sets_reps": "3x12-15", "notes": "Sin balanceo"},
+                            {"name": "L-sit en paralelas o suelo", "sets_reps": "4x10-20s", "notes": "Mantén la postura"},
+                            {"name": "Pinch grip con discos", "sets_reps": "3x20s", "notes": "Agarre fuerte y limpio"},
+                        ],
+                    },
+                    {
+                        "day_number": 6, "name": "Antebrazos y grip", "is_rest": False,
+                        "exercises": [
+                            {"name": "Farmer walks pesados", "sets_reps": "4x30-45s", "notes": "Camina recto, hombros bajos"},
+                            {"name": "Dead hang en barra", "sets_reps": "4x20-45s", "notes": "Si puedes, con toalla"},
+                            {"name": "Curl de muñeca", "sets_reps": "3x15-20", "notes": "Controlado, sin rebotes"},
+                            {"name": "Curl de muñeca inverso", "sets_reps": "3x15-20", "notes": "Muy útil para extensores"},
+                            {"name": "Reverse curl con barra o mancuernas", "sets_reps": "3x10-12", "notes": "Ayuda mucho al antebrazo"},
+                            {"name": "Pronosupinación con mancuerna", "sets_reps": "2-3x12-15", "notes": "Salud de codo y muñeca"},
+                        ],
+                    },
+                    {"day_number": 7, "name": "Descanso", "is_rest": True, "exercises": []},
+                ],
+            },
+            {
+                "name": "Rutina PPL (Push-Pull-Legs)",
+                "duration": 4,
+                "weekly_structure": "push_pull_legs",
+                "training_focus": "bodybuilding",
+                "exercise_types": ["push", "pull", "legs", "core", "forearms"],
+                "days": [
+                    {
+                        "day_number": 1, "name": "Día Push (Pecho, Hombros, Tríceps)", "is_rest": False,
+                        "exercises": [
+                            {"name": "Press banca/plano", "sets_reps": "4x8-10", "notes": "Controla bajada"},
+                            {"name": "Press hombros mancuernas", "sets_reps": "3x10-12", "notes": "Sin arquear espalda"},
+                            {"name": "Fondos pecho o máquina", "sets_reps": "3x10-12", "notes": "Añade peso si puedes"},
+                            {"name": "Extensiones tríceps polea", "sets_reps": "3x12", "notes": "Mantén codos fijos"},
+                            {"name": "Core: Plancha", "sets_reps": "3x30-45s", "notes": None},
+                            {"name": "Antebrazos: Curl muñeca", "sets_reps": "3x15", "notes": "Opcional"},
+                        ],
+                    },
+                    {
+                        "day_number": 2, "name": "Día Pull (Espalda, Bíceps)", "is_rest": False,
+                        "exercises": [
+                            {"name": "Dominadas o jalón pecho", "sets_reps": "4x8-10", "notes": "Aprieta escápulas"},
+                            {"name": "Remo mancuerna/barra", "sets_reps": "3x10-12", "notes": "Tira con espalda"},
+                            {"name": "Face pull hombros posteriores", "sets_reps": "3x12", "notes": "Para postura"},
+                            {"name": "Curl bíceps barra", "sets_reps": "3x10-12", "notes": "Sin balanceo"},
+                            {"name": "Core: Elevación de piernas", "sets_reps": "3x12", "notes": None},
+                            {"name": "Antebrazos: Giro muñeca inverso", "sets_reps": "3x15", "notes": None},
+                        ],
+                    },
+                    {
+                        "day_number": 3, "name": "Día Legs (Piernas)", "is_rest": False,
+                        "exercises": [
+                            {"name": "Sentadilla/prensa", "sets_reps": "4x8-10", "notes": "Profundidad 90°"},
+                            {"name": "Peso muerto rumano", "sets_reps": "3x10-12", "notes": "Protege lumbares"},
+                            {"name": "Zancadas caminando", "sets_reps": "3x10", "notes": "Controladas"},
+                            {"name": "Elevación de gemelos", "sets_reps": "3x12-15", "notes": "Estira completo"},
+                            {"name": "Core: Russian twists", "sets_reps": "3x20", "notes": "Con peso ligero"},
+                        ],
+                    },
+                ],
+            },
+        ]
 
-        # Crear una sola rutina por usuario antes de procesar las sesiones
-        # y actualizar el perfil del usuario con las fechas de inicio y fin
-        routines_by_user = {}
-        with open(csv_path, newline="", encoding="utf-8") as csvfile:
-            for row in csv.DictReader(csvfile):
-                if row.get("session_type") != "training":
-                    continue
-                username = row.get("user", "david")
-                if username not in routines_by_user:
-                    user = User.objects.filter(username=username).first()
-                    if user:
-                        routine = Routine.objects.filter(user=user).first()
-                        if not routine:
-                            routine = Routine.objects.create(user=user)
-                        profile, _ = GymUserProfile.objects.get_or_create(user=user)
-                        if not profile.start_date:
-                            profile.start_date = timezone.now().date()
-                        if not profile.end_date:
-                            profile.end_date = (
-                                timezone.now() + timedelta(weeks=6)
-                            ).date()
-                        if not profile.active_routine:
-                            profile.active_routine = routine
-                        profile.save()
-                        routines_by_user[username] = routine
+        created = 0
+        for routine_def in ROUTINES:
+            if Routine.objects.filter(user=None, exercise_types=routine_def["exercise_types"]).filter(
+                days__day_number=1
+            ).exists():
+                logger.info(f"Rutina '{routine_def['name']}' ya existe, saltando")
+                continue
 
-        created_count = 0
-        with open(csv_path, newline="", encoding="utf-8") as csvfile:
-            for row in csv.DictReader(csvfile):
-                if row.get("session_type") != "training":
-                    continue
-                username = row.get("user", "david")
-                user = User.objects.filter(username=username).first()
-                if not user:
-                    logger.warning(f"Usuario {username} no encontrado, saltando sesión")
-                    continue
+            routine = Routine.objects.create(
+                user=None,
+                duration=routine_def.get("duration"),
+                weekly_structure=routine_def["weekly_structure"],
+                training_focus=routine_def["training_focus"],
+                exercise_types=routine_def["exercise_types"],
+            )
 
-                routine = routines_by_user.get(username)
-                session_date = self.parse_datetime_safe(row.get("session_start"))
-                workout_time = (
-                    parse_duration(row["workout_time"]) if row.get("workout_time") else None
+            for day_def in routine_def["days"]:
+                routine_day = RoutineDay.objects.create(
+                    routine=routine,
+                    day_number=day_def["day_number"],
+                    name=day_def["name"],
+                    is_rest=day_def["is_rest"],
                 )
-
-                if not TrainingSession.objects.filter(
-                    user=user, session_date=session_date
-                ).exists():
-                    TrainingSession.objects.create(
-                        user=user,
-                        routine=routine,
-                        session_date=session_date,
-                        location=row.get("location") or None,
-                        workout_time=workout_time,
-                        active_kilocalories=int(row["active_calories"]) if row.get("active_calories") else None,
-                        total_kilocalories=int(row["total_calories"]) if row.get("total_calories") else None,
-                        avg_heart_rate=int(row["average_heart_rate"]) if row.get("average_heart_rate") else None,
+                for order, ex in enumerate(day_def.get("exercises", [])):
+                    library_ex, _ = MusculationExercise.objects.get_or_create(
+                        name=ex["name"],
+                        defaults={"sets": 0, "reps": 0},
                     )
-                    created_count += 1
+                    routine.exercises.add(library_ex)
+                    RoutineDayExercise.objects.create(
+                        day=routine_day,
+                        exercise=library_ex,
+                        exercise_name=ex["name"],
+                        sets_reps=ex.get("sets_reps", ""),
+                        notes=ex.get("notes"),
+                        order=order,
+                    )
 
-        logger.info(
-            f"Sesiones de entrenamiento cargadas correctamente ✅ "
-            f"({created_count} creadas)"
-        )
+            logger.info(f"Rutina '{routine_def['name']}' creada ✅")
+            created += 1
+
+        logger.info(f"Rutinas por defecto cargadas ✅ ({created} creadas)")
         return True
 
     def prompts_data(self):

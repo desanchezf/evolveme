@@ -35,7 +35,7 @@ def chat_view(request):
         with_admin_context(request, {
             "chat_session": session,
             "chat_messages": chat_messages,
-            "chat_available": is_model_downloaded("qwen3:8b"),
+            "chat_available": is_model_downloaded("qwen3:1.7b"),
         }),
     )
 
@@ -50,7 +50,7 @@ def chat_send_view(request):
         return JsonResponse({"error": "JSON inválido"}, status=400)
     content = (data.get("content") or "").strip()
     session_id = data.get("session_id")
-    model_key = "qwen3:8b"
+    model_key = "qwen3:1.7b"
     if not content:
         return JsonResponse({"error": "Mensaje vacío"}, status=400)
     if session_id:
@@ -133,6 +133,22 @@ def ollama_model_pull_view(request, pk):
     else:
         messages.error(request, f"Error al actualizar el modelo: {err}")
     return redirect("admin:ia_ollamamodelconfig_changelist")
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def ollama_model_delete_view(request, pk):
+    """Elimina el modelo del servidor Ollama y actualiza el registro."""
+    from ia.services import delete_model_on_server
+
+    config = get_object_or_404(OllamaModelConfig, pk=pk)
+    ok, err = delete_model_on_server(config.server, config.model_name)
+    if ok:
+        OllamaModelConfig.objects.filter(pk=pk).update(
+            downloaded=False, digest="", update_available=False
+        )
+        return JsonResponse({"deleted": True})
+    return JsonResponse({"deleted": False, "error": err}, status=500)
 
 
 @staff_member_required

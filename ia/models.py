@@ -187,6 +187,35 @@ class OllamaModelConfig(models.Model):
         return f"{self.alias} ({self.server.name}:{self.model_name})"
 
 
+class UserModelPrompt(models.Model):
+    """
+    Prompt de sistema generado para un usuario concreto y un modelo Ollama.
+    Se inyecta como mensaje 'system' al inicio de cada conversación.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ia_prompts",
+    )
+    model_config = models.ForeignKey(
+        OllamaModelConfig,
+        on_delete=models.CASCADE,
+        related_name="user_prompts",
+        verbose_name="Modelo",
+    )
+    prompt_text = models.TextField(verbose_name="Prompt de sistema")
+    generated_at = models.DateTimeField(auto_now=True, verbose_name="Generado el")
+
+    class Meta:
+        verbose_name = "Prompt de usuario"
+        verbose_name_plural = "Prompts de usuario"
+        unique_together = ("user", "model_config")
+
+    def __str__(self) -> str:
+        return f"{self.user} — {self.model_config.model_name}"
+
+
 class ChatSession(models.Model):
     """
     Sesión de conversación de un usuario con un modelo Ollama.

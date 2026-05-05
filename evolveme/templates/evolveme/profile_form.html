@@ -1,0 +1,94 @@
+{% extends "admin/base.html" %}
+{% load admin_urls crispy_forms_tags i18n static %}
+
+{% block title %}Perfil de usuario - EvolveMe{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  {% include "includes/md3_forms.html" %}
+  <style>
+    .section-header { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6c757d; margin-bottom: .5rem; }
+  </style>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% url 'admin:jsi18n' %}"></script>
+  {{ form.media }}
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+      if (t === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 register-form">
+
+  <div class="mb-3">
+    <h1 class="h4 mb-1">Perfil de usuario</h1>
+    <p class="text-muted">Actualiza tu información personal, objetivo y rutina activa.</p>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {# ── Usuario ──────────────────────────────────────────────────────────── #}
+    {% if form.user %}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Usuario</div>
+        <div class="row mb-2">
+          <div class="col-md-6">{{ form.user|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {# ── Información personal ─────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Información personal</div>
+        <div class="row mb-3">
+          <div class="col-md-4">{{ form.birth_date|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.gender|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.height|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Objetivos ────────────────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Objetivos</div>
+        <div class="row mb-2">
+          <div class="col-md-6">{{ form.objective|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Rutina activa ────────────────────────────────────────────────────── #}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Rutina activa</div>
+        <div class="row mb-3">
+          <div class="col-12">{{ form.active_routine|as_crispy_field }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-md-6">{{ form.start_date|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.end_date|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+      <a href="{% url 'evolveme:index' %}" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save me-1"></i> Guardar Perfil
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

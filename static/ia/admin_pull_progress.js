@@ -83,10 +83,48 @@
             .catch(function () {});
     }
 
+    function handleDeleteClick(e) {
+        e.preventDefault();
+        var btn = e.currentTarget;
+        var deleteUrl = btn.getAttribute('data-delete-url');
+        var modelName = btn.closest('tr').querySelector('td:nth-child(3)');
+        var label = modelName ? modelName.textContent.trim() : 'este modelo';
+        if (!confirm('¿Borrar ' + label + ' del servidor Ollama? Esta acción no se puede deshacer.')) {
+            return;
+        }
+        btn.disabled = true;
+        btn.textContent = 'Borrando…';
+        fetch(deleteUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json'},
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.deleted) {
+                    location.reload();
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = 'Borrar';
+                    alert('Error al borrar: ' + (data.error || 'desconocido'));
+                }
+            })
+            .catch(function () {
+                btn.disabled = false;
+                btn.textContent = 'Borrar';
+                alert('Error de conexión al borrar el modelo.');
+            });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         // Wire up pull buttons
         document.querySelectorAll('[data-start-url]').forEach(function (btn) {
             btn.addEventListener('click', handlePullClick);
+        });
+
+        // Wire up delete buttons
+        document.querySelectorAll('[data-delete-url]').forEach(function (btn) {
+            btn.addEventListener('click', handleDeleteClick);
         });
 
         // If there are already in-progress bars (page reloaded mid-download)

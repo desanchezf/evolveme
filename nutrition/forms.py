@@ -110,48 +110,51 @@ class DietJSONForm(forms.Form):
     )
 
 
+_NUM = {"class": "form-control", "step": "0.01"}
+
+
 class ProductForm(forms.ModelForm):
-    """Formulario público para registrar productos. Permite subir una o varias imágenes (campo en template) para extraer datos con IA."""
+    """Formulario público para registrar productos."""
 
     class Meta:
         model = Product
         fields = [
-            "name",
-            "description",
-            "barcode",
-            "market",
-            "calories_per_100g",
-            "protein_per_100g",
-            "carbs_per_100g",
-            "fat_per_100g",
+            "name", "description", "barcode", "market", "stock",
+            "energy_kj_per_100g",
+            "calories_per_100g", "protein_per_100g", "carbs_per_100g", "fat_per_100g",
+            "saturated_fat_per_100g", "sugars_per_100g", "fiber_per_100g", "salt_per_100g",
+            "monounsaturated_fat_per_100g", "polyunsaturated_fat_per_100g",
+            "polyols_per_100g", "omega3_epa_dha_per_100g",
+            "thiamine_b1_per_100g", "phosphorus_per_100g",
+            "magnesium_per_100g", "iron_per_100g", "zinc_per_100g",
         ]
         widgets = {
-            "name": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
+            "name": forms.TextInput(attrs={"class": "form-control", "id": "id_name"}),
+            "description": forms.Textarea(attrs={"rows": 2, "class": "form-control"}),
             "barcode": forms.TextInput(attrs={"class": "form-control"}),
-            "market": forms.Select(attrs={"class": "form-control"}),
-            "calories_per_100g": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
-            "protein_per_100g": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
-            "carbs_per_100g": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
-            "fat_per_100g": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "market": forms.Select(attrs={"class": "form-select"}),
+            "stock": forms.Select(attrs={"class": "form-select"}),
+            "energy_kj_per_100g": forms.NumberInput(attrs=_NUM),
+            "calories_per_100g": forms.NumberInput(attrs=_NUM),
+            "protein_per_100g": forms.NumberInput(attrs=_NUM),
+            "carbs_per_100g": forms.NumberInput(attrs=_NUM),
+            "fat_per_100g": forms.NumberInput(attrs=_NUM),
+            "saturated_fat_per_100g": forms.NumberInput(attrs=_NUM),
+            "sugars_per_100g": forms.NumberInput(attrs=_NUM),
+            "fiber_per_100g": forms.NumberInput(attrs=_NUM),
+            "salt_per_100g": forms.NumberInput(attrs=_NUM),
+            "monounsaturated_fat_per_100g": forms.NumberInput(attrs=_NUM),
+            "polyunsaturated_fat_per_100g": forms.NumberInput(attrs=_NUM),
+            "polyols_per_100g": forms.NumberInput(attrs=_NUM),
+            "omega3_epa_dha_per_100g": forms.NumberInput(attrs=_NUM),
+            "thiamine_b1_per_100g": forms.NumberInput(attrs=_NUM),
+            "phosphorus_per_100g": forms.NumberInput(attrs=_NUM),
+            "magnesium_per_100g": forms.NumberInput(attrs=_NUM),
+            "iron_per_100g": forms.NumberInput(attrs=_NUM),
+            "zinc_per_100g": forms.NumberInput(attrs=_NUM),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.layout = Layout(
-            Row(Column("name", css_class="col-12"), css_class="mb-3"),
-            Row(Column("description", css_class="col-12"), css_class="mb-3"),
-            Row(
-                Column("barcode", css_class="col-md-6"),
-                Column("market", css_class="col-md-6"),
-                css_class="mb-3",
-            ),
-            Row(
-                Column("calories_per_100g", css_class="col-md-3"),
-                Column("protein_per_100g", css_class="col-md-3"),
-                Column("carbs_per_100g", css_class="col-md-3"),
-                Column("fat_per_100g", css_class="col-md-3"),
-                css_class="mb-3",
-            ),
-        )
+        self.helper.form_tag = False

@@ -89,3 +89,63 @@ class UnitChoices(str):
     @classmethod
     def choices(cls):
         return UnitChoices.values
+
+
+class RoutineSplitChoices(str):
+    FullBody = "full_body"
+    TorsoPierna = "torso_pierna"
+    PushPullLegs = "push_pull_legs"
+    Weider = "weider"
+
+    values = (
+        (FullBody, _("Full Body")),
+        (TorsoPierna, _("Torso/Pierna")),
+        (PushPullLegs, _("Push/Pull/Legs (PPL)")),
+        (Weider, _("Weider (dividida)")),
+    )
+
+    @classmethod
+    def choices(cls):
+        return RoutineSplitChoices.values
+
+
+class RoutineFocusChoices(str):
+    Powerlifting = "powerlifting"
+    Halterofilia = "halterofilia"
+    FuerzaResistencia = "fuerza_resistencia"
+    Bodybuilding = "bodybuilding"
+    Powerbuilding = "powerbuilding"
+    Calistenia = "calistenia"
+    FuncionalHibrido = "funcional_hibrido"
+
+    values = (
+        (Powerlifting, _("Powerlifting")),
+        (Halterofilia, _("Halterofilia")),
+        (FuerzaResistencia, _("Fuerza-resistencia")),
+        (Bodybuilding, _("Bodybuilding")),
+        (Powerbuilding, _("Powerbuilding")),
+        (Calistenia, _("Calistenia")),
+        (FuncionalHibrido, _("Funcional/Híbrido")),
+    )
+
+    @classmethod
+    def choices(cls):
+        return RoutineFocusChoices.values
+
+
+class IntensityTechniqueChoices(str):
+    SeriesClasicas = "series_clasicas"
+    Superseries = "superseries"
+    DropSets = "drop_sets"
+    Circuitos = "circuitos"
+
+    values = (
+        (SeriesClasicas, _("Series clásicas")),
+        (Superseries, _("Superseries")),
+        (DropSets, _("Drop-sets")),
+        (Circuitos, _("Circuitos")),
+    )
+
+    @classmethod
+    def choices(cls):
+        return IntensityTechniqueChoices.values

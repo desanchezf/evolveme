@@ -43,3 +43,15 @@
     background: #3d4252;
     color: #fff;
 }
+
+.pull-btn--danger {
+    border-color: #dc3545;
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+.pull-btn--danger:hover {
+    background: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}

@@ -1,0 +1,522 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}Hitos - EvolveMe{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    .dashboard { background: #f1f5f9; min-height: 100vh; padding: 1.5rem; }
+    .dash-title { font-size: 1.4rem; font-weight: 700; color: #1e293b; margin-bottom: 1.5rem; }
+
+    /* KPI cards */
+    .kpi-card { background: #fff; border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); display: flex; align-items: center; gap: 1rem; height: 100%; }
+    .kpi-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .kpi-body { flex: 1; min-width: 0; }
+    .kpi-value { font-size: 1.6rem; font-weight: 800; line-height: 1.1; color: #1e293b; }
+    .kpi-label { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; margin-top: .15rem; }
+    .kpi-sub { font-size: .75rem; color: #64748b; margin-top: .1rem; }
+    .kpi-pos { color: #22c55e; font-weight: 700; }
+    .kpi-neg { color: #ef4444; font-weight: 700; }
+
+    /* Chart cards */
+    .chart-card { background: #fff; border-radius: 12px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); height: 100%; }
+    .chart-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #64748b; margin-bottom: .75rem; }
+    .chart-wrap { position: relative; }
+
+    /* Ranking tables */
+    .rank-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    .rank-table th { font-size: .65rem; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; font-weight: 600; padding: .4rem .5rem; border-bottom: 1px solid #f1f5f9; }
+    .rank-table td { padding: .45rem .5rem; border-bottom: 1px solid #f8fafc; color: #334155; }
+    .rank-table tr:last-child td { border-bottom: none; }
+    .rank-me { background: #eff6ff; font-weight: 700; color: #1d4ed8 !important; }
+    .rank-pos { font-weight: 700; color: #94a3b8; width: 24px; }
+    .rank-medal-1 { color: #f59e0b; }
+    .rank-medal-2 { color: #94a3b8; }
+    .rank-medal-3 { color: #b45309; }
+    .no-data { text-align: center; color: #cbd5e1; font-size: .8rem; padding: 2rem 0; }
+    .section-label { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; margin: 1.5rem 0 .75rem; }
+  </style>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% url 'admin:jsi18n' %}"></script>
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+      if (t === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+  <div class="dash-title"><i class="fas fa-trophy me-2" style="color:#f59e0b;"></i>Hitos y evolución</div>
+
+  {# ── KPI row ──────────────────────────────────────────────────────────── #}
+  <div class="row g-3 mb-3">
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#fff7ed;color:#f97316;">
+          <i class="fas fa-fire"></i>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ kpi.monthly_kcal|default:"—" }}</div>
+          <div class="kpi-label">Kcal quemadas</div>
+          <div class="kpi-sub">este mes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#eff6ff;color:#3b82f6;">
+          <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ kpi.monthly_sessions }}</div>
+          <div class="kpi-label">Sesiones</div>
+          <div class="kpi-sub">{{ kpi.monthly_workout_min }} min totales</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#fefce8;color:#eab308;">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ kpi.streak }}d</div>
+          <div class="kpi-label">Racha activa</div>
+          <div class="kpi-sub">días consecutivos</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#f0fdf4;color:#22c55e;">
+          <i class="fas fa-moon"></i>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value">{{ kpi.sleep_avg_h }}h</div>
+          <div class="kpi-label">Sueño medio</div>
+          <div class="kpi-sub">última semana</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#fdf4ff;color:#a855f7;">
+          <i class="fas fa-weight"></i>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value">
+            {% if kpi.current_weight %}{{ kpi.current_weight }} kg{% else %}—{% endif %}
+          </div>
+          <div class="kpi-label">Peso actual</div>
+          <div class="kpi-sub">
+            {% if kpi.weight_change is not None %}
+              <span class="{% if kpi.weight_change < 0 %}kpi-pos{% elif kpi.weight_change > 0 %}kpi-neg{% endif %}">
+                {% if kpi.weight_change > 0 %}+{% endif %}{{ kpi.weight_change }} kg
+              </span> vs anterior
+            {% else %}sin cambios{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:#fff1f2;color:#f43f5e;">
+          <i class="fas fa-heartbeat"></i>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpi-pr-weight">—</div>
+          <div class="kpi-label">Mejor PR</div>
+          <div class="kpi-sub" id="kpi-pr-name">kg levantados</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {# ── Entrenamiento ────────────────────────────────────────────────────── #}
+  <div class="section-label"><i class="fas fa-dumbbell me-1"></i> Entrenamiento</div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-8">
+      <div class="chart-card">
+        <div class="chart-title">Calorías activas — últimas 8 semanas</div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="chartWeekly"></canvas></div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="chart-card">
+        <div class="chart-title">Tipos de sesión — este mes</div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="chartSessionTypes"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Cuerpo ───────────────────────────────────────────────────────────── #}
+  <div class="section-label"><i class="fas fa-ruler-combined me-1"></i> Evolución corporal</div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <div class="chart-card">
+        <div class="chart-title">Peso (kg)</div>
+        <div class="chart-wrap" style="height:190px;"><canvas id="chartWeight"></canvas></div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="chart-card">
+        <div class="chart-title">% Grasa &amp; Masa muscular (kg)</div>
+        <div class="chart-wrap" style="height:190px;"><canvas id="chartBodyComp"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Musculación PRs ──────────────────────────────────────────────────── #}
+  <div class="section-label"><i class="fas fa-medal me-1"></i> Records personales</div>
+  <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="chart-card">
+        <div class="chart-title">Máximo peso levantado por ejercicio (kg)</div>
+        <div class="chart-wrap" style="height:220px;"><canvas id="chartPRs"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Sueño ────────────────────────────────────────────────────────────── #}
+  <div class="section-label"><i class="fas fa-moon me-1"></i> Sueño</div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-8">
+      <div class="chart-card">
+        <div class="chart-title">Horas por noche — últimas 2 semanas</div>
+        <div class="chart-wrap" style="height:190px;"><canvas id="chartSleepNights"></canvas></div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="chart-card">
+        <div class="chart-title">Distribución de fases — media 30 días</div>
+        <div class="chart-wrap" style="height:190px;"><canvas id="chartSleepPhases"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Nutrición ────────────────────────────────────────────────────────── #}
+  <div class="section-label"><i class="fas fa-utensils me-1"></i> Nutrición</div>
+  <div class="row g-3 mb-3">
+    <div class="col-md-8">
+      <div class="chart-card">
+        <div class="chart-title">Calorías diarias — últimas 2 semanas</div>
+        <div class="chart-wrap" style="height:190px;"><canvas id="chartNutritionKcal"></canvas></div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="chart-card">
+        <div class="chart-title">Macros promedio — últimos 30 días</div>
+        <div class="chart-wrap" style="height:190px;"><canvas id="chartMacros"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Rankings ─────────────────────────────────────────────────────────── #}
+  <div class="section-label"><i class="fas fa-crown me-1"></i> Rankings de plataforma</div>
+  <div class="row g-3 mb-4">
+
+    <div class="col-md-6 col-xl-3">
+      <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-fire me-1" style="color:#f97316;"></i>Kcal quemadas — mes</div>
+        {% if rankings.kcal %}
+        <table class="rank-table">
+          <thead><tr><th>#</th><th>Usuario</th><th class="text-end">Kcal</th></tr></thead>
+          <tbody>
+            {% for r in rankings.kcal %}
+            <tr class="{% if r.user__username == current_username %}rank-me{% endif %}">
+              <td class="rank-pos">
+                {% if forloop.counter == 1 %}<span class="rank-medal-1">🥇</span>
+                {% elif forloop.counter == 2 %}<span class="rank-medal-2">🥈</span>
+                {% elif forloop.counter == 3 %}<span class="rank-medal-3">🥉</span>
+                {% else %}{{ forloop.counter }}{% endif %}
+              </td>
+              <td>{{ r.user__username }}</td>
+              <td class="text-end fw-semibold">{{ r.t }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}<div class="no-data">Sin datos aún</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-calendar-check me-1" style="color:#3b82f6;"></i>Sesiones — mes</div>
+        {% if rankings.sessions %}
+        <table class="rank-table">
+          <thead><tr><th>#</th><th>Usuario</th><th class="text-end">Sesiones</th></tr></thead>
+          <tbody>
+            {% for r in rankings.sessions %}
+            <tr class="{% if r.user__username == current_username %}rank-me{% endif %}">
+              <td class="rank-pos">
+                {% if forloop.counter == 1 %}<span class="rank-medal-1">🥇</span>
+                {% elif forloop.counter == 2 %}<span class="rank-medal-2">🥈</span>
+                {% elif forloop.counter == 3 %}<span class="rank-medal-3">🥉</span>
+                {% else %}{{ forloop.counter }}{% endif %}
+              </td>
+              <td>{{ r.user__username }}</td>
+              <td class="text-end fw-semibold">{{ r.c }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}<div class="no-data">Sin datos aún</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-dumbbell me-1" style="color:#a855f7;"></i>Mayor PR levantado</div>
+        {% if rankings.lifts %}
+        <table class="rank-table">
+          <thead><tr><th>#</th><th>Usuario</th><th class="text-end">Kg</th></tr></thead>
+          <tbody>
+            {% for r in rankings.lifts %}
+            <tr class="{% if r.user__username == current_username %}rank-me{% endif %}">
+              <td class="rank-pos">
+                {% if forloop.counter == 1 %}<span class="rank-medal-1">🥇</span>
+                {% elif forloop.counter == 2 %}<span class="rank-medal-2">🥈</span>
+                {% elif forloop.counter == 3 %}<span class="rank-medal-3">🥉</span>
+                {% else %}{{ forloop.counter }}{% endif %}
+              </td>
+              <td>{{ r.user__username }}</td>
+              <td class="text-end fw-semibold">{{ r.max_w }} kg</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}<div class="no-data">Sin datos aún</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-moon me-1" style="color:#22c55e;"></i>Sueño medio — mes</div>
+        {% if rankings.sleep %}
+        <table class="rank-table">
+          <thead><tr><th>#</th><th>Usuario</th><th class="text-end">Horas</th></tr></thead>
+          <tbody>
+            {% for r in rankings.sleep %}
+            <tr class="{% if r.user__username == current_username %}rank-me{% endif %}">
+              <td class="rank-pos">
+                {% if forloop.counter == 1 %}<span class="rank-medal-1">🥇</span>
+                {% elif forloop.counter == 2 %}<span class="rank-medal-2">🥈</span>
+                {% elif forloop.counter == 3 %}<span class="rank-medal-3">🥉</span>
+                {% else %}{{ forloop.counter }}{% endif %}
+              </td>
+              <td>{{ r.user__username }}</td>
+              <td class="text-end fw-semibold">{{ r.avg_h }}h</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}<div class="no-data">Sin datos aún</div>{% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  const C = {{ charts_json|safe }};
+  const FONT = { family: "'Inter', 'Helvetica Neue', sans-serif", size: 11 };
+  Chart.defaults.font = FONT;
+  Chart.defaults.color = '#64748b';
+  Chart.defaults.plugins.legend.labels.boxWidth = 10;
+  Chart.defaults.plugins.legend.labels.padding = 12;
+
+  const gridColor = 'rgba(148,163,184,.15)';
+  const baseOpts = (title) => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, title: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { font: FONT } },
+      y: { grid: { color: gridColor }, ticks: { font: FONT } },
+    },
+  });
+
+  // ── Weekly calories ────────────────────────────────────────────────────
+  if (C.weekly.labels.length) {
+    new Chart(document.getElementById('chartWeekly'), {
+      type: 'bar',
+      data: {
+        labels: C.weekly.labels,
+        datasets: [{ label: 'Kcal activas', data: C.weekly.data,
+          backgroundColor: 'rgba(249,115,22,.75)', borderRadius: 6, borderSkipped: false }]
+      },
+      options: { ...baseOpts(), plugins: { legend: { display: false } } },
+    });
+  } else { noData('chartWeekly'); }
+
+  // ── Session types doughnut ──────────────────────────────────────────────
+  if (C.session_types.labels.length) {
+    new Chart(document.getElementById('chartSessionTypes'), {
+      type: 'doughnut',
+      data: {
+        labels: C.session_types.labels,
+        datasets: [{ data: C.session_types.data, backgroundColor:
+          ['#3b82f6','#14b8a6','#f59e0b','#a855f7','#f43f5e','#22c55e'],
+          borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: FONT } } } },
+    });
+  } else { noData('chartSessionTypes'); }
+
+  // ── Weight evolution ────────────────────────────────────────────────────
+  if (C.weight.labels.length) {
+    new Chart(document.getElementById('chartWeight'), {
+      type: 'line',
+      data: {
+        labels: C.weight.labels,
+        datasets: [{ label: 'Peso (kg)', data: C.weight.data,
+          borderColor: '#a855f7', backgroundColor: 'rgba(168,85,247,.1)',
+          fill: true, tension: .35, pointRadius: 4, pointBackgroundColor: '#a855f7' }]
+      },
+      options: baseOpts(),
+    });
+  } else { noData('chartWeight'); }
+
+  // ── Body composition ────────────────────────────────────────────────────
+  if (C.body_comp.labels.length) {
+    new Chart(document.getElementById('chartBodyComp'), {
+      type: 'line',
+      data: {
+        labels: C.body_comp.labels,
+        datasets: [
+          { label: '% Grasa', data: C.body_comp.fat,
+            borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.08)',
+            fill: true, tension: .35, pointRadius: 3 },
+          { label: 'Músculo (kg)', data: C.body_comp.muscle,
+            borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,.08)',
+            fill: true, tension: .35, pointRadius: 3, yAxisID: 'y1' },
+        ]
+      },
+      options: { ...baseOpts(), plugins: { legend: { display: true, position: 'top' } },
+        scales: {
+          x: { grid: { color: gridColor } },
+          y: { grid: { color: gridColor }, title: { display: true, text: '% Grasa' } },
+          y1: { position: 'right', grid: { drawOnChartArea: false },
+            title: { display: true, text: 'Músculo kg' } },
+        }
+      },
+    });
+  } else { noData('chartBodyComp'); }
+
+  // ── Personal records horizontal bar ─────────────────────────────────────
+  if (C.prs.labels.length) {
+    new Chart(document.getElementById('chartPRs'), {
+      type: 'bar',
+      data: {
+        labels: C.prs.labels,
+        datasets: [{ label: 'Peso máx (kg)', data: C.prs.data,
+          backgroundColor: 'rgba(168,85,247,.75)', borderRadius: 5 }]
+      },
+      options: { ...baseOpts(), indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor } },
+          y: { grid: { color: 'transparent' }, ticks: { font: { ...FONT, size: 10 } } },
+        }
+      },
+    });
+
+    // Populate PR KPI card
+    if (C.prs.data.length) {
+      document.getElementById('kpi-pr-weight').textContent = C.prs.data[0] + ' kg';
+      document.getElementById('kpi-pr-name').textContent = C.prs.labels[0];
+    }
+  } else { noData('chartPRs'); }
+
+  // ── Sleep per night ────────────────────────────────────────────────────
+  if (C.sleep_nights.labels.length) {
+    new Chart(document.getElementById('chartSleepNights'), {
+      type: 'bar',
+      data: {
+        labels: C.sleep_nights.labels,
+        datasets: [{ label: 'Horas', data: C.sleep_nights.data,
+          backgroundColor: 'rgba(99,102,241,.7)', borderRadius: 5 }]
+      },
+      options: { ...baseOpts(),
+        plugins: { legend: { display: false },
+          annotation: { annotations: { line1: { type: 'line', yMin: 8, yMax: 8,
+            borderColor: 'rgba(239,68,68,.4)', borderDash: [4,4] } } } }
+      },
+    });
+  } else { noData('chartSleepNights'); }
+
+  // ── Sleep phases doughnut ──────────────────────────────────────────────
+  const hasSleepPhases = C.sleep_phases.data.some(v => v > 0);
+  if (hasSleepPhases) {
+    new Chart(document.getElementById('chartSleepPhases'), {
+      type: 'doughnut',
+      data: {
+        labels: C.sleep_phases.labels,
+        datasets: [{ data: C.sleep_phases.data,
+          backgroundColor: ['#ef4444','#38bdf8','#60a5fa','#818cf8'], borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: FONT } } } },
+    });
+  } else { noData('chartSleepPhases'); }
+
+  // ── Nutrition daily kcal ───────────────────────────────────────────────
+  if (C.nutrition_kcal.labels.length) {
+    new Chart(document.getElementById('chartNutritionKcal'), {
+      type: 'line',
+      data: {
+        labels: C.nutrition_kcal.labels,
+        datasets: [{ label: 'Kcal', data: C.nutrition_kcal.data,
+          borderColor: '#14b8a6', backgroundColor: 'rgba(20,184,166,.1)',
+          fill: true, tension: .35, pointRadius: 4, pointBackgroundColor: '#14b8a6' }]
+      },
+      options: baseOpts(),
+    });
+  } else { noData('chartNutritionKcal'); }
+
+  // ── Macros doughnut ────────────────────────────────────────────────────
+  const hasMacros = C.macros.data.some(v => v > 0);
+  if (hasMacros) {
+    new Chart(document.getElementById('chartMacros'), {
+      type: 'doughnut',
+      data: {
+        labels: C.macros.labels,
+        datasets: [{ data: C.macros.data,
+          backgroundColor: ['#3b82f6','#f59e0b','#ef4444'], borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: FONT } } } },
+    });
+  } else { noData('chartMacros'); }
+
+  function noData(id) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    const wrap = canvas.parentElement;
+    canvas.style.display = 'none';
+    const msg = document.createElement('div');
+    msg.className = 'no-data';
+    msg.innerHTML = '<i class="fas fa-chart-line" style="font-size:1.5rem;display:block;margin-bottom:.5rem;"></i>Sin datos suficientes';
+    wrap.appendChild(msg);
+  }
+})();
+</script>
+{% endblock %}

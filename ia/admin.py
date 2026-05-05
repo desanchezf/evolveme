@@ -10,6 +10,7 @@ from ia.models import (
     OllamaModelConfig,
     OllamaServer,
     Promtps,
+    UserModelPrompt,
 )
 
 
@@ -169,7 +170,31 @@ class OllamaModelConfigAdmin(ImportExportModelAdmin):
         else:
             self.message_user(request, "No hay modelos nuevos para descargar.", level="warning")
 
-    actions = ["download_models"]
+    @admin.action(description=_("Borrar modelos seleccionados del servidor Ollama"))
+    def delete_models(self, request, queryset):
+        from ia.services import delete_model_on_server
+
+        ok_count = 0
+        for config in queryset.filter(downloaded=True):
+            ok, err = delete_model_on_server(config.server, config.model_name)
+            if ok:
+                config.__class__.objects.filter(pk=config.pk).update(
+                    downloaded=False, digest="", update_available=False
+                )
+                ok_count += 1
+            else:
+                self.message_user(
+                    request,
+                    f"Error al borrar '{config.model_name}': {err}",
+                    level="error",
+                )
+        if ok_count:
+            self.message_user(
+                request,
+                f"{ok_count} modelo(s) eliminado(s) del servidor correctamente.",
+            )
+
+    actions = ["download_models", "delete_models"]
 
     class Media:
         css = {"all": ("ia/admin_pull_progress.css",)}
@@ -197,18 +222,31 @@ class OllamaModelConfigAdmin(ImportExportModelAdmin):
     def pull_action(self, obj):
         if obj.pull_progress is not None:
             return format_html('<span class="text-muted">Descargando…</span>')
+
+        buttons = []
         start_url = reverse("ia:ollama_model_pull_start", args=[obj.pk])
         progress_url = reverse("ia:ollama_model_pull_progress", args=[obj.pk])
+
         if not obj.downloaded:
-            label = _("Descargar")
-        elif obj.update_available:
-            label = _("Actualizar")
+            buttons.append(format_html(
+                '<button class="button pull-btn" data-start-url="{}" data-progress-url="{}" data-pk="{}">{}</button>',
+                start_url, progress_url, obj.pk, _("Descargar"),
+            ))
         else:
+            if obj.update_available:
+                buttons.append(format_html(
+                    '<button class="button pull-btn" data-start-url="{}" data-progress-url="{}" data-pk="{}">{}</button>',
+                    start_url, progress_url, obj.pk, _("Actualizar"),
+                ))
+            delete_url = reverse("ia:ollama_model_delete", args=[obj.pk])
+            buttons.append(format_html(
+                '<button class="button pull-btn pull-btn--danger" data-delete-url="{}">{}</button>',
+                delete_url, _("Borrar"),
+            ))
+
+        if not buttons:
             return "—"
-        return format_html(
-            '<button class="button pull-btn" data-start-url="{}" data-progress-url="{}" data-pk="{}">{}</button>',
-            start_url, progress_url, obj.pk, label,
-        )
+        return format_html(" ".join(str(b) for b in buttons))
 
     pull_action.short_description = _("Acción")
 
@@ -243,3 +281,25 @@ class ChatMessageAdmin(ImportExportModelAdmin):
         return (obj.content[:60] + "...") if len(obj.content) > 60 else obj.content
 
     content_preview.short_description = "Contenido"
+
+
+@admin.register(UserModelPrompt)
+class UserModelPromptAdmin(admin.ModelAdmin):
+    list_display = ("user", "model_config", "generated_at")
+    list_filter = ("model_config",)
+    search_fields = ("user__username",)
+    ordering = ("user", "model_config")
+    readonly_fields = ("generated_at", "prompt_text")
+
+    @admin.action(description=_("Regenerar prompt para los usuarios seleccionados"))
+    def regenerate_prompts(self, request, queryset):
+        from ia.services import build_user_prompt
+
+        count = 0
+        for obj in queryset:
+            obj.prompt_text = build_user_prompt(obj.user)
+            obj.save(update_fields=["prompt_text", "generated_at"])
+            count += 1
+        self.message_user(request, f"{count} prompt(s) regenerado(s) correctamente.")
+
+    actions = ["regenerate_prompts"]

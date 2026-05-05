@@ -1,7 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from gym.enums import BodyPartChoices, CardioExerciseNameChoices, UnitChoices
+from gym.enums import (
+    BodyPartChoices,
+    CardioExerciseNameChoices,
+    RoutineFocusChoices,
+    RoutineSplitChoices,
+    UnitChoices,
+)
 
 
 # ── Cardio ─────────────────────────────────────────────────────────────────
@@ -181,6 +187,29 @@ class Routine(models.Model):
         verbose_name="Duración de la rutina (semanas)",
         help_text="Duración de la rutina en semanas",
     )
+    weekly_structure = models.CharField(
+        max_length=50,
+        choices=RoutineSplitChoices.choices(),
+        null=True,
+        blank=True,
+        verbose_name="Estructura temporal",
+        help_text="Cómo se divide la rutina en la semana (Full Body, PPL, etc.)",
+    )
+    training_focus = models.CharField(
+        max_length=50,
+        choices=RoutineFocusChoices.choices(),
+        null=True,
+        blank=True,
+        verbose_name="Enfoque de entrenamiento",
+        help_text="Objetivo principal fisiológico de la rutina",
+    )
+    intensity_techniques = models.JSONField(
+        default=list,
+        null=True,
+        blank=True,
+        verbose_name="Técnicas de intensidad",
+        help_text="Técnicas aplicadas: series clásicas, superseries, drop-sets, circuitos",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -194,7 +223,81 @@ class Routine(models.Model):
         if self.exercise_types:
             exercise_types_str = f" - {', '.join(self.exercise_types)}"
         duration_str = f" - {self.duration} semana(s)" if self.duration else ""
-        return f"{exercise_types_str}{duration_str} - {self.user}"
+        split_str = f" - {self.get_weekly_structure_display()}" if self.weekly_structure else ""
+        return f"{exercise_types_str}{duration_str}{split_str} - {self.user}"
+
+
+class RoutineDay(models.Model):
+    """Día de una rutina (puede ser día de descanso o de entrenamiento)."""
+
+    routine = models.ForeignKey(
+        Routine,
+        on_delete=models.CASCADE,
+        related_name="days",
+        verbose_name="Rutina",
+    )
+    day_number = models.PositiveSmallIntegerField(verbose_name="Número de día")
+    name = models.CharField(
+        max_length=255,
+        verbose_name="Enfoque del día",
+        help_text="Ej: Push + calistenia de empuje, Descanso",
+    )
+    is_rest = models.BooleanField(default=False, verbose_name="Día de descanso")
+
+    class Meta:
+        verbose_name = "Día de rutina"
+        verbose_name_plural = "Días de rutina"
+        ordering = ["day_number"]
+        unique_together = [("routine", "day_number")]
+
+    def __str__(self):
+        return f"Día {self.day_number} – {self.name}"
+
+
+class RoutineDayExercise(models.Model):
+    """Ejercicio dentro de un día de rutina."""
+
+    day = models.ForeignKey(
+        RoutineDay,
+        on_delete=models.CASCADE,
+        related_name="exercises",
+        verbose_name="Día",
+    )
+    exercise = models.ForeignKey(
+        "MusculationExercise",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="routine_day_exercises",
+        verbose_name="Ejercicio (biblioteca)",
+    )
+    exercise_name = models.CharField(
+        max_length=255,
+        verbose_name="Nombre del ejercicio",
+        help_text="Nombre libre. Puede incluir prefijo de categoría (ej: Core: Plancha)",
+    )
+    sets_reps = models.CharField(
+        max_length=50,
+        verbose_name="Series × Reps",
+        help_text="Ej: 4x8-10, 3x30-45s, 3x12",
+        blank=True,
+        default="",
+    )
+    notes = models.CharField(
+        max_length=255,
+        verbose_name="Notas",
+        null=True,
+        blank=True,
+    )
+    order = models.PositiveSmallIntegerField(default=0, verbose_name="Orden")
+
+    class Meta:
+        verbose_name = "Ejercicio del día"
+        verbose_name_plural = "Ejercicios del día"
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"{self.exercise_name} – {self.sets_reps}"
 
 
 class TrainingSession(models.Model):
@@ -246,3 +349,79 @@ class TrainingSession(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.session_date}"
+
+
+# ── Sesión unificada ───────────────────────────────────────────────────────
+
+class Session(models.Model):
+    """Sesión de entrenamiento o cardio unificada."""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="sessions",
+        verbose_name="Usuario",
+    )
+    name = models.CharField(
+        max_length=255,
+        verbose_name="Categoría",
+        choices=CardioExerciseNameChoices.choices(),
+    )
+    routine = models.ForeignKey(
+        Routine,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="unified_sessions",
+        verbose_name="Rutina",
+    )
+    session_start = models.DateTimeField(
+        null=True, blank=True, verbose_name="Inicio"
+    )
+    session_end = models.DateTimeField(
+        null=True, blank=True, verbose_name="Fin"
+    )
+    date = models.DateField(verbose_name="Fecha")
+    location = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name="Ubicación"
+    )
+    workout_time = models.DurationField(
+        null=True, blank=True, verbose_name="Duración"
+    )
+    distance = models.FloatField(
+        null=True, blank=True, verbose_name="Distancia (km)"
+    )
+    avg_speed = models.FloatField(
+        null=True, blank=True, verbose_name="Velocidad media (km/h)"
+    )
+    active_calories = models.IntegerField(
+        null=True, blank=True, verbose_name="Kcal activas"
+    )
+    total_calories = models.IntegerField(
+        null=True, blank=True, verbose_name="Kcal totales"
+    )
+    elevation_gain = models.IntegerField(
+        null=True, blank=True, verbose_name="Desnivel (m)"
+    )
+    average_heart_rate = models.IntegerField(
+        null=True, blank=True, verbose_name="FC media (bpm)"
+    )
+    workout_image = models.ImageField(
+        upload_to="sessions/%Y/%m/",
+        null=True,
+        blank=True,
+        verbose_name="Imagen",
+        help_text="Opcional. Sube una captura para extraer datos con IA.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Sesión"
+        verbose_name_plural = "Sesiones"
+        ordering = ["-date", "-session_start"]
+
+    def __str__(self):
+        return f"{self.user} - {self.get_name_display()} - {self.date}"

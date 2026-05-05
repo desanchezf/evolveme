@@ -6,6 +6,9 @@
 {% block extrastyle %}
   {{ block.super }}
   {% include "includes/md3_forms.html" %}
+  <style>
+    .section-header { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6c757d; margin-bottom: .5rem; }
+  </style>
 {% endblock %}
 
 {% block extrahead %}
@@ -24,20 +27,57 @@
 
 {% block content %}
 <div class="container-fluid py-4 register-form">
+  <div class="mb-3">
+    <h1 class="h4 mb-1">Registro de sesión de musculación</h1>
+    <p class="text-muted">Registra los ejercicios y series de tu sesión de musculación.</p>
+  </div>
+
   <form method="post" novalidate>
     {% csrf_token %}
-    <div class="mb-3">
-      <h1 class="h4 mb-1">Registro de sesión de musculación</h1>
-      <p class="text-muted">Registra los ejercicios y series de tu sesión de musculación.</p>
+
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Información básica</div>
+        <div class="row mb-3">
+          <div class="col-md-6">{{ form.user|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.record_date|as_crispy_field }}</div>
+        </div>
+      </div>
     </div>
 
     <div class="card shadow-sm mb-3">
       <div class="card-body">
-        {% crispy form "bootstrap5" %}
+        <div class="section-header">Ejercicio</div>
+        <div class="row mb-3">
+          <div class="col-12">{{ form.exercise|as_crispy_field }}</div>
+        </div>
       </div>
     </div>
 
-    <div class="d-flex justify-content-end gap-2">
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Datos del ejercicio</div>
+        <div class="row mb-3">
+          <div class="col-md-4">{{ form.sets|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.reps|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.weight|as_crispy_field }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-12">{{ form.tbi|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <div class="section-header">Observaciones</div>
+        <div class="row mb-2">
+          <div class="col-12">{{ form.observation|as_crispy_field }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
       <a href="{% url 'evolveme:index' %}" class="btn btn-secondary">Cancelar</a>
       <button type="submit" class="btn btn-primary">
         <i class="fas fa-save me-1"></i> Guardar Registro

@@ -11,9 +11,11 @@ from gym.models import (
     MusculationRecord,
     MusculationExercise,
     Routine,
+    Session,
     TrainingSession,
 )
-from gym.widgets import ExerciseTypesCheckboxWidget
+from gym.enums import CardioExerciseNameChoices
+from gym.widgets import ExerciseTypesCheckboxWidget, IntensityTechniquesCheckboxWidget
 
 
 # ── Cardio forms ────────────────────────────────────────────────────────────
@@ -294,7 +296,8 @@ class RoutineJSONForm(forms.Form):
         ),
         label="JSON de la Rutina",
         help_text="Pega el JSON generado por la IA siguiendo el formato de gym_response.txt. "
-        "Opcionalmente puedes incluir 'start_date' y 'end_date' para actualizar el perfil del usuario.",
+        "Opcionalmente puedes incluir 'start_date', 'end_date', "
+        "'weekly_structure', 'training_focus' e 'intensity_techniques'.",
         required=True,
     )
 
@@ -307,6 +310,7 @@ class RoutineAdminForm(forms.ModelForm):
         fields = "__all__"
         widgets = {
             "exercise_types": ExerciseTypesCheckboxWidget(),
+            "intensity_techniques": IntensityTechniquesCheckboxWidget(),
             "duration": forms.NumberInput(
                 attrs={
                     "type": "number",
@@ -329,6 +333,7 @@ class RoutineAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Asegurar que el widget esté configurado
         self.fields["exercise_types"].widget = ExerciseTypesCheckboxWidget()
+        self.fields["intensity_techniques"].widget = IntensityTechniquesCheckboxWidget()
 
         # Asegurar que el valor inicial del campo sea una lista si existe
         if self.instance and self.instance.pk:
@@ -438,6 +443,89 @@ class RoutineAdminForm(forms.ModelForm):
         
         # Si no se pudo parsear, devolver el valor original
         return warmup_duration
+
+    def clean_intensity_techniques(self):
+        """Limpia y valida las técnicas de intensidad seleccionadas."""
+        data = self.cleaned_data.get("intensity_techniques", [])
+        if not isinstance(data, list):
+            data = []
+        return data
+
+
+class RoutinePublicForm(forms.ModelForm):
+    """Formulario público para crear rutinas de entrenamiento."""
+
+    class Meta:
+        model = Routine
+        fields = [
+            "user", "duration",
+            "weekly_structure", "training_focus", "intensity_techniques",
+            "exercise_types",
+            "warmup", "warmup_duration",
+        ]
+        widgets = {
+            "user": forms.Select(attrs={"class": "form-select"}),
+            "duration": forms.NumberInput(
+                attrs={"class": "form-control", "min": "1", "step": "1",
+                       "placeholder": "Número de semanas (ej: 4)"}
+            ),
+            "weekly_structure": forms.Select(attrs={"class": "form-select"}),
+            "training_focus": forms.Select(attrs={"class": "form-select"}),
+            "intensity_techniques": IntensityTechniquesCheckboxWidget(),
+            "exercise_types": ExerciseTypesCheckboxWidget(),
+            "warmup": forms.Select(attrs={"class": "form-select"}),
+            "warmup_duration": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "HH:MM (ej: 00:15)"}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        is_staff = kwargs.pop("is_staff", False)
+        super().__init__(*args, **kwargs)
+        self.fields["warmup"].queryset = CardioExercise.objects.all()
+        self.fields["warmup"].required = False
+        self.fields["warmup_duration"].required = False
+        self.fields["weekly_structure"].required = False
+        self.fields["training_focus"].required = False
+        if user:
+            self.fields["user"].initial = user
+        if is_staff:
+            self.fields["user"].queryset = User.objects.all()
+        else:
+            self.fields.pop("user", None)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+
+    def clean_exercise_types(self):
+        data = self.cleaned_data.get("exercise_types", [])
+        return data if isinstance(data, list) else []
+
+    def clean_intensity_techniques(self):
+        data = self.cleaned_data.get("intensity_techniques", [])
+        return data if isinstance(data, list) else []
+
+    def clean_warmup_duration(self):
+        from django.utils.dateparse import parse_duration as _parse
+        v = self.cleaned_data.get("warmup_duration")
+        if not v:
+            return None
+        if hasattr(v, "total_seconds"):
+            return v
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return None
+            if v.count(":") == 1:
+                try:
+                    h, m = v.split(":")
+                    v = f"{int(h):02d}:{int(m):02d}:00"
+                except (ValueError, IndexError):
+                    pass
+            parsed = _parse(v)
+            if parsed:
+                return parsed
+        return v
 
 
 class TrainingSessionAdminForm(forms.ModelForm):
@@ -591,19 +679,63 @@ class MusculationRecordPublicForm(forms.ModelForm):
         if user:
             self.fields["user"].initial = user
         self.helper = FormHelper()
-        self.helper.layout = Layout(
-            Row(
-                Column("user", css_class="col-md-6"),
-                Column("record_date", css_class="col-md-6"),
-                css_class="mb-3",
+        self.helper.form_tag = False
+
+
+class SessionModelForm(forms.ModelForm):
+    """Formulario público para registrar sesiones de entrenamiento o cardio."""
+
+    class Meta:
+        model = Session
+        fields = [
+            "user", "name", "routine", "date", "session_start", "session_end",
+            "location", "workout_time", "distance", "avg_speed",
+            "active_calories", "total_calories", "elevation_gain",
+            "average_heart_rate", "workout_image",
+        ]
+        widgets = {
+            "user": forms.Select(attrs={"class": "form-control"}),
+            "name": forms.Select(attrs={"class": "form-select"}),
+            "routine": forms.Select(attrs={"class": "form-control"}),
+            "date": forms.DateInput(
+                attrs={"type": "date", "class": "form-control"}
             ),
-            Row(Column("exercise", css_class="col-12"), css_class="mb-3"),
-            Row(
-                Column("sets", css_class="col-md-4"),
-                Column("reps", css_class="col-md-4"),
-                Column("weight", css_class="col-md-4"),
-                css_class="mb-3",
+            "session_start": forms.DateTimeInput(
+                attrs={"type": "datetime-local", "class": "form-control"}
             ),
-            Row(Column("tbi", css_class="col-12"), css_class="mb-3"),
-            Row(Column("observation", css_class="col-12"), css_class="mb-3"),
-        )
+            "session_end": forms.DateTimeInput(
+                attrs={"type": "datetime-local", "class": "form-control"}
+            ),
+            "location": forms.TextInput(attrs={"class": "form-control"}),
+            "workout_time": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "HH:MM:SS"}
+            ),
+            "distance": forms.NumberInput(
+                attrs={"class": "form-control", "step": "0.01"}
+            ),
+            "avg_speed": forms.NumberInput(
+                attrs={"class": "form-control", "step": "0.01"}
+            ),
+            "active_calories": forms.NumberInput(attrs={"class": "form-control"}),
+            "total_calories": forms.NumberInput(attrs={"class": "form-control"}),
+            "elevation_gain": forms.NumberInput(attrs={"class": "form-control"}),
+            "average_heart_rate": forms.NumberInput(attrs={"class": "form-control"}),
+            "workout_image": forms.FileInput(
+                attrs={"class": "form-control", "accept": "image/*"}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        is_staff = kwargs.pop("is_staff", False)
+        super().__init__(*args, **kwargs)
+        self.fields["routine"].queryset = Routine.objects.all()
+        self.fields["routine"].required = False
+        if user:
+            self.fields["user"].initial = user
+        if is_staff:
+            self.fields["user"].queryset = User.objects.all()
+        else:
+            self.fields.pop("user", None)
+        self.helper = FormHelper()
+        self.helper.form_tag = False

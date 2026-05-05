@@ -226,22 +226,12 @@ class DietJSONView(PermissionRequiredMixin, FormView):
 
 @login_required
 def product_form_view(request):
-    """Vista para el formulario de productos. Permite subir una o varias imágenes para extraer datos con IA."""
-    from nutrition.services import extract_product_data_from_images
-
+    """Vista para el formulario de productos."""
     if request.method == "POST":
-        post_data = request.POST.copy()
-        image_files = request.FILES.getlist("product_images")
-        if image_files:
-            extracted = extract_product_data_from_images(image_files)
-            for key, value in extracted.items():
-                if key not in post_data or not str(post_data.get(key)).strip():
-                    post_data[key] = value
-
-        form = ProductForm(post_data, request.FILES)
+        form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save()
-            for img_file in image_files:
+            for img_file in request.FILES.getlist("product_images"):
                 ProductImage.objects.create(product=product, image=img_file)
             messages.success(request, "Producto guardado correctamente.")
             return redirect("nutrition:product_form")
@@ -252,6 +242,29 @@ def product_form_view(request):
         "form": form,
         "vision_available": is_model_downloaded("llama3.2-vision:11b"),
     }))
+
+
+@login_required
+def product_analyze_view(request):
+    """AJAX: analiza imágenes con el modelo de visión y devuelve los campos extraídos."""
+    from django.http import JsonResponse
+    from nutrition.services import extract_product_data_from_images
+
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido."}, status=405)
+
+    image_files = request.FILES.getlist("product_images")
+    if not image_files:
+        return JsonResponse({"error": "No se recibieron imágenes."}, status=400)
+
+    extracted = extract_product_data_from_images(image_files)
+    if not extracted:
+        return JsonResponse({"error": "No se pudieron extraer datos. Comprueba las imágenes."}, status=422)
+
+    # Serializar timedelta u otros tipos no-JSON si los hubiera
+    result = {k: (str(v) if not isinstance(v, (str, int, float, bool, type(None))) else v)
+              for k, v in extracted.items()}
+    return JsonResponse({"data": result})
 
 
 @login_required

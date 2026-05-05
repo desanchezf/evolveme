@@ -6,6 +6,9 @@
 {% block extrastyle %}
   {{ block.super }}
   {% include "includes/md3_forms.html" %}
+  <style>
+    .section-header { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6c757d; margin-bottom: .5rem; }
+  </style>
 {% endblock %}
 
 {% block extrahead %}
@@ -24,29 +27,33 @@
 
 {% block content %}
 <div class="container-fluid py-4 register-form">
+  <div class="mb-3">
+    <h1 class="h4 mb-1">Dieta del día</h1>
+    <p class="text-muted">Indica la fecha y el usuario, luego añade los productos consumidos.</p>
+  </div>
+
   <form method="post" novalidate>
     {% csrf_token %}
-    <div class="mb-3">
-      <h1 class="h4 mb-1">Información de la dieta</h1>
-      <p class="text-muted">Indica la fecha y el usuario para registrar la dieta del día.</p>
-    </div>
 
     <div class="card shadow-sm mb-3">
       <div class="card-body">
-        {% crispy form "bootstrap5" %}
+        <div class="section-header">Información básica</div>
+        <div class="row mb-3">
+          <div class="col-md-6">{{ form.user|as_crispy_field }}</div>
+          <div class="col-md-6">{{ form.date|as_crispy_field }}</div>
+        </div>
       </div>
     </div>
 
-    <h2 class="h5 mb-1 mt-3">Productos consumidos</h2>
-    <p class="text-muted small mb-3">Añade los productos y cantidades de tu dieta del día.</p>
-
     <div class="card shadow-sm mb-3">
       <div class="card-body">
+        <div class="section-header">Productos consumidos</div>
+        <p class="text-muted small mb-3">Añade los productos y cantidades de tu dieta del día.</p>
         {% crispy formset formset_helper "bootstrap5" %}
       </div>
     </div>
 
-    <div class="d-flex justify-content-end gap-2">
+    <div class="d-flex justify-content-end gap-2 mb-4">
       <a href="{% url 'evolveme:index' %}" class="btn btn-secondary">Cancelar</a>
       <button type="submit" class="btn btn-primary">
         <i class="fas fa-save me-1"></i> Guardar Dieta

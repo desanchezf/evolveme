@@ -26,6 +26,7 @@ urlpatterns = [
     path("gym/", include("gym.urls")),
     path("nutrition/", include("nutrition.urls")),
     path("ia/", include("ia.urls")),
+    path("sleep/", include("sleep.urls")),
     path("", include("django_prometheus.urls")),
 ]
 if settings.DEBUG:

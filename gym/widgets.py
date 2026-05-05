@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.safestring import mark_safe
 
-from gym.enums import ExerciseTypesChoices
+from gym.enums import ExerciseTypesChoices, IntensityTechniqueChoices
 
 
 class ExerciseTypesCheckboxWidget(forms.Widget):
@@ -127,3 +127,11 @@ class ExerciseTypesCheckboxWidget(forms.Widget):
         )
 
         return mark_safe("".join(html))
+
+
+class IntensityTechniquesCheckboxWidget(ExerciseTypesCheckboxWidget):
+    """Widget para seleccionar técnicas de intensidad con checkboxes."""
+
+    def __init__(self, attrs=None):
+        super().__init__(attrs)
+        self.choices = IntensityTechniqueChoices.choices()
