@@ -7,13 +7,6 @@
   {{ block.super }}
   {% include "includes/md3_forms.html" %}
   <style>
-    .ocr-zone { border: 2px dashed #adb5bd; border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; }
-    .ocr-zone:hover, .ocr-zone.drag-over { border-color: var(--primary, #3d4252); background: rgba(61,66,82,.05); }
-    .ocr-zone input[type=file] { display: none; }
-    .ocr-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: .75rem; }
-    .ocr-previews img { height: 64px; width: 64px; object-fit: cover; border-radius: 4px; border: 1px solid #dee2e6; }
-    .field-filled { background: #f0fdf4 !important; transition: background .4s; }
-    .section-header { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #6c757d; margin-bottom: .5rem; }
     .stage-icon { font-size: 1rem; margin-right: .4rem; }
   </style>
 {% endblock %}

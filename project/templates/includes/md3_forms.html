@@ -228,14 +228,59 @@
     background: var(--color-base-200, #dee2e6);
   }
 
-  /* ── Quitar borde y radius extra de crispy que choca ─────────────────── */
-  .card { border-radius: var(--md-radius-lg) !important; }
-  .card.shadow-sm { box-shadow: var(--md-elev-1) !important; }
+  /* ── Cards: idéntico al estilo .chart-card del dashboard ────────────── */
+  .card,
+  .card.shadow-sm {
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08) !important;
+    background: #fff !important;
+  }
+
+  /* ── Fondo de página (igual que el dashboard) ────────────────────────── */
+  .register-form { background: #f1f5f9; }
+
+  /* ── Section header (igual que .section-label del dashboard) ─────────── */
+  .section-header {
+    font-size: .65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #94a3b8;
+    margin-bottom: .75rem;
+  }
+
+  /* ── OCR zone ─────────────────────────────────────────────────────────── */
+  .ocr-zone {
+    border: 2px dashed #adb5bd;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .ocr-zone:hover, .ocr-zone.drag-over {
+    border-color: var(--md-primary, #3d4252);
+    background: rgba(61,66,82,.05);
+  }
+  .ocr-zone input[type=file] { display: none; }
+  .ocr-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: .75rem; }
+  .ocr-previews img {
+    height: 64px; width: 64px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+  }
+  .field-filled { background: #f0fdf4 !important; transition: background .4s; }
 </style>
 
 <script>
   /* Upload zone: click + drag & drop + label actualizable */
   document.addEventListener('DOMContentLoaded', function () {
+    // Aplica fondo #f1f5f9 al content-wrapper para que coincida con el dashboard
+    var cw = document.querySelector('.content-wrapper');
+    if (cw) cw.style.background = '#f1f5f9';
+
     document.querySelectorAll('.md3-upload-zone').forEach(function (zone) {
       var input = zone.querySelector('input[type="file"]');
       var labelEl = zone.querySelector('.md3-upload-zone__label');
