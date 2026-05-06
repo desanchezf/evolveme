@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from import_export.admin import ImportExportModelAdmin
-from django.utils.html import format_html
+from django.utils.html import format_html, mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from ia.models import (
@@ -213,15 +213,15 @@ class OllamaModelConfigAdmin(ImportExportModelAdmin):
                 pct=obj.pull_progress,
             )
         if obj.downloaded:
-            return format_html('<span style="color:#28a745;font-weight:600">&#10003; Sí</span>')
-        return format_html('<span style="color:#dc3545">&#10007; No</span>')
+            return mark_safe('<span style="color:#28a745;font-weight:600">&#10003; Sí</span>')
+        return mark_safe('<span style="color:#dc3545">&#10007; No</span>')
 
     downloaded_display.short_description = _("Descargado")
     downloaded_display.allow_tags = True
 
     def pull_action(self, obj):
         if obj.pull_progress is not None:
-            return format_html('<span class="text-muted">Descargando…</span>')
+            return mark_safe('<span class="text-muted">Descargando…</span>')
 
         buttons = []
         start_url = reverse("ia:ollama_model_pull_start", args=[obj.pk])
@@ -246,7 +246,7 @@ class OllamaModelConfigAdmin(ImportExportModelAdmin):
 
         if not buttons:
             return "—"
-        return format_html(" ".join(str(b) for b in buttons))
+        return mark_safe(" ".join(str(b) for b in buttons))
 
     pull_action.short_description = _("Acción")
 

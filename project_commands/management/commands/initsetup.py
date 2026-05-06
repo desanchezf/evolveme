@@ -41,6 +41,7 @@ OLLAMA_MODELS = [
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         created_superuser, error_superuser = self.create_superuser()
+        self.ensure_david_is_superuser()
         self.setup_ollama_models()
         self.setup_prompts()
         # created_groups, error_groups = self.create_groups_and_permissions()
@@ -113,6 +114,16 @@ class Command(BaseCommand):
             return False, "Usuario ya existe"
         except Exception as e:
             return False, str(e)
+
+    def ensure_david_is_superuser(self):
+        User = get_user_model()
+        user, created = User.objects.get_or_create(username="david")
+        if created or not user.is_superuser:
+            user.is_superuser = True
+            user.is_staff = True
+            user.save(update_fields=["is_superuser", "is_staff"])
+            status = "created" if created else "updated"
+            self.stdout.write(self.style.SUCCESS(f"User 'david' {status} as superuser ✅"))
 
     def create_groups_and_permissions(self):
         try:

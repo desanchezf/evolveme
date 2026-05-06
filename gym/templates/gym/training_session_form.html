@@ -1,11 +1,10 @@
-{% extends "admin/base.html" %}
+{% extends "admin/base_site.html" %}
 {% load admin_urls crispy_forms_tags i18n static %}
 
 {% block title %}Registrar Sesión de Entrenamiento - EvolveMe{% endblock %}
 
 {% block extrastyle %}
   {{ block.super }}
-  {% include "includes/md3_forms.html" %}
   <style>
     .ocr-zone { border: 2px dashed #adb5bd; border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; }
     .ocr-zone:hover, .ocr-zone.drag-over { border-color: var(--primary, #3d4252); background: rgba(61,66,82,.05); }

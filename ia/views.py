@@ -101,6 +101,75 @@ def chat_send_view(request):
     })
 
 
+@login_required
+@require_http_methods(["POST"])
+def chat_save_routine_view(request):
+    """Convierte una respuesta de texto con una rutina al JSON del formulario de rutinas."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "JSON inválido"}, status=400)
+
+    content = (data.get("content") or "").strip()
+    if not content:
+        return JsonResponse({"error": "Contenido vacío"}, status=400)
+
+    from ia.services import _get_ollama_server
+    from ia.models import OllamaModelConfig
+    import requests as req
+
+    server = _get_ollama_server()
+    if not server:
+        return JsonResponse({"error": "Servidor Ollama no disponible"}, status=503)
+
+    try:
+        from ia.models import Promtps
+        schema_prompt = Promtps.objects.filter(name="gym").first()
+        schema_text = schema_prompt.prompt if schema_prompt else ""
+    except Exception:
+        schema_text = ""
+
+    from django.utils import timezone
+    today = timezone.now().strftime("%d/%m/%Y %H:%M")
+
+    conversion_prompt = (
+        f"Convierte la siguiente rutina de gimnasio al formato JSON requerido. "
+        f"Responde ÚNICAMENTE con el JSON válido, sin explicaciones ni markdown. "
+        f"Usa el usuario '{request.user.username}', start_date '{today}' y calcula end_date sumando las semanas de la rutina. "
+        f"Si no hay duración definida usa 4 semanas.\n\n"
+        f"ESQUEMA:\n{schema_text}\n\n"
+        f"RUTINA A CONVERTIR:\n{content}"
+    )
+
+    model_config = OllamaModelConfig.objects.filter(
+        proposito="Chat", downloaded=True
+    ).order_by("is_default").first()
+    model = model_config.model_name if model_config else "qwen3:1.7b"
+
+    url = f"{server.base_url.rstrip('/')}/api/chat"
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": conversion_prompt}],
+        "stream": False,
+        "think": False,
+    }
+    headers = {}
+    if server.api_key:
+        headers["Authorization"] = f"Bearer {server.api_key}"
+
+    try:
+        resp = req.post(url, json=payload, headers=headers or None, timeout=120)
+        resp.raise_for_status()
+        json_text = resp.json().get("message", {}).get("content", "").strip()
+        if json_text.startswith("```"):
+            json_text = json_text.split("```")[1]
+            if json_text.startswith("json"):
+                json_text = json_text[4:]
+        return JsonResponse({"json_data": json_text.strip()})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
 @staff_member_required
 def ollama_model_pull_view(request, pk):
     """GET: confirmación. POST: lanza descarga/actualización del modelo Ollama."""

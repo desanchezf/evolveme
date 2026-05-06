@@ -1,14 +1,13 @@
-{% extends "admin/base.html" %}
+{% extends "admin/base_site.html" %}
 {% load admin_urls i18n static %}
 
 {% block title %}Chat IA - EvolveMe{% endblock %}
 
 {% block extrastyle %}
   {{ block.super }}
-  {% include "includes/md3_forms.html" %}
   <style>
     .ia-chat-card {
-      height: 70vh;
+      height: 72vh;
       display: flex;
       flex-direction: column;
     }
@@ -38,8 +37,8 @@
     }
     .ia-chat-message {
       margin-bottom: .75rem;
-      padding: .5rem .75rem;
-      border-radius: 10px;
+      padding: .6rem .85rem;
+      border-radius: 12px;
       max-width: 85%;
     }
     .ia-chat-message.user {
@@ -55,22 +54,68 @@
       background: #fff3cd;
       color: #664d03;
     }
-    .ia-chat-message.assistant.ia-error .small { color: #856404; }
     .ia-chat-message .small {
-      opacity: .75;
+      opacity: .65;
       font-size: .72rem;
+      margin-bottom: .25rem;
+    }
+    /* Markdown styles inside assistant messages */
+    .ia-chat-message.assistant .ia-md h1,
+    .ia-chat-message.assistant .ia-md h2,
+    .ia-chat-message.assistant .ia-md h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: .6rem 0 .3rem;
+    }
+    .ia-chat-message.assistant .ia-md h2 { font-size: .95rem; }
+    .ia-chat-message.assistant .ia-md h3 { font-size: .9rem; }
+    .ia-chat-message.assistant .ia-md ul,
+    .ia-chat-message.assistant .ia-md ol {
+      padding-left: 1.2rem;
+      margin: .25rem 0;
+    }
+    .ia-chat-message.assistant .ia-md li { margin-bottom: .15rem; }
+    .ia-chat-message.assistant .ia-md p { margin: .3rem 0; }
+    .ia-chat-message.assistant .ia-md table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: .85rem;
+      margin: .4rem 0;
+    }
+    .ia-chat-message.assistant .ia-md th,
+    .ia-chat-message.assistant .ia-md td {
+      border: 1px solid #dee2e6;
+      padding: .3rem .5rem;
+      text-align: left;
+    }
+    .ia-chat-message.assistant .ia-md th { background: #f1f5f9; font-weight: 600; }
+    .ia-chat-message.assistant .ia-md code {
+      background: #f1f5f9;
+      padding: .1rem .3rem;
+      border-radius: 4px;
+      font-size: .85em;
+    }
+    .ia-chat-message.assistant .ia-md hr { border: none; border-top: 1px solid #e2e8f0; margin: .5rem 0; }
+    /* Save routine button */
+    .btn-save-routine {
+      margin-top: .5rem;
+      font-size: .78rem;
+      padding: .25rem .6rem;
     }
     .ia-chat-input-row {
       display: flex;
       gap: .5rem;
     }
     .ia-chat-input-row input { flex: 1; }
+    /* Save modal */
+    #save-routine-modal .modal-body textarea { font-family: monospace; font-size: .8rem; }
   </style>
 {% endblock %}
 
 {% block extrahead %}
   {{ block.super }}
   <script src="{% url 'admin:jsi18n' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     (function() {
       var t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -97,22 +142,29 @@
       <div id="ia-chat-messages" class="ia-chat-messages">
         {% if not chat_messages %}
           <div class="ia-chat-message assistant">
-            <div class="small mb-1">EvolveMe IA</div>
-            <div>Hola. Soy el asistente de EvolveMe. Puedes preguntarme sobre rutinas, nutrición o medidas. Escribe tu mensaje abajo.</div>
+            <div class="small">EvolveMe IA</div>
+            <div>Hola. Soy el asistente de EvolveMe. Puedes preguntarme sobre rutinas, nutrición o medidas.</div>
           </div>
         {% else %}
           {% for msg in chat_messages %}
             {% if msg.role == 'assistant' %}
-              {% if "no está descargado" in msg.content or "Error del servidor" in msg.content or "No se pudo obtener" in msg.content or "No se pudo conectar" in msg.content or "tardó demasiado" in msg.content or "devolvió un error" in msg.content %}
+              {% if "no está descargado" in msg.content or "No se pudo conectar" in msg.content or "tardó demasiado" in msg.content or "devolvió un error" in msg.content %}
               <div class="ia-chat-message assistant ia-error">
+                <div class="small">EvolveMe IA</div>
+                <div>{{ msg.content }}</div>
               {% else %}
               <div class="ia-chat-message assistant">
+                <div class="small">EvolveMe IA</div>
+                <div class="ia-md">{{ msg.content }}</div>
+                <button class="btn btn-outline-success btn-sm btn-save-routine" data-content="{{ msg.content|escapejs }}">
+                  <i class="fas fa-save me-1"></i>Guardar como rutina
+                </button>
               {% endif %}
             {% else %}
             <div class="ia-chat-message user">
-            {% endif %}
-              <div class="small mb-1">{% if msg.role == 'user' %}Tú{% else %}EvolveMe IA{% endif %}</div>
+              <div class="small">Tú</div>
               <div>{{ msg.content }}</div>
+            {% endif %}
             </div>
           {% endfor %}
         {% endif %}
@@ -138,14 +190,47 @@
   <p class="text-muted small mt-2 mb-0">La conversación se guarda en tu sesión de chat.</p>
 </div>
 
+<!-- Modal guardar rutina -->
+<div class="modal fade" id="save-routine-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-dumbbell me-2"></i>Guardar rutina</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small mb-2">El asistente convertirá la rutina al formato JSON del sistema. Revisa y guarda.</p>
+        <div id="save-routine-spinner" class="text-center py-3 d-none">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted small mt-2">Convirtiendo rutina a JSON…</p>
+        </div>
+        <div id="save-routine-result" class="d-none">
+          <form method="post" action="{% url 'gym:routine_form' %}" id="save-routine-form">
+            {% csrf_token %}
+            <textarea name="json_data" id="save-routine-json" class="form-control" rows="12"></textarea>
+            <div class="mt-3 d-flex gap-2">
+              <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Guardar rutina</button>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+          </form>
+        </div>
+        <div id="save-routine-error" class="alert alert-danger d-none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 (function() {
-  var form = document.getElementById('ia-chat-form');
-  var input = document.getElementById('ia-chat-input');
-  var messagesEl = document.getElementById('ia-chat-messages');
-  var container = document.querySelector('[data-session-id]');
-  var sessionId = container ? container.getAttribute('data-session-id') : '';
-  var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  // Configurar marked para salida segura
+  if (typeof marked !== 'undefined') {
+    marked.setOptions({ breaks: true, gfm: true });
+  }
+
+  function renderMarkdown(text) {
+    if (typeof marked === 'undefined') return escapeHtml(text);
+    return marked.parse(text);
+  }
 
   function escapeHtml(text) {
     var div = document.createElement('div');
@@ -153,11 +238,33 @@
     return div.innerHTML;
   }
 
-  function appendMessage(role, content, label, isError) {
+  // Renderizar markdown en mensajes existentes
+  document.querySelectorAll('.ia-md').forEach(function(el) {
+    el.innerHTML = renderMarkdown(el.textContent);
+  });
+
+  var form = document.getElementById('ia-chat-form');
+  var input = document.getElementById('ia-chat-input');
+  var messagesEl = document.getElementById('ia-chat-messages');
+  var container = document.querySelector('[data-session-id]');
+  var sessionId = container ? container.getAttribute('data-session-id') : '';
+  var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  function appendMessage(role, content, isError) {
     var div = document.createElement('div');
     div.className = 'ia-chat-message ' + role + (isError ? ' ia-error' : '');
-    var icon = isError ? '<i class="fas fa-exclamation-triangle me-1"></i>' : '';
-    div.innerHTML = '<div class="small mb-1">' + escapeHtml(label) + '</div><div>' + icon + escapeHtml(content) + '</div>';
+    var label = role === 'user' ? 'Tú' : 'EvolveMe IA';
+    var body = '';
+    if (role === 'assistant' && !isError) {
+      body = '<div class="small">' + escapeHtml(label) + '</div>'
+           + '<div class="ia-md">' + renderMarkdown(content) + '</div>'
+           + '<button class="btn btn-outline-success btn-sm btn-save-routine" data-content="' + content.replace(/"/g, '&quot;') + '">'
+           + '<i class="fas fa-save me-1"></i>Guardar como rutina</button>';
+    } else {
+      var icon = isError ? '<i class="fas fa-exclamation-triangle me-1"></i>' : '';
+      body = '<div class="small">' + escapeHtml(label) + '</div><div>' + icon + escapeHtml(content) + '</div>';
+    }
+    div.innerHTML = body;
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
@@ -168,8 +275,17 @@
     if (!text || input.disabled) return;
     var sendBtn = document.getElementById('ia-chat-send');
     sendBtn.disabled = true;
-    appendMessage('user', text, 'Tú');
+    input.disabled = true;
+    appendMessage('user', text);
     input.value = '';
+
+    // Placeholder de carga
+    var loadingDiv = document.createElement('div');
+    loadingDiv.className = 'ia-chat-message assistant';
+    loadingDiv.innerHTML = '<div class="small">EvolveMe IA</div>'
+      + '<div class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span>Pensando…</div>';
+    messagesEl.appendChild(loadingDiv);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
 
     fetch('{% url "ia:chat_send" %}', {
       method: 'POST',
@@ -178,16 +294,63 @@
     })
     .then(function(r) { if (!r.ok) throw new Error('Error al enviar'); return r.json(); })
     .then(function(data) {
-      appendMessage('assistant', data.content, 'EvolveMe IA', data.is_error);
+      messagesEl.removeChild(loadingDiv);
+      appendMessage('assistant', data.content, data.is_error);
       if (!sessionId && data.session_id) {
         container.setAttribute('data-session-id', data.session_id);
         sessionId = data.session_id;
       }
     })
     .catch(function() {
-      appendMessage('assistant', 'No se pudo enviar el mensaje. Comprueba tu conexión e inténtalo de nuevo.', 'EvolveMe IA', true);
+      messagesEl.removeChild(loadingDiv);
+      appendMessage('assistant', 'No se pudo enviar el mensaje. Comprueba tu conexión e inténtalo de nuevo.', true);
     })
-    .finally(function() { sendBtn.disabled = false; });
+    .finally(function() {
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    });
+  });
+
+  // Guardar rutina
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.btn-save-routine');
+    if (!btn) return;
+    var content = btn.getAttribute('data-content');
+    var modal = document.getElementById('save-routine-modal');
+    var spinner = document.getElementById('save-routine-spinner');
+    var result = document.getElementById('save-routine-result');
+    var error = document.getElementById('save-routine-error');
+    var jsonArea = document.getElementById('save-routine-json');
+
+    spinner.classList.remove('d-none');
+    result.classList.add('d-none');
+    error.classList.add('d-none');
+
+    var bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+
+    fetch('{% url "ia:chat_save_routine" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({ content: content })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      spinner.classList.add('d-none');
+      if (data.error) {
+        error.textContent = data.error;
+        error.classList.remove('d-none');
+      } else {
+        jsonArea.value = data.json_data;
+        result.classList.remove('d-none');
+      }
+    })
+    .catch(function() {
+      spinner.classList.add('d-none');
+      error.textContent = 'Error al conectar con el servidor.';
+      error.classList.remove('d-none');
+    });
   });
 })();
 </script>

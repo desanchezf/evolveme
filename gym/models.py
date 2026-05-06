@@ -219,12 +219,9 @@ class Routine(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        exercise_types_str = ""
-        if self.exercise_types:
-            exercise_types_str = f" - {', '.join(self.exercise_types)}"
-        duration_str = f" - {self.duration} semana(s)" if self.duration else ""
-        split_str = f" - {self.get_weekly_structure_display()}" if self.weekly_structure else ""
-        return f"{exercise_types_str}{duration_str}{split_str} - {self.user}"
+        username = self.user.username if self.user else "Sin usuario"
+        date = self.created_at.strftime("%d/%m/%Y") if self.created_at else ""
+        return f"{username} - {date}"
 
 
 class RoutineDay(models.Model):

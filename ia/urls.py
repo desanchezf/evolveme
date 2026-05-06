@@ -7,6 +7,7 @@ app_name = "ia"
 urlpatterns = [
     path("chat/", views.chat_view, name="chat"),
     path("chat/send/", views.chat_send_view, name="chat_send"),
+    path("chat/save-routine/", views.chat_save_routine_view, name="chat_save_routine"),
     path(
         "admin/ollama-model/<int:pk>/pull/",
         views.ollama_model_pull_view,

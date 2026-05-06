@@ -283,7 +283,7 @@ JAZZMIN_SETTINGS = {
     # Apartados en el menú superior (como Portal EvolveMe)
     "topmenu_links": [
         {"name": "Home", "url": "/admin/", "icon": "fas fa-home"},
-        {"name": "Hitos", "url": "/hitos/", "icon": "fas fa-trophy"},
+        {"name": "Hitos", "url": "/milestones/", "icon": "fas fa-trophy"},
         {"name": "Perfil", "url": "/profile/", "icon": "fas fa-user-edit"},
         {"name": "Dieta", "url": "/nutrition/daily-diet/", "icon": "fas fa-utensils"},
         {"name": "Entrenamiento", "url": "/gym/session/", "icon": "fas fa-calendar-check"},

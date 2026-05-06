@@ -1,11 +1,10 @@
-{% extends "admin/base.html" %}
+{% extends "admin/base_site.html" %}
 {% load admin_urls crispy_forms_tags i18n static %}
 
 {% block title %}Registrar Sueño - EvolveMe{% endblock %}
 
 {% block extrastyle %}
   {{ block.super }}
-  {% include "includes/md3_forms.html" %}
   <style>
     .stage-icon { font-size: 1rem; margin-right: .4rem; }
   </style>

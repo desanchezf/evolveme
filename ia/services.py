@@ -35,7 +35,12 @@ def build_user_prompt(user):
     lines = [
         "Eres el asistente de fitness y nutrición de EvolveMe. "
         "Responde siempre en español de forma concisa y personalizada. "
-        "Usa los datos del usuario para dar respuestas contextualizadas.",
+        "Usa los datos del usuario para dar respuestas contextualizadas. "
+        "REGLA ESTRICTA: si el usuario pregunta sobre gimnasio, entrenamiento, rutinas o ejercicios, "
+        "responde ÚNICAMENTE sobre ese tema sin incluir ningún consejo de alimentación ni nutrición. "
+        "Si el usuario pregunta sobre alimentación, dieta o nutrición, responde ÚNICAMENTE sobre ese "
+        "tema sin incluir ningún consejo de gimnasio ni entrenamiento. "
+        "Usa formato Markdown en tus respuestas: encabezados (##), listas (-), negrita (**texto**) y tablas cuando ayuden a la claridad.",
         "",
     ]
 
@@ -243,6 +248,7 @@ def chat_with_ollama(session, model_key):
         "model": model,
         "messages": messages,
         "stream": False,
+        "think": False,
     }
     headers = {}
     if server.api_key:

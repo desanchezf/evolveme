@@ -90,6 +90,22 @@ img.admin-logo-constrained.brand-image {
   object-fit: contain;
 }
 
+/* Brand link alineado a la izquierda */
+.sidebar-brand {
+  justify-content: flex-start !important;
+}
+
+.sidebar-brand .brand-link,
+a.brand-link {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  text-align: left !important;
+  padding-left: 0.8rem !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+}
+
 /* Título en el sidebar */
 .main-sidebar .brand-link .brand-text,
 .sidebar .brand-link .brand-text {
@@ -172,6 +188,24 @@ body.login-page {
 .register-form .card-body label,
 .register-form label {
     font-weight: bold;
+}
+
+/* Inlines tabulares: scroll horizontal en lugar de desbordamiento */
+.inline-group {
+    overflow-x: auto !important;
+    display: block !important;
+    max-width: 100% !important;
+}
+
+/* La tabla tiene text-nowrap por defecto en Jazzmin; forzamos wrap normal */
+.inline-group table.text-nowrap {
+    white-space: normal !important;
+    width: 100% !important;
+}
+
+.inline-group table.text-nowrap th,
+.inline-group table.text-nowrap td {
+    white-space: nowrap;  /* Las celdas individuales sí pueden ser nowrap */
 }
 
 /* Rutinas (admin): evitar "caja dentro de caja" en el formulario */

@@ -1,5 +1,5 @@
 # Versión de linux que se va a utilizar dentro del container
-FROM python:3.12-bookworm
+FROM python:3.14-bookworm
 
 # Evita la generación de archivos de bytecode (.pyc)
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -21,5 +21,5 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir /code
 WORKDIR /code
 COPY requirements.txt /code/
-RUN uv pip install -r requirements.txt
+RUN uv pip install --prerelease=allow -r requirements.txt
 COPY . /code/

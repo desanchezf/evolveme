@@ -1,11 +1,10 @@
-{% extends "admin/base.html" %}
+{% extends "admin/base_site.html" %}
 {% load static %}
 
 {% block title %}EvolveMe - Panel Principal{% endblock %}
 
 {% block extrastyle %}
   {{ block.super }}
-  {% include "includes/md3_forms.html" %}
   <style>
     .cards-grid {
       display: grid;
