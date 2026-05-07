@@ -36,7 +36,7 @@
       <div class="ocr-zone" id="ocr-zone" onclick="document.getElementById('id_product_images').click()">
         <i class="fas fa-barcode fa-2x mb-2 text-muted"></i>
         <div class="fw-semibold">Arrastra fotos del envase o etiqueta nutricional</div>
-        <div class="text-muted small mt-1">o pulsa para seleccionar · Varias imágenes permitidas</div>
+        <div class="text-muted small mt-1">pulsa, arrastra o pega con Ctrl+V · Varias imágenes permitidas</div>
         <input type="file" name="product_images" id="id_product_images" accept="image/*" multiple>
       </div>
 
@@ -155,25 +155,50 @@
 
   input.addEventListener('change', function() { setFiles(this.files); });
 
+  // Ctrl+V / Cmd+V: pegar imagen del portapapeles
+  document.addEventListener('paste', function(e) {
+    var items = (e.clipboardData || {}).items;
+    if (!items) return;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        setFiles([items[i].getAsFile()]);
+        zone.style.borderColor = 'var(--md-primary, #3d4252)';
+        setTimeout(function() { zone.style.borderColor = ''; }, 800);
+        break;
+      }
+    }
+  });
+
+  var currentFiles = [];
+  var MAX_FILES = 3;
+
   function setFiles(files) {
     if (!files || !files.length) return;
-    // Transfer to hidden input via DataTransfer
-    try {
-      var dt = new DataTransfer();
-      for (var i = 0; i < files.length; i++) dt.items.add(files[i]);
-      input.files = dt.files;
-    } catch(e) {}
-
-    // Show previews
+    var arr = Array.from ? Array.from(files) : [].slice.call(files);
+    currentFiles = currentFiles.concat(arr).slice(0, MAX_FILES);
+    rebuildInput(); renderPreviews(); updateHint();
+  }
+  function removeFile(idx) {
+    currentFiles.splice(idx, 1);
+    rebuildInput(); renderPreviews(); updateHint();
+  }
+  function updateHint() {
+    if (!currentFiles.length) { btnAnalyze.disabled = true; hint.textContent = 'Selecciona imágenes para activar el análisis'; }
+    else { btnAnalyze.disabled = false; hint.textContent = currentFiles.length + ' / ' + MAX_FILES + ' imagen(es). Pulsa "Analizar con IA".'; }
+  }
+  function renderPreviews() {
     previews.innerHTML = '';
-    for (var i = 0; i < files.length; i++) {
-      var img = document.createElement('img');
-      img.src = URL.createObjectURL(files[i]);
-      previews.appendChild(img);
-    }
-
-    btnAnalyze.disabled = false;
-    hint.textContent = files.length + ' imagen(es) seleccionada(s). Pulsa "Analizar con IA".';
+    currentFiles.forEach(function(file, idx) {
+      var item = document.createElement('div'); item.className = 'ocr-preview-item';
+      var img = document.createElement('img'); img.src = URL.createObjectURL(file);
+      var x = document.createElement('button'); x.type = 'button'; x.className = 'ocr-remove'; x.innerHTML = '&times;';
+      x.addEventListener('click', function() { removeFile(idx); });
+      item.appendChild(img); item.appendChild(x); previews.appendChild(item);
+    });
+  }
+  function rebuildInput() {
+    try { var dt = new DataTransfer(); currentFiles.forEach(function(f) { dt.items.add(f); }); input.files = dt.files; } catch(e) {}
   }
 
   btnAnalyze.addEventListener('click', function () {

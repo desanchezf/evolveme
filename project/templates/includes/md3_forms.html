@@ -265,27 +265,48 @@
   }
   .ocr-zone input[type=file] { display: none; }
   .ocr-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: .75rem; }
-  .ocr-previews img {
+  .ocr-preview-item { position: relative; display: inline-block; }
+  .ocr-preview-item img {
     height: 64px; width: 64px;
     object-fit: cover;
     border-radius: 4px;
     border: 1px solid #dee2e6;
+    display: block;
   }
+  .ocr-remove {
+    position: absolute; top: -6px; right: -6px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #dc3545; color: #fff;
+    border: none; cursor: pointer;
+    font-size: 12px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+  }
+  .ocr-remove:hover { background: #b02a37; }
   .field-filled { background: #f0fdf4 !important; transition: background .4s; }
 </style>
 
 <script>
-  /* Upload zone: click + drag & drop + label actualizable */
+  /* Upload zone: click + drag & drop + Ctrl+V + label actualizable */
   document.addEventListener('DOMContentLoaded', function () {
     // Aplica fondo #f1f5f9 al content-wrapper para que coincida con el dashboard
     var cw = document.querySelector('.content-wrapper');
     if (cw) cw.style.background = '#f1f5f9';
 
+    var activeUploadInput = null;
+
     document.querySelectorAll('.md3-upload-zone').forEach(function (zone) {
       var input = zone.querySelector('input[type="file"]');
       var labelEl = zone.querySelector('.md3-upload-zone__label');
       if (!input) return;
-      zone.addEventListener('click', function () { input.click(); });
+
+      // Registrar zona activa al hacer hover o click
+      zone.addEventListener('mouseenter', function () { activeUploadInput = input; });
+      zone.addEventListener('click', function () {
+        activeUploadInput = input;
+        input.click();
+      });
       zone.addEventListener('dragover', function (e) {
         e.preventDefault();
         zone.style.borderColor = 'var(--md-primary)';
@@ -296,11 +317,64 @@
       zone.addEventListener('drop', function (e) {
         e.preventDefault();
         zone.style.borderColor = '';
-        input.files = e.dataTransfer.files;
+        setFiles(input, e.dataTransfer.files);
         updateLabel(input, labelEl);
       });
       input.addEventListener('change', function () { updateLabel(input, labelEl); });
     });
+
+    // Ctrl+V / Cmd+V: pegar imagen del portapapeles
+    document.addEventListener('paste', function (e) {
+      var zones = document.querySelectorAll('.md3-upload-zone');
+      if (!zones.length) return;
+
+      var items = (e.clipboardData || e.originalEvent && e.originalEvent.clipboardData || {}).items;
+      if (!items) return;
+
+      var imageFile = null;
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          imageFile = items[i].getAsFile();
+          break;
+        }
+      }
+      if (!imageFile) return;
+
+      // Usar la zona activa o la primera disponible
+      var targetInput = activeUploadInput;
+      if (!targetInput) {
+        var firstZone = zones[0];
+        targetInput = firstZone.querySelector('input[type="file"]');
+      }
+      if (!targetInput) return;
+
+      e.preventDefault();
+      setFiles(targetInput, [imageFile]);
+
+      // Actualizar label de la zona correspondiente
+      var parentZone = targetInput.closest('.md3-upload-zone');
+      var labelEl = parentZone ? parentZone.querySelector('.md3-upload-zone__label') : null;
+      updateLabel(targetInput, labelEl);
+
+      // Feedback visual
+      if (parentZone) {
+        parentZone.style.borderColor = 'var(--md-primary)';
+        setTimeout(function () { parentZone.style.borderColor = ''; }, 800);
+      }
+    });
+
+    function setFiles(input, files) {
+      try {
+        var dt = new DataTransfer();
+        var arr = Array.from ? Array.from(files) : [].slice.call(files);
+        arr.forEach(function (f) { dt.items.add(f); });
+        input.files = dt.files;
+      } catch (_) {
+        // Fallback para navegadores sin DataTransfer constructor
+        input.files = files;
+      }
+    }
+
     function updateLabel(input, labelEl) {
       if (!labelEl) return;
       var n = input.files.length;

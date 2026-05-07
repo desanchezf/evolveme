@@ -138,6 +138,9 @@
       <div class="ia-chat-model-row d-flex align-items-center flex-wrap gap-2">
         <label>Modelo de chat:</label>
         <span class="badge bg-secondary">qwen3:1.7b</span>
+        <button id="ia-chat-clear" class="btn btn-outline-danger btn-sm ms-auto" type="button" title="Limpiar conversación">
+          <i class="fas fa-trash-alt me-1"></i>Limpiar conversación
+        </button>
       </div>
       <div id="ia-chat-messages" class="ia-chat-messages">
         {% if not chat_messages %}
@@ -309,6 +312,29 @@
       sendBtn.disabled = false;
       input.disabled = false;
       input.focus();
+    });
+  });
+
+  // Limpiar conversación
+  document.getElementById('ia-chat-clear').addEventListener('click', function() {
+    if (!confirm('¿Borrar toda la conversación? Esta acción no se puede deshacer.')) return;
+    fetch('{% url "ia:chat_clear" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({ session_id: sessionId })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.cleared) {
+        messagesEl.innerHTML =
+          '<div class="ia-chat-message assistant">'
+          + '<div class="small">EvolveMe IA</div>'
+          + '<div>Hola. Soy el asistente de EvolveMe. Puedes preguntarme sobre rutinas, nutrición o medidas.</div>'
+          + '</div>';
+      }
+    })
+    .catch(function() {
+      alert('No se pudo limpiar la conversación. Inténtalo de nuevo.');
     });
   });
 

@@ -36,11 +36,14 @@ def build_user_prompt(user):
         "Eres el asistente de fitness y nutrición de EvolveMe. "
         "Responde siempre en español de forma concisa y personalizada. "
         "Usa los datos del usuario para dar respuestas contextualizadas. "
-        "REGLA ESTRICTA: si el usuario pregunta sobre gimnasio, entrenamiento, rutinas o ejercicios, "
-        "responde ÚNICAMENTE sobre ese tema sin incluir ningún consejo de alimentación ni nutrición. "
-        "Si el usuario pregunta sobre alimentación, dieta o nutrición, responde ÚNICAMENTE sobre ese "
-        "tema sin incluir ningún consejo de gimnasio ni entrenamiento. "
-        "Usa formato Markdown en tus respuestas: encabezados (##), listas (-), negrita (**texto**) y tablas cuando ayuden a la claridad.",
+        "REGLA ESTRICTA: si el usuario pregunta sobre gimnasio, entrenamiento, "
+        "rutinas o ejercicios, responde ÚNICAMENTE sobre ese tema sin incluir "
+        "ningún consejo de alimentación ni nutrición. "
+        "Si el usuario pregunta sobre alimentación, dieta o nutrición, responde "
+        "ÚNICAMENTE sobre ese tema sin incluir ningún consejo de gimnasio ni "
+        "entrenamiento. "
+        "Usa formato Markdown: encabezados (##), listas (-), negrita (**texto**)"
+        " y tablas cuando ayuden a la claridad.",
         "",
     ]
 
@@ -93,9 +96,7 @@ def build_user_prompt(user):
     # ── RUTINA ACTIVA COMPLETA ───────────────────────────────────────────────
     try:
         from gym.models import Routine
-        routine = getattr(profile, "active_routine", None)
-        if not routine:
-            routine = Routine.objects.filter(user=user).order_by("-created_at").first()
+        routine = Routine.objects.filter(user=user).order_by("-created_at").first()
         if routine:
             lines += ["", "## RUTINA ACTIVA"]
             if routine.start_date:
@@ -183,6 +184,83 @@ def build_user_prompt(user):
     except Exception:
         pass
 
+    # ── HITOS Y KPIs ────────────────────────────────────────────────────────
+    try:
+        from datetime import timedelta as _td
+        from django.db.models import Count, Max, Sum
+
+        from gym.models import MusculationRecord, Session as GymSession
+
+        month_start = today.replace(day=1)
+
+        # Racha de días activos consecutivos
+        active_dates = (
+            set(GymSession.objects.filter(user=user).values_list("date", flat=True)) |
+            set(MusculationRecord.objects.filter(user=user, record_date__isnull=False)
+                .values_list("record_date__date", flat=True))
+        )
+        streak, check = 0, today if today in active_dates else today - _td(days=1)
+        while check in active_dates:
+            streak += 1
+            check -= _td(days=1)
+
+        # KPIs del mes en curso
+        monthly_sessions = GymSession.objects.filter(user=user, date__gte=month_start).count()
+        monthly_kcal = GymSession.objects.filter(
+            user=user, date__gte=month_start
+        ).aggregate(t=Sum("active_calories"))["t"] or 0
+        monthly_min = round(sum(
+            s.workout_time.total_seconds()
+            for s in GymSession.objects.filter(user=user, date__gte=month_start)
+            if s.workout_time
+        ) / 60)
+
+        lines += ["", "## HITOS"]
+        lines.append(f"Racha actual de días activos: {streak} días")
+        lines.append(f"Sesiones este mes: {monthly_sessions}")
+        if monthly_kcal:
+            lines.append(f"Calorías quemadas este mes: {monthly_kcal} kcal")
+        if monthly_min:
+            lines.append(f"Minutos de entrenamiento este mes: {monthly_min} min")
+
+        # Records personales (top 10 por peso máximo)  # noqa: E501
+        pr_qs = (
+            MusculationRecord.objects.filter(user=user)
+            .values("exercise__name")
+            .annotate(max_w=Max("weight"))
+            .order_by("-max_w")[:10]
+        )
+        if pr_qs:
+            lines.append("Records personales (peso máximo):")
+            for pr in pr_qs:
+                if pr["exercise__name"] and pr["max_w"]:
+                    lines.append(f"  · {pr['exercise__name']}: {pr['max_w']} kg")
+    except Exception:
+        pass
+
+    # ── MÉTRICAS NUTRICIONALES (últimas 4 semanas) ───────────────────────────
+    try:
+        from django.db.models import Avg
+        from nutrition.models import MealMetrics
+
+        four_weeks_ago = today - timedelta(days=28)
+        mac_qs = list(
+            MealMetrics.objects.filter(
+                daily_diet__user=user, daily_diet__date__gte=four_weeks_ago
+            )
+        )
+        if mac_qs:
+            n = len(mac_qs)
+            avg_kcal = round(sum(m.calories for m in mac_qs) / n)
+            avg_prot = round(sum(m.protein for m in mac_qs) / n, 1)
+            avg_carbs = round(sum(m.carbs for m in mac_qs) / n, 1)
+            avg_fat = round(sum(m.fat for m in mac_qs) / n, 1)
+            lines += ["", "## NUTRICIÓN PROMEDIO (últimas 4 semanas)"]
+            lines.append(f"Calorías: {avg_kcal} kcal/día")
+            lines.append(f"Proteína: {avg_prot} g | Carbos: {avg_carbs} g | Grasa: {avg_fat} g")
+    except Exception:
+        pass
+
     # ── BASE DE CONOCIMIENTO (gym + nutrition) ───────────────────────────────
     try:
         from ia.models import Promtps
@@ -222,7 +300,8 @@ def chat_with_ollama(session, model_key):
     Envía el historial de la sesión (incluido el último mensaje del usuario ya guardado)
     a Ollama y devuelve el contenido de la respuesta del asistente.
     session: ChatSession con .messages (queryset ordenado por created_at).
-    model_key: nombre del modelo de CHAT en Ollama (p. ej. "qwen3:8b"). No usar modelo de visión aquí.
+    model_key: nombre del modelo de CHAT en Ollama (p. ej. "qwen3:8b").
+    No usar modelo de visión aquí.
     Devuelve (content, error). Si error no es None, content puede ser un mensaje de fallback.
     """
     if not requests:
@@ -234,7 +313,7 @@ def chat_with_ollama(session, model_key):
 
     model = (model_key or "qwen3:8b").strip() or "qwen3:8b"
 
-    system_prompt = get_or_build_user_prompt(session.user, model)
+    system_prompt = build_user_prompt(session.user)
     messages = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})

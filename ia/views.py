@@ -103,6 +103,24 @@ def chat_send_view(request):
 
 @login_required
 @require_http_methods(["POST"])
+def chat_clear_view(request):
+    """Elimina todos los mensajes de la sesión de chat activa del usuario."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "JSON inválido"}, status=400)
+    session_id = data.get("session_id")
+    if session_id:
+        session = get_object_or_404(ChatSession, pk=session_id, user=request.user)
+    else:
+        session = ChatSession.objects.filter(user=request.user).order_by("-updated_at").first()
+    if session:
+        session.messages.all().delete()
+    return JsonResponse({"cleared": True})
+
+
+@login_required
+@require_http_methods(["POST"])
 def chat_save_routine_view(request):
     """Convierte una respuesta de texto con una rutina al JSON del formulario de rutinas."""
     try:

@@ -35,7 +35,7 @@
       <div class="ocr-zone" id="ocr-zone" onclick="document.getElementById('id_workout_images').click()">
         <i class="fas fa-dumbbell fa-2x mb-2 text-muted"></i>
         <div class="fw-semibold">Arrastra capturas de tu reloj o app de fitness</div>
-        <div class="text-muted small mt-1">o pulsa para seleccionar · La IA extraerá categoría, tiempo, calorías y FC</div>
+        <div class="text-muted small mt-1">pulsa, arrastra o pega con Ctrl+V · La IA extraerá categoría, tiempo, calorías y FC</div>
         <input type="file" name="workout_images" id="id_workout_images" accept="image/*" multiple>
       </div>
       <div class="ocr-previews" id="ocr-previews"></div>
@@ -123,13 +123,35 @@
   zone.addEventListener('drop', function(e) { e.preventDefault(); zone.classList.remove('drag-over'); setFiles(e.dataTransfer.files); });
   input.addEventListener('change', function() { setFiles(this.files); });
 
+  var currentFiles = [];
+  var MAX_FILES = 3;
+
   function setFiles(files) {
     if (!files || !files.length) return;
-    try { var dt = new DataTransfer(); for (var i = 0; i < files.length; i++) dt.items.add(files[i]); input.files = dt.files; } catch(e) {}
+    var arr = Array.from ? Array.from(files) : [].slice.call(files);
+    currentFiles = currentFiles.concat(arr).slice(0, MAX_FILES);
+    rebuildInput(); renderPreviews(); updateHint();
+  }
+  function removeFile(idx) {
+    currentFiles.splice(idx, 1);
+    rebuildInput(); renderPreviews(); updateHint();
+  }
+  function updateHint() {
+    if (!currentFiles.length) { btn.disabled = true; hint.textContent = 'Selecciona imágenes para activar el análisis'; }
+    else { btn.disabled = false; hint.textContent = currentFiles.length + ' / ' + MAX_FILES + ' imagen(es). Pulsa "Analizar con IA".'; }
+  }
+  function renderPreviews() {
     previews.innerHTML = '';
-    for (var i = 0; i < files.length; i++) { var img = document.createElement('img'); img.src = URL.createObjectURL(files[i]); previews.appendChild(img); }
-    btn.disabled = false;
-    hint.textContent = files.length + ' imagen(es) seleccionada(s). Pulsa "Analizar con IA".';
+    currentFiles.forEach(function(file, idx) {
+      var item = document.createElement('div'); item.className = 'ocr-preview-item';
+      var img = document.createElement('img'); img.src = URL.createObjectURL(file);
+      var x = document.createElement('button'); x.type = 'button'; x.className = 'ocr-remove'; x.innerHTML = '&times;';
+      x.addEventListener('click', function() { removeFile(idx); });
+      item.appendChild(img); item.appendChild(x); previews.appendChild(item);
+    });
+  }
+  function rebuildInput() {
+    try { var dt = new DataTransfer(); currentFiles.forEach(function(f) { dt.items.add(f); }); input.files = dt.files; } catch(e) {}
   }
 
   btn.addEventListener('click', function () {
