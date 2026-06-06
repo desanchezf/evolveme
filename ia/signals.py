@@ -7,14 +7,14 @@ from django.dispatch import receiver
 
 
 def _refresh_prompt(user):
-    """Reconstruye y guarda el prompt para todas las configuraciones activas del usuario."""
+    """Reconstruye y guarda el prompt para modelos de Chat (no OCR/visión)."""
     if user is None:
         return
     from ia.models import OllamaModelConfig, UserModelPrompt
     from ia.services import build_user_prompt
 
     prompt_text = build_user_prompt(user)
-    for model_config in OllamaModelConfig.objects.filter(downloaded=True):
+    for model_config in OllamaModelConfig.objects.filter(downloaded=True, proposito="Chat"):
         UserModelPrompt.objects.update_or_create(
             user=user,
             model_config=model_config,
